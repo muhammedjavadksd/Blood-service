@@ -4,8 +4,10 @@ import * as env from 'dotenv';
 import userRouter from './src/router/userRouter';
 import adminRouter from './src/router/adminRouter';
 import organizationRouter from './src/router/organizationRouter';
+import mongoDbConnection from './src/db/connection';
 
 env.config({ path: "./env" })
+mongoDbConnection()
 
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '', 10) || 7007;
