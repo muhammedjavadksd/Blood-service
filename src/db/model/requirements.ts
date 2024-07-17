@@ -3,6 +3,11 @@ import { BloodGroup, BloodStatus, LocatedAt, Relationship } from '../../Util/Typ
 import IBloodRequirement from '../../Util/Types/Interface/ModelInterface';
 
 const bloodRequirementScheme = new mongoose.Schema({
+    blood_id: {
+        type: String,
+        required: true,
+        unique: true
+    },
     patientName: {
         type: String,
         required: true
@@ -50,5 +55,6 @@ const bloodRequirementScheme = new mongoose.Schema({
 })
 
 const BloodRequirement = mongoose.model<IBloodRequirement>("blood_requirement", bloodRequirementScheme);
+
 
 export default BloodRequirement
