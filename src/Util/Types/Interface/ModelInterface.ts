@@ -3,6 +3,7 @@ import { BloodGroup, BloodStatus, LocatedAt, Relationship } from "../Enum"
 
 
 interface IBloodRequirementTemplate {
+    blood_id: string
     patientName: string
     unit: number,
     neededAt: Date,
@@ -16,7 +17,7 @@ interface IBloodRequirementTemplate {
     phoneNumber: number
 }
 
-interface IBloodRequirement extends IBloodRequirementTemplate, Document { }
+interface IBloodRequirement extends Document, IBloodRequirementTemplate { }
 
 export { IBloodRequirementTemplate }
 export default IBloodRequirement
