@@ -15,6 +15,11 @@ app.use("/admin", adminRouter)
 app.use("/organization", organizationRouter)
 
 
+app.use((err, req, res, next) => {
+    console.log("Error occured");
+})
+
+
 app.listen(PORT, () => {
     console.log(`Blood server started @port ${PORT}`);
 })
