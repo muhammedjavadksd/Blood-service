@@ -32,7 +32,12 @@ class UserController implements IUserController {
         const bloodGroup: BloodGroup = req.body.bloodGroup;
         const location: string = req.body.location;
 
-
+        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+        res.status(createBloodDonor.statusCode).json({
+            status: createBloodDonor.status,
+            msg: createBloodDonor.msg,
+            data: createBloodDonor.data
+        })
     }
 
     async updateBloodDonation(req: Request, res: Response) { }
