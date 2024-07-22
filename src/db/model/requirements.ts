@@ -56,5 +56,4 @@ const bloodRequirementScheme = new mongoose.Schema({
 
 const BloodRequirement = mongoose.model<IBloodRequirement>("blood_requirement", bloodRequirementScheme);
 
-
 export default BloodRequirement
