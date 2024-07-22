@@ -1,15 +1,17 @@
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { BloodGroup, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
+    bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse>
+    createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
 }
 
 class BloodService implements IBloodService {
@@ -68,8 +70,35 @@ class BloodService implements IBloodService {
         }
     }
 
-    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string) {
+    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse> {
 
+        const BloodDonorId: string = await this.createDonorId(bloodGroup, fullName);
+        const saveData: IBloodDonorTemplate = {
+            blood_group: bloodGroup,
+            donor_id: BloodDonorId,
+            email_address: emailID,
+            full_name: fullName,
+            locatedAt: location,
+            phoneNumber: phoneNumber
+        };
+        const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);
+        if (saveDonorIntoDb) {
+            return {
+                msg: "User inserted success",
+                status: true,
+                statusCode: StatusCode.CREATED,
+                data: {
+                    donor_db_id: saveDonorIntoDb,
+                    donor_id: BloodDonorId
+                }
+            }
+        } else {
+            return {
+                msg: "User inserted failed",
+                status: false,
+                statusCode: StatusCode.SERVER_ERROR
+            }
+        }
     }
 
 }

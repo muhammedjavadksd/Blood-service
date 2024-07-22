@@ -6,7 +6,7 @@ interface IBloodDonorTemplate {
     donor_id: string
     full_name: string
     blood_group: BloodGroup,
-    locatedAt: LocatedAt,
+    locatedAt: string,
     phoneNumber: number,
     email_address: string,
 }
