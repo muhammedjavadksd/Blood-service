@@ -4,12 +4,12 @@ import IBloodRequirement from "../Util/Types/Interface/ModelInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 
 
-interface IBloodRepo {
+interface IBloodReqDepo {
     createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<mongoObjectId | null>
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
 }
 
-class BloodRepo implements IBloodRepo {
+class BloodReqDepo implements IBloodReqDepo {
 
 
     private readonly BloodReq: typeof BloodRequirement
@@ -35,4 +35,4 @@ class BloodRepo implements IBloodRepo {
     }
 }
 
-export default BloodRepo
+export default BloodReqDepo
