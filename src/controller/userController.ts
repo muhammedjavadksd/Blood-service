@@ -1,11 +1,17 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { BloodGroup, BloodStatus, LocatedAt, Relationship, StatusCode } from '../Util/Types/Enum';
 import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
 
 interface IUserController {
-    blood_request(req: CustomRequest, res: Response)
+    createBloodDonation(req: Request, res: Response): Promise<void>
+    updateBloodDonation(req: Request, res: Response): Promise<void>
+    blood_request(req: CustomRequest, res: Response): Promise<void>
+    blood_donate(req: CustomRequest, res: Response): Promise<void>
+    findNearBy(req: Request, res: Response): Promise<void>
+    bloodAvailability(req: Request, res: Response): Promise<void>
+    closeRequest(req: Request, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -16,6 +22,24 @@ class UserController implements IUserController {
     constructor() {
         this.bloodService = new BloodService();
     }
+
+
+    async createBloodDonation(req: Request, res: Response) {
+
+        const fullName: string = req.body.full_name;
+        const emailID: string = req.body.email_address
+        const phoneNumber: number = req.body.phone_number;
+        const bloodGroup: string = req.body.bloodGroup;
+        const location: string = req.body.location;
+
+
+    }
+
+    async updateBloodDonation(req: Request, res: Response) { }
+
+    async findNearBy(req: Request, res: Response) { }
+
+    async bloodAvailability(req: Request, res: Response) { }
 
     async blood_request(req: CustomRequest, res: Response) {
 
@@ -45,6 +69,19 @@ class UserController implements IUserController {
                 status: false,
                 msg: "Internal server error",
             })
+        }
+    }
+
+    async closeRequest(req: Request, res: Response): Promise<void> { }
+
+    async blood_donate(req: CustomRequest, res: Response) {
+        const context = req.context;
+        if (context) {
+            const user_id = context.user_id;
+            const profile_id = context.profile_id;
+            const donation_id = req.params.donation_id;
+
+
         }
     }
 
