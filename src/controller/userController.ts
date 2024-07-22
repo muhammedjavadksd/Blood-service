@@ -29,7 +29,7 @@ class UserController implements IUserController {
         const fullName: string = req.body.full_name;
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
-        const bloodGroup: string = req.body.bloodGroup;
+        const bloodGroup: BloodGroup = req.body.bloodGroup;
         const location: string = req.body.location;
 
 

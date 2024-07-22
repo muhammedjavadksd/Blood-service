@@ -4,7 +4,7 @@ import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 
 interface IBloodService {
@@ -24,6 +24,15 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
     }
 
+    async createDonorId(blood_group: BloodGroup, fullName: string): Promise<string> {
+        let blood_id: string = blood_group + fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5);
+        let isDonorExist: IBloodDonor | null = await this.bloodDonorRepo.findBloodDonorByDonorId(blood_id);
+        while (isDonorExist) {
+            blood_id = blood_group + fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5);
+            isDonorExist = await this.bloodDonorRepo.findBloodDonorByDonorId(blood_id);
+        }
+        return blood_id
+    }
 
 
     async createBloodId(blood_group: BloodGroup, unit: number): Promise<string> {
@@ -31,6 +40,7 @@ class BloodService implements IBloodService {
         let isUserExist: IBloodRequirement | null = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
         while (isUserExist) {
             blood_id = blood_group + unit + this.utilHelper.createRandomText(5);
+            isUserExist = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
         }
         return blood_id
     }
@@ -58,7 +68,7 @@ class BloodService implements IBloodService {
         }
     }
 
-    async bloodDonation(user_id, profile_id, donation_id) {
+    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string) {
 
     }
 

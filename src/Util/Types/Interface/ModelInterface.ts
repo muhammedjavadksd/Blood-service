@@ -3,6 +3,7 @@ import { BloodGroup, BloodStatus, LocatedAt, Relationship } from "../Enum"
 
 
 interface IBloodDonorTemplate {
+    donor_id: string
     full_name: string
     blood_group: BloodGroup,
     locatedAt: LocatedAt,
