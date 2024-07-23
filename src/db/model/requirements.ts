@@ -51,6 +51,10 @@ const bloodRequirementScheme = new mongoose.Schema({
     phoneNumber: {
         type: Number,
         required: true
+    },
+    is_closed: {
+        type: Boolean,
+        required: true
     }
 })
 

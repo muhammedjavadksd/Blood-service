@@ -77,7 +77,16 @@ class UserController implements IUserController {
         }
     }
 
-    async closeRequest(req: Request, res: Response): Promise<void> { }
+    async closeRequest(req: CustomRequest, res: Response): Promise<void> {
+        const bloodReqId: string = req.body.blood_req_id;
+        const user_id = req.context?.user_id;
+
+        if (user_id) {
+
+        } else {
+
+        }
+    }
 
     async blood_donate(req: CustomRequest, res: Response) {
         const context = req.context;
@@ -85,6 +94,8 @@ class UserController implements IUserController {
             const user_id = context.user_id;
             const profile_id = context.profile_id;
             const donation_id = req.params.donation_id;
+
+
 
 
         }

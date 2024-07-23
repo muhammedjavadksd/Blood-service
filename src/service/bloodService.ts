@@ -79,7 +79,7 @@ class BloodService implements IBloodService {
             email_address: emailID,
             full_name: fullName,
             locatedAt: location,
-            phoneNumber: phoneNumber
+            phoneNumber: phoneNumber,
         };
         const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);
         if (saveDonorIntoDb) {
@@ -98,6 +98,15 @@ class BloodService implements IBloodService {
                 status: false,
                 statusCode: StatusCode.SERVER_ERROR
             }
+        }
+    }
+
+
+    async closeRequest(blood_id: string) {
+        const bloodRequestion = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
+        if (bloodRequestion) {
+            bloodRequestion.is_closed = true;
+            await this.bloodReqRepo.updateBloodDonor
         }
     }
 
