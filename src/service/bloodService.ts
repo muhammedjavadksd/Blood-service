@@ -12,6 +12,7 @@ interface IBloodService {
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
+    closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -102,11 +103,31 @@ class BloodService implements IBloodService {
     }
 
 
-    async closeRequest(blood_id: string) {
+    async closeRequest(blood_id: string): Promise<HelperFunctionResponse> {
         const bloodRequestion = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
         if (bloodRequestion) {
-            bloodRequestion.is_closed = true;
-            await this.bloodReqRepo.updateBloodDonor
+            const updateData: boolean = await this.bloodReqRepo.updateBloodDonor(blood_id, {
+                is_closed: true
+            });
+            if (updateData) {
+                return {
+                    msg: "Requirement closed",
+                    status: true,
+                    statusCode: StatusCode.OK
+                }
+            } else {
+                return {
+                    msg: "Requirement closing failed",
+                    status: false,
+                    statusCode: StatusCode.BAD_REQUESR
+                }
+            }
+        } else {
+            return {
+                msg: "Internal server error",
+                status: false,
+                statusCode: StatusCode.SERVER_ERROR
+            }
         }
     }
 
