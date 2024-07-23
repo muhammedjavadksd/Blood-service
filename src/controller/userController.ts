@@ -82,9 +82,10 @@ class UserController implements IUserController {
         const user_id = req.context?.user_id;
 
         if (user_id) {
-
+            const closeRequest = await this.bloodService.closeRequest(bloodReqId);
+            res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.status })
         } else {
-
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "User not found" })
         }
     }
 
