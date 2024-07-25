@@ -16,6 +16,7 @@ const PORT: number = parseInt(process.env.PORT || '', 10) || 7007;
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(express.static("public"))
 
 app.use(logger("combined"))
 

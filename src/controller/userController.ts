@@ -35,10 +35,10 @@ class UserController implements IUserController {
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
         const donor_id: string = req.context?.donor_id;
         const newGroup: BloodGroup = req.body?.blood_group;
+        const certificateName: string = req.body?.certificate_name;
 
-        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroup(newGroup, donor_id, "");
+        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroup(newGroup, donor_id, certificateName);
         res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
-
     }
 
     async updateBloodDonor(req: Request, res: Response): Promise<void> {

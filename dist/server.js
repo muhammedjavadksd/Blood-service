@@ -17,6 +17,7 @@ const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '', 10) || 7007;
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.static("public"));
 app.use((0, morgan_1.default)("combined"));
 app.use("/", userRouter_1.default);
 app.use("/admin", adminRouter_1.default);
