@@ -22,13 +22,19 @@ class BloodService implements IBloodService {
     private readonly utilHelper: UtilHelper;
 
     constructor() {
+        this.createBloodRequirement = this.createBloodRequirement.bind(this)
+        this.createBloodId = this.createBloodId.bind(this)
+        this.bloodDonation = this.bloodDonation.bind(this)
+        this.createDonorId = this.createDonorId.bind(this)
+        this.closeRequest = this.closeRequest.bind(this)
+        this.createBloodRequirement = this.createBloodRequirement.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.utilHelper = new UtilHelper();
     }
 
     async createDonorId(blood_group: BloodGroup, fullName: string): Promise<string> {
-        let blood_id: string = blood_group + fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5);
+        let blood_id: string = fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5) + blood_group;
         let isDonorExist: IBloodDonor | null = await this.bloodDonorRepo.findBloodDonorByDonorId(blood_id);
         while (isDonorExist) {
             blood_id = blood_group + fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5);

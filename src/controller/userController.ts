@@ -20,17 +20,23 @@ class UserController implements IUserController {
     private readonly bloodService: BloodService;
 
     constructor() {
+
+        this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
+        console.log(this);
     }
 
 
     async createBloodDonation(req: Request, res: Response) {
 
+        console.log(req.body);
         const fullName: string = req.body.full_name;
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
         const bloodGroup: BloodGroup = req.body.bloodGroup;
         const location: string = req.body.location;
+
+        console.log(this);
 
         const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
         res.status(createBloodDonor.statusCode).json({
