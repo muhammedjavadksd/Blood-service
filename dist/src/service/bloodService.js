@@ -30,6 +30,28 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    findBloodGroupChangeRequets(status, page, limit, perPage) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findRequests = yield this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage);
+            if (findRequests.length) {
+                return {
+                    status: true,
+                    msg: "Data fetched",
+                    data: {
+                        requests: findRequests
+                    },
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No request found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
+    }
     updateBloodGroup(newGroup, profile_id, certificate_name) {
         return __awaiter(this, void 0, void 0, function* () {
             const findBloodId = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);

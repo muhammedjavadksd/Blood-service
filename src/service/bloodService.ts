@@ -16,6 +16,7 @@ interface IBloodService {
     closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
     updateBloodGroup(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
+    findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -36,6 +37,26 @@ class BloodService implements IBloodService {
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+    async findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse> {
+        const findRequests = await this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage)
+        if (findRequests.length) {
+            return {
+                status: true,
+                msg: "Data fetched",
+                data: {
+                    requests: findRequests
+                },
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No request found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
     async updateBloodGroup(newGroup: BloodGroup, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse> {
@@ -151,6 +172,7 @@ class BloodService implements IBloodService {
             locatedAt: location,
             phoneNumber: phoneNumber,
         };
+
         const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);
         if (saveDonorIntoDb) {
             return {

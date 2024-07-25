@@ -18,7 +18,7 @@ userRouter.get("/get_profile", userController.getSingleProfile);
 userRouter.post("/create", authMiddleware.isValidUser, userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request); //test pending
 userRouter.post("/blood_donate/:donation_id", authMiddleware.isValidUser, userController.blood_donate);
-userRouter.post("/group_change_request", authMiddleware.isValidUser, uploadCertificate.single("certificate"), userController.updateBloodGroup);
+userRouter.post("/group_change_request", authMiddleware.isValidUser, uploadCertificate.single("certificate"), userController.updateBloodGroup); //test pending
 userRouter.patch("/close_request", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest); //test pending
 userRouter.patch("/update_donor/:edit_id", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest); //test pending
 exports.default = userRouter;

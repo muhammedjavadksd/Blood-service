@@ -12,20 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const updateBloodGroup_1 = __importDefault(require("../db/model/updateBloodGroup"));
-class BloodGroupUpdateRepo {
+const bloodService_1 = __importDefault(require("../service/bloodService"));
+class AdminController {
     constructor() {
-        this.bloodGroupUpdate = updateBloodGroup_1.default;
+        this.bloodService = new bloodService_1.default();
     }
-    saveRequest(data) {
-        const saveData = new this.bloodGroupUpdate(data);
-        return saveData === null || saveData === void 0 ? void 0 : saveData.id;
-    }
-    findAllRequest(status, page, limit, perPage) {
+    // limit/:skip/:per_page
+    bloodGroupChangeRequests(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findRequest = yield this.bloodGroupUpdate.find({ status }).skip(perPage * (page - 1)).limit(limit);
-            return findRequest;
+            const limit = parseInt(req.params.limit);
+            const skip = parseInt(req.params.skip);
+            const per_page = parseInt(req.params.per_page);
+            const status = req.params.status;
+            const findRequets = yield this.bloodService.findBloodGroupChangeRequets(status, skip, limit, per_page);
+            res.status(findRequets.statusCode).json({ status: findRequets.status, msg: findRequets.msg, data: findRequets.data });
         });
     }
 }
-exports.default = BloodGroupUpdateRepo;
+exports.default = AdminController;

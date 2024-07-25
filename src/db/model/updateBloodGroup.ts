@@ -28,5 +28,5 @@ const updateBloodGroupSchema = new mongoose.Schema({
     }
 })
 
-const BloodDonorUpdate = mongoose.model<IBloodDonorUpdate>("blood_group_update", updateBloodGroupSchema);
-export default BloodDonorUpdate
+const BloodGroupUpdate = mongoose.model<IBloodDonorUpdate>("blood_group_update", updateBloodGroupSchema);
+export default BloodGroupUpdate
