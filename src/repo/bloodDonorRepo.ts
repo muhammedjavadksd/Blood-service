@@ -23,7 +23,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
     async createDonor(donorData: IBloodDonorTemplate): Promise<null | ObjectId> {
         const insertDonor = new this.BloodDonor(donorData);
         const save = await insertDonor.save();
-        return save.id
+        return save?.id
     }
 
 }

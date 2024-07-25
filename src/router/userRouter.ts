@@ -3,6 +3,7 @@ import AuthMiddleware from '../middleware/authMiddelware';
 import UserController from '../controller/userController';
 
 const userRouter: Router = express.Router()
+
 const authMiddleware = new AuthMiddleware();
 const userController = new UserController();
 
@@ -13,7 +14,7 @@ userRouter.post("/create", authMiddleware.isValidUser, userController.createBloo
 userRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request) //test pending
 userRouter.post("/blood_donate/:donation_id", authMiddleware.isValidUser, userController.blood_donate)
 
-userRouter.patch("/close_request", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest)
+userRouter.patch("/close_request", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest) //test pending
 
 
 export default userRouter
