@@ -16,6 +16,7 @@ interface IUserController {
     closeRequest(req: Request, res: Response): Promise<void>
     getSingleProfile(req: Request, res: Response): Promise<void>
     updateBloodDonor(req: Request, res: Response): Promise<void>
+    updateBloodGroup(req: Request, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -29,6 +30,15 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
+    }
+
+    async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
+        const donor_id: string = req.context?.donor_id;
+        const newGroup: BloodGroup = req.body?.blood_group;
+
+        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroup(newGroup, donor_id, "");
+        res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+
     }
 
     async updateBloodDonor(req: Request, res: Response): Promise<void> {

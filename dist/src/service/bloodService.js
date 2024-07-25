@@ -16,6 +16,7 @@ const Enum_1 = require("../Util/Types/Enum");
 const bloodReqRepo_1 = __importDefault(require("../repo/bloodReqRepo"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
+const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
 class BloodService {
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
@@ -26,7 +27,53 @@ class BloodService {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
+        this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.utilHelper = new UtilHelpers_1.default();
+    }
+    updateBloodGroup(newGroup, profile_id, certificate_name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findBloodId = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            if (findBloodId) {
+                if (findBloodId.blood_group != newGroup) {
+                    const data = {
+                        certificate: "",
+                        date: new Date(),
+                        donor_id: profile_id,
+                        new_group: newGroup,
+                        status: Enum_1.BloodGroupUpdateStatus.Pending
+                    };
+                    const saveData = yield this.bloodGroupUpdateRepo.saveRequest(data);
+                    if (saveData) {
+                        return {
+                            msg: "Update request has been sent",
+                            status: true,
+                            statusCode: Enum_1.StatusCode.CREATED
+                        };
+                    }
+                    else {
+                        return {
+                            msg: "The update request failed",
+                            status: false,
+                            statusCode: Enum_1.StatusCode.BAD_REQUEST
+                        };
+                    }
+                }
+                else {
+                    return {
+                        msg: "The new blood group is the same as the current blood group.",
+                        status: false,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+            }
+            else {
+                return {
+                    msg: "We couldn't find the blood profile.",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
+            }
+        });
     }
     updateBloodDonors(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {

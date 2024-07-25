@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StatusCode = exports.LocatedAt = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
+exports.BloodGroupUpdateStatus = exports.StatusCode = exports.LocatedAt = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -47,6 +47,12 @@ var LocatedAt;
     LocatedAt["House"] = "House";
     LocatedAt["Other"] = "Other";
 })(LocatedAt || (exports.LocatedAt = LocatedAt = {}));
+var BloodGroupUpdateStatus;
+(function (BloodGroupUpdateStatus) {
+    BloodGroupUpdateStatus["Pending"] = "pending";
+    BloodGroupUpdateStatus["Completed"] = "completed";
+    BloodGroupUpdateStatus["Rejected"] = "Rejected";
+})(BloodGroupUpdateStatus || (exports.BloodGroupUpdateStatus = BloodGroupUpdateStatus = {}));
 var StatusCode;
 (function (StatusCode) {
     StatusCode[StatusCode["OK"] = 200] = "OK";

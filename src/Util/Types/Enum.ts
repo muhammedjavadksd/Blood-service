@@ -44,6 +44,11 @@ enum LocatedAt {
     Other = "Other"
 }
 
+enum BloodGroupUpdateStatus {
+    Pending = "pending",
+    Completed = "completed",
+    Rejected = "Rejected"
+}
 
 enum StatusCode {
     OK = 200,
@@ -56,4 +61,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, BloodStatus, Relationship, LocatedAt, StatusCode }
+export { BloodGroup, BloodStatus, Relationship, LocatedAt, StatusCode, BloodGroupUpdateStatus }

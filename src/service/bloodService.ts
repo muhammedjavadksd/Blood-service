@@ -1,11 +1,12 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodGroup, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodGroup, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
+import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -14,12 +15,14 @@ interface IBloodService {
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
+    updateBloodGroup(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
 
     private readonly bloodReqRepo: BloodRepo;
     private readonly bloodDonorRepo: BloodDonorRepo;
+    private readonly bloodGroupUpdateRepo: BloodGroupUpdateRepo;
     private readonly utilHelper: UtilHelper;
 
     constructor() {
@@ -31,7 +34,49 @@ class BloodService implements IBloodService {
         this.createBloodRequirement = this.createBloodRequirement.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
+        this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+    async updateBloodGroup(newGroup: BloodGroup, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse> {
+        const findBloodId: IBloodDonor | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+        if (findBloodId) {
+            if (findBloodId.blood_group != newGroup) {
+                const data: IBloodGroupUpdateTemplate = {
+                    certificate: "",
+                    date: new Date(),
+                    donor_id: profile_id,
+                    new_group: newGroup,
+                    status: BloodGroupUpdateStatus.Pending
+                }
+                const saveData: ObjectId | null = await this.bloodGroupUpdateRepo.saveRequest(data)
+                if (saveData) {
+                    return {
+                        msg: "Update request has been sent",
+                        status: true,
+                        statusCode: StatusCode.CREATED
+                    }
+                } else {
+                    return {
+                        msg: "The update request failed",
+                        status: false,
+                        statusCode: StatusCode.BAD_REQUEST
+                    }
+                }
+            } else {
+                return {
+                    msg: "The new blood group is the same as the current blood group.",
+                    status: false,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            }
+        } else {
+            return {
+                msg: "We couldn't find the blood profile.",
+                status: false,
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
     }
 
     async updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse> {

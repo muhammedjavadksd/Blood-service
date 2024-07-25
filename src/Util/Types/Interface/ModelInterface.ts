@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose"
-import { BloodGroup, BloodStatus, LocatedAt, Relationship } from "../Enum"
+import { BloodGroup, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship } from "../Enum"
 
 
 interface IUserBloodDonorEditable {
@@ -47,11 +47,22 @@ interface IBloodRequirementTemplate {
     is_closed: boolean
 }
 
+
+interface IBloodGroupUpdateTemplate {
+    donor_id: string,
+    date: Date,
+    new_group: BloodGroup,
+    certificate: string,
+    status: BloodGroupUpdateStatus
+}
+
+
 interface IBloodRequirement extends Document, IBloodRequirementTemplate { }
 interface IBloodDonor extends Document, IBloodDonorTemplate { }
+interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }
 
 
 
 
-export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable }
+export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate }
 export default IBloodRequirement

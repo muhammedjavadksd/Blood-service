@@ -21,6 +21,15 @@ class UserController {
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
     }
+    updateBloodGroup(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+            const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
+            const submiteRequest = yield this.bloodService.updateBloodGroup(newGroup, donor_id, "");
+            res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
+        });
+    }
     updateBloodDonor(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const bodyData = req.body;
