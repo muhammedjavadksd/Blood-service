@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 
 
 function mongoDbConnection() {
-    const mongoURL = process.env.mongodb_ulr;
+    const mongoURL = process.env.mongodb_url;
+
     if (!mongoURL) {
         console.log("Connection failed");
         return;
