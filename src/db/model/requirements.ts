@@ -21,7 +21,8 @@ const bloodRequirementScheme = new mongoose.Schema({
         required: true,
     },
     status: {
-        type: BloodStatus,
+        type: String,
+        enum: Object.values(BloodStatus),
         required: true
     },
     user_id: {
@@ -33,15 +34,18 @@ const bloodRequirementScheme = new mongoose.Schema({
         required: true
     },
     blood_group: {
-        type: BloodGroup,
+        type: String,
+        enum: Object.values(BloodGroup),
         required: true
     },
     relationship: {
-        type: Relationship,
+        type: String,
+        enum: Object.values(Relationship),
         required: true,
     },
     locatedAt: {
-        type: LocatedAt,
+        type: String,
+        enum: Object.values(LocatedAt),
         required: true
     },
     address: {

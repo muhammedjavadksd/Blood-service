@@ -14,7 +14,8 @@ const bloodDonorScheme = new mongoose.Schema({
         required: true
     },
     blood_group: {
-        type: BloodGroup,
+        type: String,
+        enum: Object.values(BloodGroup),
         required: true
     },
     locatedAt: {
