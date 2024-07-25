@@ -11,6 +11,7 @@ const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
 userRouter.get("/find_nearby", authMiddleware.isValidUser, userController.findNearBy);
 userRouter.get("/blood_availability", authMiddleware.isValidUser, userController.bloodAvailability);
+userRouter.get("/get_profile", userController.bloodAvailability);
 userRouter.post("/create", authMiddleware.isValidUser, userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request); //test pending
 userRouter.post("/blood_donate/:donation_id", authMiddleware.isValidUser, userController.blood_donate);

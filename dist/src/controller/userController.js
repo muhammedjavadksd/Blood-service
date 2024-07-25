@@ -14,11 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Enum_1 = require("../Util/Types/Enum");
 const bloodService_1 = __importDefault(require("../service/bloodService"));
+const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 class UserController {
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.bloodService = new bloodService_1.default();
-        console.log(this);
+        this.bloodDonorRepo = new bloodDonorRepo_1.default();
+    }
+    getSingleProfile(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const profile_id = req.body.profile_id;
+            const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            if (profile) {
+                res.status(Enum_1.StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile });
+            }
+            else {
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Invalid or wrong profile id" });
+            }
+        });
     }
     createBloodDonation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

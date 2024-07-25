@@ -124,7 +124,7 @@ class BloodService {
                     return {
                         msg: "Requirement closing failed",
                         status: false,
-                        statusCode: Enum_1.StatusCode.BAD_REQUESR
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
                     };
                 }
             }

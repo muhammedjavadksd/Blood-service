@@ -125,7 +125,7 @@ class BloodService implements IBloodService {
                 return {
                     msg: "Requirement closing failed",
                     status: false,
-                    statusCode: StatusCode.BAD_REQUESR
+                    statusCode: StatusCode.BAD_REQUEST
                 }
             }
         } else {

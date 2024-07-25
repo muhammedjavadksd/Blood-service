@@ -3,6 +3,8 @@ import { BloodGroup, BloodStatus, LocatedAt, Relationship, StatusCode } from '..
 import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
+import BloodDonorRepo from '../repo/bloodDonorRepo';
+import { IBloodDonorTemplate } from '../Util/Types/Interface/ModelInterface';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -12,18 +14,30 @@ interface IUserController {
     findNearBy(req: Request, res: Response): Promise<void>
     bloodAvailability(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
+    getSingleProfile(req: Request, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
 
 
     private readonly bloodService: BloodService;
+    private readonly bloodDonorRepo: BloodDonorRepo;
 
     constructor() {
 
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
-        console.log(this);
+        this.bloodDonorRepo = new BloodDonorRepo()
+    }
+
+    async getSingleProfile(req: Request, res: Response): Promise<void> {
+        const profile_id: string = req.body.profile_id;
+        const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+        if (profile) {
+            res.status(StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile })
+        } else {
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Invalid or wrong profile id" })
+        }
     }
 
 
@@ -107,6 +121,9 @@ class UserController implements IUserController {
 
         }
     }
+
+
+
 
 }
 
