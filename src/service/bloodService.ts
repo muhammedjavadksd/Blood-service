@@ -4,7 +4,7 @@ import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 
 interface IBloodService {
@@ -13,6 +13,7 @@ interface IBloodService {
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
+    updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -31,6 +32,23 @@ class BloodService implements IBloodService {
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+    async updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse> {
+        const updateDonor = await this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+        if (updateDonor) {
+            return {
+                status: true,
+                msg: "Donor updated success",
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "Donor updation failed",
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
     }
 
     async createDonorId(blood_group: BloodGroup, fullName: string): Promise<string> {
@@ -136,6 +154,8 @@ class BloodService implements IBloodService {
             }
         }
     }
+
+
 
 }
 

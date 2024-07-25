@@ -28,6 +28,25 @@ class BloodService {
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    updateBloodDonors(editData, edit_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updateDonor = yield this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+            if (updateDonor) {
+                return {
+                    status: true,
+                    msg: "Donor updated success",
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "Donor updation failed",
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
+            }
+        });
+    }
     createDonorId(blood_group, fullName) {
         return __awaiter(this, void 0, void 0, function* () {
             let blood_id = fullName.slice(0, 2).toUpperCase() + this.utilHelper.createRandomText(5) + blood_group;

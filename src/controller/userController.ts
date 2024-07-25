@@ -4,7 +4,7 @@ import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/U
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
-import { IBloodDonorTemplate } from '../Util/Types/Interface/ModelInterface';
+import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -15,6 +15,7 @@ interface IUserController {
     bloodAvailability(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
     getSingleProfile(req: Request, res: Response): Promise<void>
+    updateBloodDonor(req: Request, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -29,6 +30,27 @@ class UserController implements IUserController {
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
     }
+
+    async updateBloodDonor(req: Request, res: Response): Promise<void> {
+
+        const bodyData: IUserBloodDonorEditable = req.body;
+        const editId: string = req.params.edit_id;
+        let editableBloodDonors: IUserBloodDonorEditable = {
+            email_address: bodyData.email_address,
+            full_name: bodyData.full_name,
+            locatedAt: bodyData.locatedAt,
+            phoneNumber: bodyData.phoneNumber
+        };
+
+        const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, editId);
+        res.status(updateDonor.statusCode).json({
+            status: updateDonor.status,
+            msg: updateDonor.msg
+        })
+    }
+
+
+
 
     async getSingleProfile(req: Request, res: Response): Promise<void> {
         const profile_id: string = req.body.profile_id;

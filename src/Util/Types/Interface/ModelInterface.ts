@@ -2,6 +2,13 @@ import mongoose, { Document } from "mongoose"
 import { BloodGroup, BloodStatus, LocatedAt, Relationship } from "../Enum"
 
 
+interface IUserBloodDonorEditable {
+    full_name?: string
+    locatedAt?: string,
+    phoneNumber?: number,
+    email_address?: string,
+}
+
 interface IBloodDonorTemplate {
     donor_id: string
     full_name: string
@@ -46,5 +53,5 @@ interface IBloodDonor extends Document, IBloodDonorTemplate { }
 
 
 
-export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate }
+export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable }
 export default IBloodRequirement

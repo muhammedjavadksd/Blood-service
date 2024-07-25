@@ -1,10 +1,11 @@
 import { ObjectId } from "mongoose";
-import { IBloodDonor, IBloodDonorTemplate } from "../Util/Types/Interface/ModelInterface";
+import { IBloodDonor, IBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorCollection from "../db/model/donors";
 
 interface IBloodDonorRepo {
     createDonor(donorData: IBloodDonorTemplate): Promise<null | ObjectId>
     findBloodDonorByDonorId(donor_id: string): Promise<IBloodDonor | null>
+    updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean>
 }
 
 class BloodDonorRepo implements IBloodDonorRepo {
@@ -13,6 +14,11 @@ class BloodDonorRepo implements IBloodDonorRepo {
 
     constructor() {
         this.BloodDonor = BloodDonorCollection;
+    }
+
+    async updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean> {
+        const updateData = await this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData })
+        return updateData.modifiedCount > 0
     }
 
     async findBloodDonorByDonorId(donor_id: string): Promise<IBloodDonor | null> {
