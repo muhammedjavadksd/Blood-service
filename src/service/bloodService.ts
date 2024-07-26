@@ -4,7 +4,7 @@ import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 
@@ -15,7 +15,9 @@ interface IBloodService {
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
-    updateBloodGroup(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
+    updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
+    updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
+    updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
 }
 
@@ -39,6 +41,47 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
     }
 
+    async updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse> {
+        const findBloodGroup = await this.bloodGroupUpdateRepo.findRequestById(request_id);
+        if (findBloodGroup) {
+            const updateData: IEditableGroupGroupRequest = {};
+
+            if (findBloodGroup.status == BloodGroupUpdateStatus.Pending && newStatus == BloodGroupUpdateStatus.Completed) {
+                updateData.new_group = findBloodGroup.new_group;
+                updateData.status = BloodGroupUpdateStatus.Completed
+            } else if (findBloodGroup.status == BloodGroupUpdateStatus.Pending && newStatus == BloodGroupUpdateStatus.Rejected) {
+                updateData.status = BloodGroupUpdateStatus.Rejected
+            } else {
+                return {
+                    msg: "Blood group update is not allowed",
+                    status: false,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            }
+
+            const upateBloodGroup = await this.bloodGroupUpdateRepo.updateRequest(request_id, updateData)
+            if (upateBloodGroup) {
+                return {
+                    msg: "Blood group updated success",
+                    status: true,
+                    statusCode: StatusCode.OK
+                }
+            } else {
+                return {
+                    msg: "Blood group updated failed",
+                    status: false,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            }
+        } else {
+            return {
+                msg: "Blood group not found.",
+                status: false,
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
+    }
+
     async findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse> {
         const findRequests = await this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage)
         if (findRequests.length) {
@@ -59,7 +102,7 @@ class BloodService implements IBloodService {
         }
     }
 
-    async updateBloodGroup(newGroup: BloodGroup, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse> {
+    async updateBloodGroupRequest(newGroup: BloodGroup, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse> {
         const findBloodId: IBloodDonor | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
         if (findBloodId) {
             if (findBloodId.blood_group != newGroup) {

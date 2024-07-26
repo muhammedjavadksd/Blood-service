@@ -37,7 +37,7 @@ class UserController implements IUserController {
         const newGroup: BloodGroup = req.body?.blood_group;
         const certificateName: string = req.body?.certificate_name;
 
-        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroup(newGroup, donor_id, certificateName);
+        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
         res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
     }
 

@@ -28,5 +28,13 @@ class AdminController {
             res.status(findRequets.statusCode).json({ status: findRequets.status, msg: findRequets.msg, data: findRequets.data });
         });
     }
+    updateBloodGroup(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const request_id = req.params.request_id;
+            const status = req.params.new_status;
+            const updateBloodGroup = yield this.bloodService.updateBloodGroup(request_id, status);
+            res.status(updateBloodGroup.statusCode).json({ status: updateBloodGroup.status, msg: updateBloodGroup.msg });
+        });
+    }
 }
 exports.default = AdminController;

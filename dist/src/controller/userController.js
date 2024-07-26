@@ -27,7 +27,7 @@ class UserController {
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
             const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.certificate_name;
-            const submiteRequest = yield this.bloodService.updateBloodGroup(newGroup, donor_id, certificateName);
+            const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
             res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
         });
     }

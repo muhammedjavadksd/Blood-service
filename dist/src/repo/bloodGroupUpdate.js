@@ -17,6 +17,18 @@ class BloodGroupUpdateRepo {
     constructor() {
         this.bloodGroupUpdate = updateBloodGroup_1.default;
     }
+    updateRequest(update_id, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const update = yield this.bloodGroupUpdate.updateOne({ id: update_id }, { $set: data });
+            return update.modifiedCount > 0;
+        });
+    }
+    findRequestById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findRequest = yield this.bloodGroupUpdate.findById(id);
+            return findRequest;
+        });
+    }
     saveRequest(data) {
         const saveData = new this.bloodGroupUpdate(data);
         return saveData === null || saveData === void 0 ? void 0 : saveData.id;

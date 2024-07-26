@@ -30,6 +30,50 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    updateBloodGroup(request_id, newStatus) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findBloodGroup = yield this.bloodGroupUpdateRepo.findRequestById(request_id);
+            if (findBloodGroup) {
+                const updateData = {};
+                if (findBloodGroup.status == Enum_1.BloodGroupUpdateStatus.Pending && newStatus == Enum_1.BloodGroupUpdateStatus.Completed) {
+                    updateData.new_group = findBloodGroup.new_group;
+                    updateData.status = Enum_1.BloodGroupUpdateStatus.Completed;
+                }
+                else if (findBloodGroup.status == Enum_1.BloodGroupUpdateStatus.Pending && newStatus == Enum_1.BloodGroupUpdateStatus.Rejected) {
+                    updateData.status = Enum_1.BloodGroupUpdateStatus.Rejected;
+                }
+                else {
+                    return {
+                        msg: "Blood group update is not allowed",
+                        status: false,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+                const upateBloodGroup = yield this.bloodGroupUpdateRepo.updateRequest(request_id, updateData);
+                if (upateBloodGroup) {
+                    return {
+                        msg: "Blood group updated success",
+                        status: true,
+                        statusCode: Enum_1.StatusCode.OK
+                    };
+                }
+                else {
+                    return {
+                        msg: "Blood group updated failed",
+                        status: false,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+            }
+            else {
+                return {
+                    msg: "Blood group not found.",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
+    }
     findBloodGroupChangeRequets(status, page, limit, perPage) {
         return __awaiter(this, void 0, void 0, function* () {
             const findRequests = yield this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage);
@@ -52,7 +96,7 @@ class BloodService {
             }
         });
     }
-    updateBloodGroup(newGroup, profile_id, certificate_name) {
+    updateBloodGroupRequest(newGroup, profile_id, certificate_name) {
         return __awaiter(this, void 0, void 0, function* () {
             const findBloodId = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
             if (findBloodId) {

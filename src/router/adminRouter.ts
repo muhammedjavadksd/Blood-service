@@ -10,6 +10,7 @@ const adminController = new AdminController();
 
 adminRouter.get("/blood_group_change_requests/:limit/:skip/:per_page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests)
 
+adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodGroup)
 
 // adminRouter.get("/find_nearby", authMiddleware.isValidUser, userController.findNearBy)
 // adminRouter.get("/blood_availability", authMiddleware.isValidUser, userController.bloodAvailability)

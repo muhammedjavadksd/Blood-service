@@ -47,6 +47,11 @@ interface IBloodRequirementTemplate {
     is_closed: boolean
 }
 
+interface IEditableGroupGroupRequest {
+    new_group?: BloodGroup
+    status?: BloodGroupUpdateStatus
+}
+
 
 interface IBloodGroupUpdateTemplate {
     donor_id: string,
@@ -64,5 +69,5 @@ interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }
 
 
 
-export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate }
+export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest }
 export default IBloodRequirement
