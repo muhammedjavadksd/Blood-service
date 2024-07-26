@@ -9,6 +9,26 @@ enum BloodGroup {
     O_NEGATIVE = "O-"
 }
 
+
+enum BloodGroupFilter {
+    All = "all",
+    A_POSITIVE = "A+",
+    A_NEGATIVE = "A-",
+    B_POSITIVE = "B+",
+    B_NEGATIVE = "B-",
+    AB_POSITIVE = "AB+",
+    AB_NEGATIVE = "AB-",
+    O_POSITIVE = "O+",
+    O_NEGATIVE = "O-"
+}
+
+
+enum BloodDonorStatus {
+    Open = "Open",
+    Blocked = "Blocked",
+    Deleted = "Deleted"
+}
+
 enum BloodStatus {
     Pending = 'pending',
     Cancelled = "cancelled",
@@ -61,4 +81,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, BloodStatus, Relationship, LocatedAt, StatusCode, BloodGroupUpdateStatus }
+export { BloodGroup, BloodStatus, Relationship, LocatedAt, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus }

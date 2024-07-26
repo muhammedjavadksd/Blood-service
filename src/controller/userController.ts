@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BloodGroup, BloodStatus, LocatedAt, Relationship, StatusCode } from '../Util/Types/Enum';
+import { BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, LocatedAt, Relationship, StatusCode } from '../Util/Types/Enum';
 import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
@@ -96,7 +96,14 @@ class UserController implements IUserController {
 
     async findNearBy(req: Request, res: Response) { }
 
-    async bloodAvailability(req: Request, res: Response) { }
+    async bloodAvailability(req: Request, res: Response) {
+
+        const bloodGroup: BloodGroup = req.params.blood_group as BloodGroup;
+        const status: BloodDonorStatus = req.params.status as BloodDonorStatus;
+        const findBloodDonors = await this.bloodService.findBloodAvailability(status, bloodGroup);
+        res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status })
+
+    }
 
     async blood_request(req: CustomRequest, res: Response) {
 

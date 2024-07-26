@@ -30,6 +30,51 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    findBloodAvailability(status, blood_group) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findBloodAvailabilityFilter = {};
+            let result = {
+                [Enum_1.BloodGroup.A_POSITIVE]: 0,
+                [Enum_1.BloodGroup.A_NEGATIVE]: 0,
+                [Enum_1.BloodGroup.B_POSITIVE]: 0,
+                [Enum_1.BloodGroup.B_NEGATIVE]: 0,
+                [Enum_1.BloodGroup.AB_POSITIVE]: 0,
+                [Enum_1.BloodGroup.AB_NEGATIVE]: 0,
+                [Enum_1.BloodGroup.O_POSITIVE]: 0,
+                [Enum_1.BloodGroup.O_NEGATIVE]: 0,
+            };
+            if (status) {
+                findBloodAvailabilityFilter.status = status;
+            }
+            if (blood_group) {
+                findBloodAvailabilityFilter.blood_group = blood_group;
+            }
+            const findDonors = yield this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
+            if (findDonors.length) {
+                for (let index = 0; index < findDonors.length; index++) {
+                    if (result[findDonors[index].blood_group]) {
+                        result[findDonors[index].blood_group]++;
+                    }
+                    else {
+                        result[findDonors[index].blood_group] = 0;
+                    }
+                }
+                return {
+                    status: true,
+                    msg: "Data fetched success",
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: result
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No donors found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND,
+                };
+            }
+        });
+    }
     updateBloodGroup(request_id, newStatus) {
         return __awaiter(this, void 0, void 0, function* () {
             const findBloodGroup = yield this.bloodGroupUpdateRepo.findRequestById(request_id);
@@ -216,6 +261,7 @@ class BloodService {
                 full_name: fullName,
                 locatedAt: location,
                 phoneNumber: phoneNumber,
+                status: Enum_1.BloodDonorStatus.Open
             };
             const saveDonorIntoDb = yield this.bloodDonorRepo.createDonor(saveData);
             if (saveDonorIntoDb) {

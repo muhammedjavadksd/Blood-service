@@ -84,7 +84,12 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () { });
     }
     bloodAvailability(req, res) {
-        return __awaiter(this, void 0, void 0, function* () { });
+        return __awaiter(this, void 0, void 0, function* () {
+            const bloodGroup = req.params.blood_group;
+            const status = req.params.status;
+            const findBloodDonors = yield this.bloodService.findBloodAvailability(status, bloodGroup);
+            res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status });
+        });
     }
     blood_request(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BloodGroupUpdateStatus = exports.StatusCode = exports.LocatedAt = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
+exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.LocatedAt = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -12,6 +12,24 @@ var BloodGroup;
     BloodGroup["O_POSITIVE"] = "O+";
     BloodGroup["O_NEGATIVE"] = "O-";
 })(BloodGroup || (exports.BloodGroup = BloodGroup = {}));
+var BloodGroupFilter;
+(function (BloodGroupFilter) {
+    BloodGroupFilter["All"] = "all";
+    BloodGroupFilter["A_POSITIVE"] = "A+";
+    BloodGroupFilter["A_NEGATIVE"] = "A-";
+    BloodGroupFilter["B_POSITIVE"] = "B+";
+    BloodGroupFilter["B_NEGATIVE"] = "B-";
+    BloodGroupFilter["AB_POSITIVE"] = "AB+";
+    BloodGroupFilter["AB_NEGATIVE"] = "AB-";
+    BloodGroupFilter["O_POSITIVE"] = "O+";
+    BloodGroupFilter["O_NEGATIVE"] = "O-";
+})(BloodGroupFilter || (exports.BloodGroupFilter = BloodGroupFilter = {}));
+var BloodDonorStatus;
+(function (BloodDonorStatus) {
+    BloodDonorStatus["Open"] = "Open";
+    BloodDonorStatus["Blocked"] = "Blocked";
+    BloodDonorStatus["Deleted"] = "Deleted";
+})(BloodDonorStatus || (exports.BloodDonorStatus = BloodDonorStatus = {}));
 var BloodStatus;
 (function (BloodStatus) {
     BloodStatus["Pending"] = "pending";

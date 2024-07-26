@@ -1,10 +1,10 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodGroup, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
-import { mongoObjectId } from "../Util/Types/Types";
+import { IBloodAvailabilityResult, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 
@@ -19,6 +19,7 @@ interface IBloodService {
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
+    findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -39,6 +40,48 @@ class BloodService implements IBloodService {
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+    async findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse> {
+        const findBloodAvailabilityFilter: ISearchBloodDonorTemplate = {}
+        let result: IBloodAvailabilityResult = {
+            [BloodGroup.A_POSITIVE]: 0,
+            [BloodGroup.A_NEGATIVE]: 0,
+            [BloodGroup.B_POSITIVE]: 0,
+            [BloodGroup.B_NEGATIVE]: 0,
+            [BloodGroup.AB_POSITIVE]: 0,
+            [BloodGroup.AB_NEGATIVE]: 0,
+            [BloodGroup.O_POSITIVE]: 0,
+            [BloodGroup.O_NEGATIVE]: 0,
+        }
+        if (status) {
+            findBloodAvailabilityFilter.status = status
+        }
+        if (blood_group) {
+            findBloodAvailabilityFilter.blood_group = blood_group
+        }
+        const findDonors = await this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
+        if (findDonors.length) {
+            for (let index = 0; index < findDonors.length; index++) {
+                if (result[findDonors[index].blood_group]) {
+                    result[findDonors[index].blood_group]++
+                } else {
+                    result[findDonors[index].blood_group] = 0
+                }
+            }
+            return {
+                status: true,
+                msg: "Data fetched success",
+                statusCode: StatusCode.OK,
+                data: result
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No donors found",
+                statusCode: StatusCode.NOT_FOUND,
+            }
+        }
     }
 
     async updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse> {
@@ -214,6 +257,7 @@ class BloodService implements IBloodService {
             full_name: fullName,
             locatedAt: location,
             phoneNumber: phoneNumber,
+            status: BloodDonorStatus.Open
         };
 
         const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);

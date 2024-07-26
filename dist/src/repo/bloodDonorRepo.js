@@ -17,6 +17,12 @@ class BloodDonorRepo {
     constructor() {
         this.BloodDonor = donors_1.default;
     }
+    findDonors(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findDonors = yield this.BloodDonor.find(filter);
+            return findDonors;
+        });
+    }
     updateBloodDonor(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const updateData = yield this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData });
