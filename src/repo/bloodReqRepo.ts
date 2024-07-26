@@ -1,14 +1,14 @@
 import BloodRequirement from "../db/model/requirements";
 import { BloodGroup, BloodStatus, Relationship } from "../Util/Types/Enum";
 import IBloodRequirement, { IEditableBloodRequirementTemplate } from "../Util/Types/Interface/ModelInterface";
-import { LocatedAt } from "../Util/Types/Interface/UtilInterface";
-import { mongoObjectId } from "../Util/Types/Types";
+import { LocatedAt, mongoObjectId } from "../Util/Types/Types";
 
 
 interface IBloodReqDepo {
     createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<mongoObjectId | null>
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
+    findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -19,6 +19,12 @@ class BloodReqDepo implements IBloodReqDepo {
     constructor() {
         this.BloodReq = BloodRequirement
     }
+
+    async findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]> {
+        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ blood_group, status: BloodStatus.Pending })
+        return bloodGroup
+    }
+
 
 
     async findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null> {

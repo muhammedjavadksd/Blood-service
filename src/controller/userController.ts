@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, StatusCode } from '../Util/Types/Enum';
-import { CustomRequest, HelperFunctionResponse, LocatedAt } from '../Util/Types/Interface/UtilInterface';
+import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
 import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
+import { LocatedAt } from '../Util/Types/Types';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -17,6 +18,7 @@ interface IUserController {
     getSingleProfile(req: Request, res: Response): Promise<void>
     updateBloodDonor(req: Request, res: Response): Promise<void>
     updateBloodGroup(req: Request, res: Response): Promise<void>
+    findRequest(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -30,6 +32,17 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
+    }
+
+
+    async findRequest(req: CustomRequest, res: Response): Promise<void> {
+        if (req.context) {
+            const donor_id = req.context?.donor_id;
+            const findCases: HelperFunctionResponse = await this.bloodService.findRequest(donor_id);
+            res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
+        }
     }
 
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {

@@ -14,10 +14,7 @@ interface HelperFunctionResponse {
 }
 
 
-interface LocatedAt {
-    hospital_name: string,
-    hospital_id: string
-}
 
 
-export { HelperFunctionResponse, CustomRequest, LocatedAt }
+
+export { HelperFunctionResponse, CustomRequest }

@@ -4,4 +4,9 @@ import { BloodGroup } from "./Enum";
 type mongoObjectId = mongoose.Types.ObjectId;
 type IBloodAvailabilityResult = Record<BloodGroup, number>
 
-export { mongoObjectId, IBloodAvailabilityResult }
+type LocatedAt = {
+    hospital_name: string,
+    hospital_id: string
+}
+
+export { mongoObjectId, IBloodAvailabilityResult, LocatedAt }

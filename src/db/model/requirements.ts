@@ -1,6 +1,19 @@
-import mongoose from 'mongoose'
-import { BloodGroup, BloodStatus, LocatedAt, Relationship } from '../../Util/Types/Enum'
+import mongoose, { Schema } from 'mongoose'
+import { BloodGroup, BloodStatus, Relationship } from '../../Util/Types/Enum'
 import IBloodRequirement from '../../Util/Types/Interface/ModelInterface';
+import { LocatedAt } from '../../Util/Types/Types'
+
+const LocatedAtSchema = new Schema({
+    hospital_name: {
+        type: String,
+        required: true
+    },
+    hospital_id: {
+        type: String,
+        required: true
+    }
+});
+
 
 const bloodRequirementScheme = new mongoose.Schema({
     blood_id: {
@@ -44,8 +57,7 @@ const bloodRequirementScheme = new mongoose.Schema({
         required: true,
     },
     locatedAt: {
-        type: String,
-        enum: Object.values(LocatedAt),
+        type: LocatedAtSchema,
         required: true
     },
     address: {

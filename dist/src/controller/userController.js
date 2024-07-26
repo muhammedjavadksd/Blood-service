@@ -21,6 +21,19 @@ class UserController {
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
     }
+    findRequest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            if (req.context) {
+                const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+                const findCases = yield this.bloodService.findRequest(donor_id);
+                res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg });
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
+            }
+        });
+    }
     updateBloodGroup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;

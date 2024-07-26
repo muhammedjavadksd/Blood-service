@@ -32,6 +32,27 @@ class BloodService {
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    findRequest(donor_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+            if (findDonor) {
+                const bloodGroup = findDonor.blood_group;
+                const request = yield this.bloodReqRepo.findActiveBloodReq(bloodGroup);
+                return {
+                    status: true,
+                    msg: "Request fetched",
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "Unauthorized access.",
+                    statusCode: Enum_1.StatusCode.UNAUTHORIZED
+                };
+            }
+        });
+    }
     donateBlood(donor_id, donation_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const insertRequest = {

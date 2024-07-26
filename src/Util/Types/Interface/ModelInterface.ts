@@ -1,6 +1,7 @@
 import mongoose, { Document } from "mongoose"
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, Relationship } from "../Enum"
-import { LocatedAt } from "./UtilInterface"
+import { LocatedAt } from "../Types"
+// import { ÷ } from "./UtilInterface"
 
 
 interface IUserBloodDonorEditable {
@@ -86,7 +87,9 @@ interface IBloodDonateTemplate {
 // }
 
 
-interface IBloodRequirement extends Document, IBloodRequirementTemplate { }
+interface IBloodRequirement extends Document, IBloodRequirementTemplate {
+    locatedAt: LocatedAt
+}
 interface IBloodDonor extends Document, IBloodDonorTemplate { }
 interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }
 interface IBloodDonate extends Document, IBloodDonateTemplate { }

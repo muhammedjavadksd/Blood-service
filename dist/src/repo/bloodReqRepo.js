@@ -13,9 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const requirements_1 = __importDefault(require("../db/model/requirements"));
+const Enum_1 = require("../Util/Types/Enum");
 class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
+    }
+    findActiveBloodReq(blood_group) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bloodGroup = yield this.BloodReq.find({ blood_group, status: Enum_1.BloodStatus.Pending });
+            return bloodGroup;
+        });
     }
     findBloodRequirementByBloodId(blood_id) {
         return __awaiter(this, void 0, void 0, function* () {

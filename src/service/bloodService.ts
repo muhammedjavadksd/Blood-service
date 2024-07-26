@@ -1,7 +1,7 @@
 import mongoose, { ObjectId } from "mongoose";
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, Relationship, StatusCode } from "../Util/Types/Enum";
-import { HelperFunctionResponse, LocatedAt } from "../Util/Types/Interface/UtilInterface";
-import { IBloodAvailabilityResult, mongoObjectId } from "../Util/Types/Types";
+import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
 import IBloodRequirement, { IBloodDonateTemplate, IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
@@ -22,6 +22,7 @@ interface IBloodService {
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
     donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
+    findRequest(donor_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -44,6 +45,25 @@ class BloodService implements IBloodService {
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+    async findRequest(donor_id: string): Promise<HelperFunctionResponse> {
+        const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+        if (findDonor) {
+            const bloodGroup: BloodGroup = findDonor.blood_group;
+            const request = await this.bloodReqRepo.findActiveBloodReq(bloodGroup);
+            return {
+                status: true,
+                msg: "Request fetched",
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "Unauthorized access.",
+                statusCode: StatusCode.UNAUTHORIZED
+            }
+        }
     }
 
 
