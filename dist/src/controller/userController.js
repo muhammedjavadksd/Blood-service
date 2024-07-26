@@ -139,9 +139,14 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const context = req.context;
             if (context) {
-                const user_id = context.user_id;
-                const profile_id = context.profile_id;
+                const donor_id = context.donor_id;
                 const donation_id = req.params.donation_id;
+                const status = req.params.status;
+                const donateBlood = yield this.bloodService.donateBlood(donor_id, donation_id, status);
+                res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg });
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
             }
         });
     }

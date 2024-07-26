@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.LocatedAt = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
+exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -59,12 +59,11 @@ var Relationship;
     Relationship["SPOUSE"] = "Spouse";
     Relationship["INLAW"] = "In-law";
 })(Relationship || (exports.Relationship = Relationship = {}));
-var LocatedAt;
-(function (LocatedAt) {
-    LocatedAt["Hospital"] = "Hospital";
-    LocatedAt["House"] = "House";
-    LocatedAt["Other"] = "Other";
-})(LocatedAt || (exports.LocatedAt = LocatedAt = {}));
+var BloodDonationStatus;
+(function (BloodDonationStatus) {
+    BloodDonationStatus["Approved"] = "approved";
+    BloodDonationStatus["Rejected"] = "Rejected";
+})(BloodDonationStatus || (exports.BloodDonationStatus = BloodDonationStatus = {}));
 var BloodGroupUpdateStatus;
 (function (BloodGroupUpdateStatus) {
     BloodGroupUpdateStatus["Pending"] = "pending";

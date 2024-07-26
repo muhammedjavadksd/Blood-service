@@ -13,9 +13,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const donors_1 = __importDefault(require("../db/model/donors"));
+const Enum_1 = require("../Util/Types/Enum");
 class BloodDonorRepo {
     constructor() {
         this.BloodDonor = donors_1.default;
+    }
+    blockDonor(donor_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blockedDate = new Date();
+            const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: Enum_1.BloodDonorStatus.Blocked, blocked_date: blockedDate } });
+            return updateData.modifiedCount > 0;
+        });
+    }
+    unBlockDonor(donor_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: Enum_1.BloodDonorStatus.Open } });
+            return updateData.modifiedCount > 0;
+        });
     }
     findDonors(filter) {
         return __awaiter(this, void 0, void 0, function* () {

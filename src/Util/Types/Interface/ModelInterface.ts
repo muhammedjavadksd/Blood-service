@@ -1,5 +1,6 @@
 import mongoose, { Document } from "mongoose"
-import { BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship } from "../Enum"
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, Relationship } from "../Enum"
+import { LocatedAt } from "./UtilInterface"
 
 
 interface IUserBloodDonorEditable {
@@ -26,7 +27,8 @@ interface IBloodDonorTemplate {
     locatedAt: string,
     phoneNumber: number,
     email_address: string,
-    status: BloodDonorStatus
+    status: BloodDonorStatus,
+    blocked_date?: Date
 }
 
 interface IEditableBloodRequirementTemplate {
@@ -72,6 +74,13 @@ interface IBloodGroupUpdateTemplate {
     status: BloodGroupUpdateStatus
 }
 
+interface IBloodDonateTemplate {
+    donor_id: string,
+    donation_id: string
+    date: Date,
+    status: BloodDonationStatus
+}
+
 // interface IBloodAvailabilityResult {
 //     [key in BloodGroup]: number,
 // }
@@ -80,9 +89,10 @@ interface IBloodGroupUpdateTemplate {
 interface IBloodRequirement extends Document, IBloodRequirementTemplate { }
 interface IBloodDonor extends Document, IBloodDonorTemplate { }
 interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }
+interface IBloodDonate extends Document, IBloodDonateTemplate { }
 
 
 
 
-export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate }
+export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IBloodDonate, IBloodDonateTemplate }
 export default IBloodRequirement

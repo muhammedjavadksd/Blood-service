@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, LocatedAt, Relationship, StatusCode } from '../Util/Types/Enum';
-import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, StatusCode } from '../Util/Types/Enum';
+import { CustomRequest, HelperFunctionResponse, LocatedAt } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
@@ -151,18 +151,16 @@ class UserController implements IUserController {
     async blood_donate(req: CustomRequest, res: Response) {
         const context = req.context;
         if (context) {
-            const user_id = context.user_id;
-            const profile_id = context.profile_id;
-            const donation_id = req.params.donation_id;
+            const donor_id: string = context.donor_id;
+            const donation_id: string = req.params.donation_id;
+            const status: BloodDonationStatus = req.params.status as BloodDonationStatus;
 
-
-
-
+            const donateBlood = await this.bloodService.donateBlood(donor_id, donation_id, status);
+            res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }
     }
-
-
-
 
 }
 

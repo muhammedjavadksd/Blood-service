@@ -58,10 +58,10 @@ enum Relationship {
     INLAW = "In-law"
 }
 
-enum LocatedAt {
-    Hospital = "Hospital",
-    House = "House",
-    Other = "Other"
+
+enum BloodDonationStatus {
+    Approved = "approved",
+    Rejected = "Rejected"
 }
 
 enum BloodGroupUpdateStatus {
@@ -81,4 +81,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, BloodStatus, Relationship, LocatedAt, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus }
+export { BloodGroup, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }

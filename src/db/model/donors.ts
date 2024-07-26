@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { BloodGroup } from "../../Util/Types/Enum";
-import { IBloodDonor } from "../../Util/Types/Interface/ModelInterface";
+import { BloodDonorStatus, BloodGroup } from "../../Util/Types/Enum";
+import { IBloodDonor, IBloodDonorTemplate } from "../../Util/Types/Interface/ModelInterface";
 
 
 const bloodDonorScheme = new mongoose.Schema({
@@ -29,9 +29,17 @@ const bloodDonorScheme = new mongoose.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        enum: BloodDonorStatus,
+        required: true
+    },
+    blocked_date: {
+        type: Date,
+    },
 })
 
 
-const BloodDonorCollection = mongoose.model<IBloodDonor>("donors", bloodDonorScheme);
+const BloodDonorCollection = mongoose.model<IBloodDonorTemplate>("donors", bloodDonorScheme);
 
 export default BloodDonorCollection

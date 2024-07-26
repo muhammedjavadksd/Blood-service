@@ -31,6 +31,14 @@ const bloodDonorScheme = new mongoose_1.default.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        enum: Enum_1.BloodDonorStatus,
+        required: true
+    },
+    blocked_date: {
+        type: Date,
+    },
 });
 const BloodDonorCollection = mongoose_1.default.model("donors", bloodDonorScheme);
 exports.default = BloodDonorCollection;

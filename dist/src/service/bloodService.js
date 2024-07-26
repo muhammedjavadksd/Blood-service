@@ -17,6 +17,7 @@ const bloodReqRepo_1 = __importDefault(require("../repo/bloodReqRepo"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
+const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 class BloodService {
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
@@ -28,7 +29,62 @@ class BloodService {
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
+        this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
+    }
+    donateBlood(donor_id, donation_id, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const insertRequest = {
+                date: new Date(),
+                donation_id,
+                status,
+                donor_id
+            };
+            const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+            if (findDonor) {
+                if (findDonor.status == Enum_1.BloodDonorStatus.Blocked || findDonor.status == Enum_1.BloodDonorStatus.Deleted) {
+                    return {
+                        msg: "You cannot process this request as your account is blocked for 90 days.",
+                        status: false,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+                else {
+                    const saveData = yield this.bloodDonationRepo.saveDonation(insertRequest);
+                    if (saveData) {
+                        if (status == Enum_1.BloodDonationStatus.Approved) {
+                            const blockDonor = yield this.bloodDonorRepo.blockDonor(donor_id);
+                            return {
+                                msg: "Please go through the email; you will receive the remaining details",
+                                status: true,
+                                statusCode: Enum_1.StatusCode.OK
+                            };
+                        }
+                        else {
+                            return {
+                                msg: "Rejected success",
+                                status: true,
+                                statusCode: Enum_1.StatusCode.OK
+                            };
+                        }
+                    }
+                    else {
+                        return {
+                            msg: "Internal server error",
+                            status: false,
+                            statusCode: Enum_1.StatusCode.SERVER_ERROR
+                        };
+                    }
+                }
+            }
+            else {
+                return {
+                    msg: "We couldn't find the donor",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.UNAUTHORIZED
+                };
+            }
+        });
     }
     findBloodAvailability(status, blood_group) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -1,6 +1,7 @@
 import BloodRequirement from "../db/model/requirements";
-import { BloodGroup, BloodStatus, LocatedAt, Relationship } from "../Util/Types/Enum";
+import { BloodGroup, BloodStatus, Relationship } from "../Util/Types/Enum";
 import IBloodRequirement, { IEditableBloodRequirementTemplate } from "../Util/Types/Interface/ModelInterface";
+import { LocatedAt } from "../Util/Types/Interface/UtilInterface";
 import { mongoObjectId } from "../Util/Types/Types";
 
 

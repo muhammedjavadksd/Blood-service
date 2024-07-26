@@ -1,12 +1,13 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, LocatedAt, Relationship, StatusCode } from "../Util/Types/Enum";
-import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, Relationship, StatusCode } from "../Util/Types/Enum";
+import { HelperFunctionResponse, LocatedAt } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonateTemplate, IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
+import BloodDonationRepo from "../repo/bloodDonation";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -20,6 +21,7 @@ interface IBloodService {
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
+    donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -27,6 +29,7 @@ class BloodService implements IBloodService {
     private readonly bloodReqRepo: BloodRepo;
     private readonly bloodDonorRepo: BloodDonorRepo;
     private readonly bloodGroupUpdateRepo: BloodGroupUpdateRepo;
+    private readonly bloodDonationRepo: BloodDonationRepo;
     private readonly utilHelper: UtilHelper;
 
     constructor() {
@@ -39,7 +42,60 @@ class BloodService implements IBloodService {
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
+        this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+
+    async donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
+        const insertRequest: IBloodDonateTemplate = {
+            date: new Date(),
+            donation_id,
+            status,
+            donor_id
+        }
+        const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+        if (findDonor) {
+            if (findDonor.status == BloodDonorStatus.Blocked || findDonor.status == BloodDonorStatus.Deleted) {
+                return {
+                    msg: "You cannot process this request as your account is blocked for 90 days.",
+                    status: false,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            } else {
+                const saveData = await this.bloodDonationRepo.saveDonation(insertRequest);
+
+                if (saveData) {
+                    if (status == BloodDonationStatus.Approved) {
+                        const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id)
+                        return {
+                            msg: "Please go through the email; you will receive the remaining details",
+                            status: true,
+                            statusCode: StatusCode.OK
+                        }
+                    } else {
+                        return {
+                            msg: "Rejected success",
+                            status: true,
+                            statusCode: StatusCode.OK
+                        }
+                    }
+                } else {
+                    return {
+                        msg: "Internal server error",
+                        status: false,
+                        statusCode: StatusCode.SERVER_ERROR
+                    }
+                }
+
+            }
+        } else {
+            return {
+                msg: "We couldn't find the donor",
+                status: false,
+                statusCode: StatusCode.UNAUTHORIZED
+            }
+        }
     }
 
     async findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse> {
