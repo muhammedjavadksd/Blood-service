@@ -134,6 +134,9 @@ class UserController implements IUserController {
 
         const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
 
+        console.log("Blood donor created");
+
+        console.log(createBloodDonor);
 
         res.status(createBloodDonor.statusCode).json({
             status: createBloodDonor.status,

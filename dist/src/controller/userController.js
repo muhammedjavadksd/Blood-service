@@ -115,6 +115,8 @@ class UserController {
             const location = req.body.location;
             // console.log(this);
             const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+            console.log("Blood donor created");
+            console.log(createBloodDonor);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,
                 msg: createBloodDonor.msg,
