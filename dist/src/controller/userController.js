@@ -16,6 +16,7 @@ const Enum_1 = require("../Util/Types/Enum");
 const bloodService_1 = __importDefault(require("../service/bloodService"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const ImageService_1 = __importDefault(require("../service/ImageService"));
+const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 class UserController {
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
@@ -30,6 +31,7 @@ class UserController {
         this.updateBloodGroup = this.updateBloodGroup.bind(this);
         this.findRequest = this.findRequest.bind(this);
         this.createBloodDonation = this.createBloodDonation.bind(this);
+        this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
@@ -56,11 +58,18 @@ class UserController {
     updateBloodGroup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
+            const utilHelper = new UtilHelpers_1.default();
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
-            const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.certificate_name;
-            const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
-            res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
+            const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.presigned_url;
+            const certificate_name_from_presigned_url = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+            if (certificate_name_from_presigned_url) {
+                const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
+                res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
+            }
+            else {
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" });
+            }
         });
     }
     updateBloodDonor(req, res) {

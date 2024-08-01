@@ -8,6 +8,7 @@ import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Inte
 import { LocatedAt } from '../Util/Types/Types';
 import TokenHelper from '../Util/Helpers/tokenHelper';
 import ImageServices from '../service/ImageService';
+import UtilHelper from '../Util/Helpers/UtilHelpers';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -43,6 +44,7 @@ class UserController implements IUserController {
         this.updateBloodGroup = this.updateBloodGroup.bind(this)
         this.findRequest = this.findRequest.bind(this)
         this.createBloodDonation = this.createBloodDonation.bind(this)
+        this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
@@ -65,12 +67,17 @@ class UserController implements IUserController {
     }
 
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
+        const utilHelper = new UtilHelper();
         const donor_id: string = req.context?.donor_id;
         const newGroup: BloodGroup = req.body?.blood_group;
-        const certificateName: string = req.body?.certificate_name;
-
-        const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
-        res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+        const certificateName: string = req.body?.presigned_url;
+        const certificate_name_from_presigned_url: string | boolean = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+        if (certificate_name_from_presigned_url) {
+            const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
+            res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+        } else {
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" })
+        }
     }
 
     async updateBloodDonor(req: Request, res: Response): Promise<void> {
