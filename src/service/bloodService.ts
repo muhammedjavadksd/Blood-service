@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -8,6 +8,7 @@ import IBloodRequirement, { IBloodDonateTemplate, IBloodDonor, IBloodDonorTempla
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 import BloodDonationRepo from "../repo/bloodDonation";
+import TokenHelper from "../Util/Helpers/tokenHelper";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -336,20 +337,38 @@ class BloodService implements IBloodService {
             status: BloodDonorStatus.Open
         };
 
+
+        console.log("Saved data");
+        console.log(saveData);
+
+
+
         const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);
+        console.log("Save donor db");
+
+        console.log(saveDonorIntoDb);
+
         if (saveDonorIntoDb) {
+            // const updateUser = await this.
+            const tokenHelper = new TokenHelper();
+            const authToken = await tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, JwtTimer._30Days)
+            console.log("Proifle");
+            console.log(authToken);
+
+
             return {
-                msg: "User inserted success",
+                msg: "Blood profile created success",
                 status: true,
                 statusCode: StatusCode.CREATED,
                 data: {
                     donor_db_id: saveDonorIntoDb,
-                    donor_id: BloodDonorId
+                    donor_id: BloodDonorId,
+                    token: authToken
                 }
             }
         } else {
             return {
-                msg: "User inserted failed",
+                msg: "Blood profile creation failed",
                 status: false,
                 statusCode: StatusCode.SERVER_ERROR
             }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.BloodGroup = void 0;
+exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -12,6 +12,10 @@ var BloodGroup;
     BloodGroup["O_POSITIVE"] = "O+";
     BloodGroup["O_NEGATIVE"] = "O-";
 })(BloodGroup || (exports.BloodGroup = BloodGroup = {}));
+var JwtTimer;
+(function (JwtTimer) {
+    JwtTimer["_30Days"] = "30d";
+})(JwtTimer || (exports.JwtTimer = JwtTimer = {}));
 var BloodGroupFilter;
 (function (BloodGroupFilter) {
     BloodGroupFilter["All"] = "all";

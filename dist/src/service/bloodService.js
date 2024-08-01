@@ -18,6 +18,7 @@ const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
 const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
+const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 class BloodService {
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
@@ -340,21 +341,31 @@ class BloodService {
                 phoneNumber: phoneNumber,
                 status: Enum_1.BloodDonorStatus.Open
             };
+            console.log("Saved data");
+            console.log(saveData);
             const saveDonorIntoDb = yield this.bloodDonorRepo.createDonor(saveData);
+            console.log("Save donor db");
+            console.log(saveDonorIntoDb);
             if (saveDonorIntoDb) {
+                // const updateUser = await this.
+                const tokenHelper = new tokenHelper_1.default();
+                const authToken = yield tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, Enum_1.JwtTimer._30Days);
+                console.log("Proifle");
+                console.log(authToken);
                 return {
-                    msg: "User inserted success",
+                    msg: "Blood profile created success",
                     status: true,
                     statusCode: Enum_1.StatusCode.CREATED,
                     data: {
                         donor_db_id: saveDonorIntoDb,
-                        donor_id: BloodDonorId
+                        donor_id: BloodDonorId,
+                        token: authToken
                     }
                 };
             }
             else {
                 return {
-                    msg: "User inserted failed",
+                    msg: "Blood profile creation failed",
                     status: false,
                     statusCode: Enum_1.StatusCode.SERVER_ERROR
                 };

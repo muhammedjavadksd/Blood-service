@@ -1,6 +1,6 @@
 
 import { Request } from 'express'
-import { StatusCode } from '../Enum'
+import { BloodGroup, StatusCode } from '../Enum'
 
 interface CustomRequest extends Request {
     context?: Record<any, any>
@@ -14,7 +14,15 @@ interface HelperFunctionResponse {
 }
 
 
+interface IDonorJwtInterface {
+    donor_id: string,
+    full_name: string,
+    blood_group: BloodGroup,
+    phone_number: number,
+    email_address: string
+}
 
 
 
-export { HelperFunctionResponse, CustomRequest }
+
+export { HelperFunctionResponse, CustomRequest, IDonorJwtInterface }

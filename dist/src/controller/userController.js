@@ -18,6 +18,17 @@ const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 class UserController {
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
+        this.updateBloodDonation = this.updateBloodDonation.bind(this);
+        this.blood_request = this.blood_request.bind(this);
+        this.blood_donate = this.blood_donate.bind(this);
+        this.findNearBy = this.findNearBy.bind(this);
+        this.bloodAvailability = this.bloodAvailability.bind(this);
+        this.closeRequest = this.closeRequest.bind(this);
+        this.getSingleProfile = this.getSingleProfile.bind(this);
+        this.updateBloodDonor = this.updateBloodDonor.bind(this);
+        this.updateBloodGroup = this.updateBloodGroup.bind(this);
+        this.findRequest = this.findRequest.bind(this);
+        this.createBloodDonation = this.createBloodDonation.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
     }
@@ -63,13 +74,14 @@ class UserController {
     }
     getSingleProfile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const profile_id = req.body.profile_id;
+            const profile_id = req.params.profile_id;
             const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            console.log(profile_id);
             if (profile) {
                 res.status(Enum_1.StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile });
             }
             else {
-                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Invalid or wrong profile id" });
+                res.status(Enum_1.StatusCode.NOT_FOUND).json({ status: false, msg: "Invalid or wrong profile id" });
             }
         });
     }
@@ -81,7 +93,7 @@ class UserController {
             const phoneNumber = req.body.phone_number;
             const bloodGroup = req.body.bloodGroup;
             const location = req.body.location;
-            console.log(this);
+            // console.log(this);
             const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,

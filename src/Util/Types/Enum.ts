@@ -10,6 +10,11 @@ enum BloodGroup {
 }
 
 
+enum JwtTimer {
+    _30Days = "30d"
+}
+
+
 enum BloodGroupFilter {
     All = "all",
     A_POSITIVE = "A+",
@@ -81,4 +86,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }
+export { BloodGroup, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }

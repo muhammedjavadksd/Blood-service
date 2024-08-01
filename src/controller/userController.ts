@@ -6,6 +6,7 @@ import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
 import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
+import TokenHelper from '../Util/Helpers/tokenHelper';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -28,7 +29,17 @@ class UserController implements IUserController {
     private readonly bloodDonorRepo: BloodDonorRepo;
 
     constructor() {
-
+        this.createBloodDonation = this.createBloodDonation.bind(this)
+        this.updateBloodDonation = this.updateBloodDonation.bind(this)
+        this.blood_request = this.blood_request.bind(this)
+        this.blood_donate = this.blood_donate.bind(this)
+        this.findNearBy = this.findNearBy.bind(this)
+        this.bloodAvailability = this.bloodAvailability.bind(this)
+        this.closeRequest = this.closeRequest.bind(this)
+        this.getSingleProfile = this.getSingleProfile.bind(this)
+        this.updateBloodDonor = this.updateBloodDonor.bind(this)
+        this.updateBloodGroup = this.updateBloodGroup.bind(this)
+        this.findRequest = this.findRequest.bind(this)
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
@@ -76,12 +87,14 @@ class UserController implements IUserController {
 
 
     async getSingleProfile(req: Request, res: Response): Promise<void> {
-        const profile_id: string = req.body.profile_id;
+        const profile_id: string = req.params.profile_id;
+
         const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+        console.log(profile_id);
         if (profile) {
             res.status(StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile })
         } else {
-            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Invalid or wrong profile id" })
+            res.status(StatusCode.NOT_FOUND).json({ status: false, msg: "Invalid or wrong profile id" })
         }
     }
 
@@ -95,9 +108,11 @@ class UserController implements IUserController {
         const bloodGroup: BloodGroup = req.body.bloodGroup;
         const location: string = req.body.location;
 
-        console.log(this);
+        // console.log(this);
 
         const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+
+
         res.status(createBloodDonor.statusCode).json({
             status: createBloodDonor.status,
             msg: createBloodDonor.msg,

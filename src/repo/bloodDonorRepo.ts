@@ -17,6 +17,12 @@ class BloodDonorRepo implements IBloodDonorRepo {
     private readonly BloodDonor: typeof BloodDonorCollection
 
     constructor() {
+        this.createDonor = this.createDonor.bind(this)
+        this.findBloodDonorByDonorId = this.findBloodDonorByDonorId.bind(this)
+        this.updateBloodDonor = this.updateBloodDonor.bind(this)
+        this.findDonors = this.findDonors.bind(this)
+        this.blockDonor = this.blockDonor.bind(this)
+        this.unBlockDonor = this.unBlockDonor.bind(this)
         this.BloodDonor = BloodDonorCollection;
     }
 

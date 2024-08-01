@@ -12,7 +12,7 @@ const userRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
 const uploadCertificate = (0, multer_1.default)({ storage: multerMiddleware_1.saveBloodRequestUpdateCertificate });
-userRouter.get("/get_profile", userController.getSingleProfile); // test pending
+userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
 userRouter.get("/blood_availability/:blood_group/:status", authMiddleware.isValidUser, userController.bloodAvailability); //test
 userRouter.get("/find_nearby", authMiddleware.isValidUser, userController.findNearBy);
 userRouter.get("/find_request", authMiddleware.isValidUser, userController.findRequest); //test pending

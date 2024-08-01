@@ -16,6 +16,12 @@ const donors_1 = __importDefault(require("../db/model/donors"));
 const Enum_1 = require("../Util/Types/Enum");
 class BloodDonorRepo {
     constructor() {
+        this.createDonor = this.createDonor.bind(this);
+        this.findBloodDonorByDonorId = this.findBloodDonorByDonorId.bind(this);
+        this.updateBloodDonor = this.updateBloodDonor.bind(this);
+        this.findDonors = this.findDonors.bind(this);
+        this.blockDonor = this.blockDonor.bind(this);
+        this.unBlockDonor = this.unBlockDonor.bind(this);
         this.BloodDonor = donors_1.default;
     }
     blockDonor(donor_id) {
