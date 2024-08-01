@@ -17,6 +17,7 @@ class AuthMiddleware {
     }
     isValidUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(req.headers);
             next();
         });
     }

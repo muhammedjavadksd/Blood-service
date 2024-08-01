@@ -63,6 +63,9 @@ class UserController {
             const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
             const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.presigned_url;
             const certificate_name_from_presigned_url = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+            console.log(req.body);
+            console.log(certificate_name_from_presigned_url);
+            console.log(req.context);
             if (certificate_name_from_presigned_url) {
                 const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
                 res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });

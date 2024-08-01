@@ -222,6 +222,7 @@ class BloodService {
     updateBloodGroupRequest(newGroup, profile_id, certificate_name) {
         return __awaiter(this, void 0, void 0, function* () {
             const findBloodId = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            console.log(findBloodId);
             if (findBloodId) {
                 if (findBloodId.blood_group != newGroup) {
                     const data = {

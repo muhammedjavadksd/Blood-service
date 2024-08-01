@@ -224,6 +224,8 @@ class BloodService implements IBloodService {
 
     async updateBloodGroupRequest(newGroup: BloodGroup, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse> {
         const findBloodId: IBloodDonor | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+        console.log(findBloodId);
+
         if (findBloodId) {
             if (findBloodId.blood_group != newGroup) {
                 const data: IBloodGroupUpdateTemplate = {

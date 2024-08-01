@@ -14,6 +14,8 @@ class AuthMiddleware implements IAuthMiddleware {
     }
 
     async isValidUser(req: Request, res: Response, next: NextFunction) {
+        console.log(req.headers);
+
         next()
     }
 

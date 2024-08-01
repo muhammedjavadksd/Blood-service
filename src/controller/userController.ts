@@ -72,6 +72,13 @@ class UserController implements IUserController {
         const newGroup: BloodGroup = req.body?.blood_group;
         const certificateName: string = req.body?.presigned_url;
         const certificate_name_from_presigned_url: string | boolean = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+
+        console.log(req.body);
+        console.log(certificate_name_from_presigned_url);
+        console.log(req.context);
+
+
+
         if (certificate_name_from_presigned_url) {
             const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
             res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
