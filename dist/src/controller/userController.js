@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Enum_1 = require("../Util/Types/Enum");
 const bloodService_1 = __importDefault(require("../service/bloodService"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
+const ImageService_1 = __importDefault(require("../service/ImageService"));
 class UserController {
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
@@ -31,6 +32,7 @@ class UserController {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
+        this.imageService = new ImageService_1.default();
     }
     findRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -47,11 +49,8 @@ class UserController {
     }
     generatePresignedUrlForBloodGroupChange(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const donor_id: string = req.context?.donor_id;
-            // const newGroup: BloodGroup = req.body?.blood_group;
-            // const certificateName: string = req.body?.certificate_name;
-            // const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
-            // res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+            const createdPresignedUrl = yield this.imageService.generatePresignedUrlForChangeBloodGroupCertificat();
+            res.status(createdPresignedUrl.statusCode).json({ status: true, msg: createdPresignedUrl.msg, data: createdPresignedUrl.data });
         });
     }
     updateBloodGroup(req, res) {

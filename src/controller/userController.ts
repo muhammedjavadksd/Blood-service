@@ -7,6 +7,7 @@ import BloodDonorRepo from '../repo/bloodDonorRepo';
 import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
 import TokenHelper from '../Util/Helpers/tokenHelper';
+import ImageServices from '../service/ImageService';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -26,6 +27,7 @@ class UserController implements IUserController {
 
 
     private readonly bloodService: BloodService;
+    private readonly imageService: ImageServices;
     private readonly bloodDonorRepo: BloodDonorRepo;
 
     constructor() {
@@ -43,6 +45,7 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
+        this.imageService = new ImageServices()
     }
 
 
@@ -57,14 +60,8 @@ class UserController implements IUserController {
     }
 
     async generatePresignedUrlForBloodGroupChange(req: CustomRequest, res: Response): Promise<void> {
-
-
-        // const donor_id: string = req.context?.donor_id;
-        // const newGroup: BloodGroup = req.body?.blood_group;
-        // const certificateName: string = req.body?.certificate_name;
-
-        // const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
-        // res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+        const createdPresignedUrl = await this.imageService.generatePresignedUrlForChangeBloodGroupCertificat()
+        res.status(createdPresignedUrl.statusCode).json({ status: true, msg: createdPresignedUrl.msg, data: createdPresignedUrl.data })
     }
 
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
