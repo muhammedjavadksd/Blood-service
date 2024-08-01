@@ -45,6 +45,15 @@ class UserController {
             }
         });
     }
+    generatePresignedUrlForBloodGroupChange(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // const donor_id: string = req.context?.donor_id;
+            // const newGroup: BloodGroup = req.body?.blood_group;
+            // const certificateName: string = req.body?.certificate_name;
+            // const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
+            // res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+        });
+    }
     updateBloodGroup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;

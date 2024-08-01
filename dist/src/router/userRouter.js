@@ -20,6 +20,7 @@ userRouter.post("/create", authMiddleware.isValidUser, userController.createBloo
 userRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request); //test pending
 userRouter.post("/blood_donate/:donation_id/:status", authMiddleware.isValidUser, userController.blood_donate); //test pending
 userRouter.post("/group_change_request", authMiddleware.isValidUser, uploadCertificate.single("certificate"), userController.updateBloodGroup); //test pending
+userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidUser, userController.generatePresignedUrlForBloodGroupChange); //test pending
 userRouter.patch("/close_request", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest); //test pending
 userRouter.patch("/update_donor/:edit_id", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest); //test pending
 exports.default = userRouter;

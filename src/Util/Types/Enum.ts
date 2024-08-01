@@ -75,6 +75,11 @@ enum BloodGroupUpdateStatus {
     Rejected = "Rejected"
 }
 
+enum S3BucketsNames {
+    bloodCertificate = "blood-certificate"
+}
+
+
 enum StatusCode {
     OK = 200,
     CREATED = 201,
@@ -86,4 +91,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }
+export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.BloodGroup = void 0;
+exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -74,6 +74,10 @@ var BloodGroupUpdateStatus;
     BloodGroupUpdateStatus["Completed"] = "completed";
     BloodGroupUpdateStatus["Rejected"] = "Rejected";
 })(BloodGroupUpdateStatus || (exports.BloodGroupUpdateStatus = BloodGroupUpdateStatus = {}));
+var S3BucketsNames;
+(function (S3BucketsNames) {
+    S3BucketsNames["bloodCertificate"] = "blood-certificate";
+})(S3BucketsNames || (exports.S3BucketsNames = S3BucketsNames = {}));
 var StatusCode;
 (function (StatusCode) {
     StatusCode[StatusCode["OK"] = 200] = "OK";

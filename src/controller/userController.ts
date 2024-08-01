@@ -56,6 +56,17 @@ class UserController implements IUserController {
         }
     }
 
+    async generatePresignedUrlForBloodGroupChange(req: CustomRequest, res: Response): Promise<void> {
+
+
+        // const donor_id: string = req.context?.donor_id;
+        // const newGroup: BloodGroup = req.body?.blood_group;
+        // const certificateName: string = req.body?.certificate_name;
+
+        // const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificateName);
+        // res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+    }
+
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
         const donor_id: string = req.context?.donor_id;
         const newGroup: BloodGroup = req.body?.blood_group;
