@@ -229,13 +229,17 @@ class BloodService implements IBloodService {
         if (findBloodId) {
             if (findBloodId.blood_group != newGroup) {
                 const data: IBloodGroupUpdateTemplate = {
-                    certificate: "",
+                    certificate: certificate_name,
                     date: new Date(),
                     donor_id: profile_id,
                     new_group: newGroup,
                     status: BloodGroupUpdateStatus.Pending
                 }
                 const saveData: ObjectId | null = await this.bloodGroupUpdateRepo.saveRequest(data)
+                console.log(saveData);
+                console.log("Saved data");
+
+
                 if (saveData) {
                     return {
                         msg: "Update request has been sent",

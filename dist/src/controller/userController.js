@@ -62,7 +62,7 @@ class UserController {
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
             const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.presigned_url;
-            const certificate_name_from_presigned_url = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+            const certificate_name_from_presigned_url = `${Enum_1.S3BucketsNames.bloodCertificate}/${utilHelper.extractImageNameFromPresignedUrl(certificateName)}`;
             console.log(req.body);
             console.log(certificate_name_from_presigned_url);
             console.log(req.context);

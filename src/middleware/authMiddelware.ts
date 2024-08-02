@@ -1,4 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
+import UtilHelper from '../Util/Helpers/UtilHelpers'
+import TokenHelper from '../Util/Helpers/tokenHelper'
+import { CustomRequest, IDonorJwtInterface } from '../Util/Types/Interface/UtilInterface'
+import { JwtPayload } from 'jsonwebtoken'
+import { StatusCode } from '../Util/Types/Enum'
 
 interface IAuthMiddleware {
     isValidUser(req: Request, res: Response, next: NextFunction): Promise<void>
@@ -13,10 +18,39 @@ class AuthMiddleware implements IAuthMiddleware {
         next()
     }
 
-    async isValidUser(req: Request, res: Response, next: NextFunction) {
+    async isValidUser(req: CustomRequest, res: Response, next: NextFunction) {
+        const utilHelper = new UtilHelper();
+        const tokenHelper = new TokenHelper();
         console.log(req.headers);
+        const headers = req.headers;
+        const authToken = headers.authorization;
+        const token = utilHelper.getTokenFromHeader(authToken);
+        if (token) {
 
-        next()
+            // "blood_group": "A+",
+            // "donor_id": "MUANBVMA+",
+            // "email_address": "muhammedjavad119144@gmail.com",
+            // "full_name": "Muhammed Javad",
+            // "phone_number": "9744727684",
+            const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
+            if (tokenValidation && typeof tokenValidation == "object") {
+                const donor_id = tokenValidation.donor_id;
+                if (!req.context) {
+                    req.context = {}
+                }
+                req.context.donor_id = donor_id;
+                console.log("Donor middleware has passed");
+                console.log(donor_id);
+                console.log(tokenValidation);
+
+
+                next()
+            } else {
+                res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
+            }
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
+        }
     }
 
     async isValidDonor(req: Request, res: Response, next: NextFunction) {

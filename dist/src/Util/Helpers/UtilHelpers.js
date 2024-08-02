@@ -5,6 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const url_1 = __importDefault(require("url"));
 class UtilHelper {
+    getTokenFromHeader(headers) {
+        const splitAuth = headers === null || headers === void 0 ? void 0 : headers.split(" ");
+        if (splitAuth && splitAuth[0] == "Bearer") {
+            const token = splitAuth[1];
+            if (token) {
+                return token;
+            }
+        }
+        return false;
+    }
     createRandomText(length) {
         const letters = 'abcdefghijklmnopqrstuvwxyz';
         let word = '';

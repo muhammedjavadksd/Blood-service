@@ -30,8 +30,8 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
         return findRequest
     }
 
-    saveRequest(data: IBloodGroupUpdateTemplate): Promise<ObjectId | null> {
-        const saveData = new this.bloodGroupUpdate(data);
+    async saveRequest(data: IBloodGroupUpdateTemplate): Promise<ObjectId | null> {
+        const saveData = await new this.bloodGroupUpdate(data).save();
         return saveData?.id
     }
 

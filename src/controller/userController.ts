@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, StatusCode } from '../Util/Types/Enum';
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
 import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
@@ -71,7 +71,7 @@ class UserController implements IUserController {
         const donor_id: string = req.context?.donor_id;
         const newGroup: BloodGroup = req.body?.blood_group;
         const certificateName: string = req.body?.presigned_url;
-        const certificate_name_from_presigned_url: string | boolean = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+        const certificate_name_from_presigned_url: string | boolean = `${S3BucketsNames.bloodCertificate}/${utilHelper.extractImageNameFromPresignedUrl(certificateName)}`;
 
         console.log(req.body);
         console.log(certificate_name_from_presigned_url);

@@ -226,13 +226,15 @@ class BloodService {
             if (findBloodId) {
                 if (findBloodId.blood_group != newGroup) {
                     const data = {
-                        certificate: "",
+                        certificate: certificate_name,
                         date: new Date(),
                         donor_id: profile_id,
                         new_group: newGroup,
                         status: Enum_1.BloodGroupUpdateStatus.Pending
                     };
                     const saveData = yield this.bloodGroupUpdateRepo.saveRequest(data);
+                    console.log(saveData);
+                    console.log("Saved data");
                     if (saveData) {
                         return {
                             msg: "Update request has been sent",

@@ -30,8 +30,10 @@ class BloodGroupUpdateRepo {
         });
     }
     saveRequest(data) {
-        const saveData = new this.bloodGroupUpdate(data);
-        return saveData === null || saveData === void 0 ? void 0 : saveData.id;
+        return __awaiter(this, void 0, void 0, function* () {
+            const saveData = yield new this.bloodGroupUpdate(data).save();
+            return saveData === null || saveData === void 0 ? void 0 : saveData.id;
+        });
     }
     findAllRequest(status, page, limit, perPage) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -1,13 +1,27 @@
 
+import { Request } from 'express';
 import url from 'url'
 
 interface IUtilHelper {
 
     createRandomText(length: number): string
     extractImageNameFromPresignedUrl(presigned_url: string): string | boolean
+    getTokenFromHeader(headers: Request['headers']['authorization']): string | false
 }
 
 class UtilHelper implements IUtilHelper {
+
+
+    getTokenFromHeader(headers: Request['headers']['authorization']): string | false {
+        const splitAuth = headers?.split(" ");
+        if (splitAuth && splitAuth[0] == "Bearer") {
+            const token: string | undefined = splitAuth[1];
+            if (token) {
+                return token
+            }
+        }
+        return false
+    }
 
     createRandomText(length: number): string {
         const letters = 'abcdefghijklmnopqrstuvwxyz';
