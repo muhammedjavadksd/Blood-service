@@ -46,7 +46,7 @@ class BloodDonorRepo {
     updateBloodDonor(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const updateData = yield this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData });
-            return updateData.modifiedCount > 0;
+            return true;
         });
     }
     findBloodDonorByDonorId(donor_id) {

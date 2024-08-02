@@ -77,15 +77,18 @@ class UserController {
     }
     updateBloodDonor(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const bodyData = req.body;
-            const editId = req.params.edit_id;
+            const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             let editableBloodDonors = {
                 email_address: bodyData.email_address,
                 full_name: bodyData.full_name,
                 locatedAt: bodyData.locatedAt,
                 phoneNumber: bodyData.phoneNumber
             };
-            const updateDonor = yield this.bloodService.updateBloodDonors(editableBloodDonors, editId);
+            console.log("Editing details");
+            console.log(editableBloodDonors);
+            const updateDonor = yield this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
             res.status(updateDonor.statusCode).json({
                 status: updateDonor.status,
                 msg: updateDonor.msg

@@ -271,6 +271,10 @@ class BloodService implements IBloodService {
 
     async updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse> {
         const updateDonor = await this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+        console.log(updateDonor);
+        console.log(edit_id, editData);
+
+
         if (updateDonor) {
             return {
                 status: true,

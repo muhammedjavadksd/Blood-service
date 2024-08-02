@@ -87,10 +87,10 @@ class UserController implements IUserController {
         }
     }
 
-    async updateBloodDonor(req: Request, res: Response): Promise<void> {
+    async updateBloodDonor(req: CustomRequest, res: Response): Promise<void> {
 
         const bodyData: IUserBloodDonorEditable = req.body;
-        const editId: string = req.params.edit_id;
+        const donor_id: string = req.context?.donor_id;
         let editableBloodDonors: IUserBloodDonorEditable = {
             email_address: bodyData.email_address,
             full_name: bodyData.full_name,
@@ -98,7 +98,11 @@ class UserController implements IUserController {
             phoneNumber: bodyData.phoneNumber
         };
 
-        const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, editId);
+        console.log("Editing details");
+        console.log(editableBloodDonors);
+
+
+        const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
         res.status(updateDonor.statusCode).json({
             status: updateDonor.status,
             msg: updateDonor.msg

@@ -22,7 +22,7 @@ userRouter.post("/group_change_request", authMiddleware.isValidUser, userControl
 userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidUser, userController.generatePresignedUrlForBloodGroupChange) //test pending
 
 userRouter.patch("/close_request", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest) //test pending
-userRouter.patch("/update_donor/:edit_id", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.closeRequest) //test pending
+userRouter.patch("/update_donor", authMiddleware.isValidUser, authMiddleware.isValidReq, userController.updateBloodDonor) //test pending
 
 
 export default userRouter

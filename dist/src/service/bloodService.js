@@ -270,6 +270,8 @@ class BloodService {
     updateBloodDonors(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const updateDonor = yield this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+            console.log(updateDonor);
+            console.log(edit_id, editData);
             if (updateDonor) {
                 return {
                     status: true,
