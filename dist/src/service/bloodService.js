@@ -313,7 +313,8 @@ class BloodService {
     createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber) {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = yield this.createBloodId(blood_group, unit);
-            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false);
+            console.log(createdBloodRequest);
             if (createdBloodRequest) {
                 return {
                     msg: "Blood requirement created success",

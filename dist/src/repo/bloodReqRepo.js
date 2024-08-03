@@ -30,14 +30,28 @@ class BloodReqDepo {
             return find;
         });
     }
-    createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber) {
+    createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('blood_id:', blood_id);
+            console.log('patientName:', patientName);
+            console.log('unit:', unit);
+            console.log('neededAt:', neededAt);
+            console.log('status:', status);
+            console.log('user_id:', user_id);
+            console.log('profile_id:', profile_id);
+            console.log('blood_group:', blood_group);
+            console.log('relationship:', relationship);
+            console.log('locatedAt:', locatedAt);
+            console.log('address:', address);
+            console.log('phoneNumber:', phoneNumber);
+            console.log('is_closed:', is_closed);
             try {
-                const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber });
+                const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed });
                 const userCreated = yield bloodRequirement.save();
                 return userCreated.id;
             }
             catch (e) {
+                console.log(e);
                 return null;
             }
         });

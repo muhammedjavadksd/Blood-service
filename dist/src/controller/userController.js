@@ -143,20 +143,32 @@ class UserController {
     }
     blood_request(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             const context = req.context;
+            const requestData = req.body;
+            console.log("Context");
+            console.log(context);
             if (context) {
-                const patientName = req.body.name;
-                const unit = req.body.unit;
-                const neededAt = req.body.needed_at;
+                console.log(requestData.enquired_with_others);
+                if (!requestData.enquired_with_others) {
+                    res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please ask your neighbors, friends, and relatives for blood donors first.This can provide a quicker response and helps save blood for others in need" });
+                    return;
+                }
+                console.log("Request data");
+                console.log(requestData);
+                const patientName = requestData.patientName;
+                const unit = requestData.unit;
+                const neededAt = requestData.neededAt;
                 const status = Enum_1.BloodStatus.Pending;
-                const user_id = context.user_id;
-                const profile_id = context === null || context === void 0 ? void 0 : context.profile_id;
-                const blood_group = req.body.blood_group;
+                const blood_group = requestData.blood_group;
                 const relationship = req.body.relationship;
                 const locatedAt = req.body.locatedAt;
                 const address = req.body.address;
-                const phoneNumber = req.body.phone_number;
+                const phoneNumber = req.body.phoneNumber;
+                const user_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user_id;
+                const profile_id = (_b = req.context) === null || _b === void 0 ? void 0 : _b.profile_id;
                 const createdBloodRequest = yield this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+                console.log("Worked this");
                 res.status(createdBloodRequest.statusCode).json({
                     status: createdBloodRequest.status,
                     msg: createdBloodRequest.msg,
@@ -164,6 +176,7 @@ class UserController {
                 });
             }
             else {
+                console.log("This workeds");
                 res.status(Enum_1.StatusCode.SERVER_ERROR).json({
                     status: false,
                     msg: "Internal server error",

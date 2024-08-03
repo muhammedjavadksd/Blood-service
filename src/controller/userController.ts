@@ -165,27 +165,47 @@ class UserController implements IUserController {
     async blood_request(req: CustomRequest, res: Response) {
 
         const context = req.context;
+        const requestData = req.body;
+        console.log("Context");
+        console.log(context);
+
+
         if (context) {
 
-            const patientName: string = req.body.name;
-            const unit: number = req.body.unit;
-            const neededAt: Date = req.body.needed_at;
+            console.log(requestData.enquired_with_others);
+
+            if (!requestData.enquired_with_others) {
+                res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please ask your neighbors, friends, and relatives for blood donors first.This can provide a quicker response and helps save blood for others in need" })
+                return;
+            }
+
+            console.log("Request data");
+
+            console.log(requestData);
+
+            const patientName: string = requestData.patientName;
+            const unit: number = requestData.unit;
+            const neededAt: Date = requestData.neededAt;
             const status = BloodStatus.Pending;
-            const user_id: mongoose.Types.ObjectId = context.user_id;
-            const profile_id: string = context?.profile_id;
-            const blood_group: BloodGroup = req.body.blood_group;
+            const blood_group: BloodGroup = requestData.blood_group;
             const relationship: Relationship = req.body.relationship;
             const locatedAt: LocatedAt = req.body.locatedAt;
             const address: string = req.body.address;
-            const phoneNumber: number = req.body.phone_number;
+            const phoneNumber: number = req.body.phoneNumber;
+            const user_id = req.context?.user_id;
+            const profile_id = req.context?.profile_id;
 
             const createdBloodRequest: HelperFunctionResponse = await this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+            console.log("Worked this");
+
             res.status(createdBloodRequest.statusCode).json({
                 status: createdBloodRequest.status,
                 msg: createdBloodRequest.msg,
                 data: createdBloodRequest.data
             })
         } else {
+            console.log("This workeds");
+
             res.status(StatusCode.SERVER_ERROR).json({
                 status: false,
                 msg: "Internal server error",

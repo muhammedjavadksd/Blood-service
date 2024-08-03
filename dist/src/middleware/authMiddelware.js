@@ -21,7 +21,7 @@ class AuthMiddleware {
             next();
         });
     }
-    isValidUser(req, res, next) {
+    isValidDonor(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const utilHelper = new UtilHelpers_1.default();
             const tokenHelper = new tokenHelper_1.default();
@@ -36,7 +36,7 @@ class AuthMiddleware {
                 // "full_name": "Muhammed Javad",
                 // "phone_number": "9744727684",
                 const tokenValidation = yield tokenHelper.checkTokenValidity(token);
-                if (tokenValidation && typeof tokenValidation == "object") {
+                if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {
                     const donor_id = tokenValidation.donor_id;
                     if (!req.context) {
                         req.context = {};
@@ -56,9 +56,36 @@ class AuthMiddleware {
             }
         });
     }
-    isValidDonor(req, res, next) {
+    isAuthenitcated(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            next();
+            const utilHelper = new UtilHelpers_1.default();
+            const tokenHelper = new tokenHelper_1.default();
+            console.log(req.headers);
+            const headers = req.headers;
+            const authToken = headers.authorization;
+            const token = utilHelper.getTokenFromHeader(authToken);
+            if (token) {
+                const tokenValidation = yield tokenHelper.checkTokenValidity(token);
+                if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.profile_id && tokenValidation.user_id) {
+                    const profile_id = tokenValidation.profile_id;
+                    const user_id = tokenValidation.user_id;
+                    if (!req.context) {
+                        req.context = {};
+                    }
+                    req.context.profile_id = profile_id;
+                    req.context.user_id = user_id;
+                    console.log("Donor middleware has passed");
+                    console.log(profile_id);
+                    console.log(tokenValidation);
+                    next();
+                }
+                else {
+                    res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
+                }
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
+            }
         });
     }
     isValidReq(req, res, next) {
