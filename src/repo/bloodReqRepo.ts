@@ -9,6 +9,7 @@ interface IBloodReqDepo {
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
+    findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -18,6 +19,11 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+    async findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]> {
+        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Pending }).skip(skip).limit(limit)
+        return bloodGroup
     }
 
     async findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]> {
