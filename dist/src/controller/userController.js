@@ -23,7 +23,7 @@ class UserController {
         this.updateBloodDonation = this.updateBloodDonation.bind(this);
         this.blood_request = this.blood_request.bind(this);
         this.blood_donate = this.blood_donate.bind(this);
-        this.findNearBy = this.findNearBy.bind(this);
+        this.findBloodRequirement = this.findBloodRequirement.bind(this);
         this.bloodAvailability = this.bloodAvailability.bind(this);
         this.closeRequest = this.closeRequest.bind(this);
         this.getSingleProfile = this.getSingleProfile.bind(this);
@@ -130,8 +130,17 @@ class UserController {
     updateBloodDonation(req, res) {
         return __awaiter(this, void 0, void 0, function* () { });
     }
-    findNearBy(req, res) {
-        return __awaiter(this, void 0, void 0, function* () { });
+    findBloodRequirement(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const page = +req.params.page;
+            const limit = +req.params.limit;
+            const findReq = yield this.bloodService.findActivePaginatedBloodRequirements(page, limit);
+            res.status(findReq.statusCode).json({
+                status: findReq.status,
+                msg: findReq.msg,
+                data: findReq.data
+            });
+        });
     }
     bloodAvailability(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

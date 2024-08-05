@@ -14,7 +14,7 @@ const userController = new userController_1.default();
 const uploadCertificate = (0, multer_1.default)({ storage: multerMiddleware_1.saveBloodRequestUpdateCertificate });
 userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
 userRouter.get("/blood_availability/:blood_group/:status", authMiddleware.isValidDonor, userController.bloodAvailability); //test
-userRouter.get("/find_nearby", authMiddleware.isValidDonor, userController.findNearBy);
+userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending
 userRouter.post("/create", authMiddleware.isValidDonor, userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request); //test pending

@@ -12,7 +12,7 @@ const uploadCertificate = multer({ storage: saveBloodRequestUpdateCertificate })
 
 userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
 userRouter.get("/blood_availability/:blood_group/:status", authMiddleware.isValidDonor, userController.bloodAvailability) //test
-userRouter.get("/find_nearby", authMiddleware.isValidDonor, userController.findNearBy)
+userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement)
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest) //test pending
 
 userRouter.post("/create", authMiddleware.isValidDonor, userController.createBloodDonation) //test pending

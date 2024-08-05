@@ -15,7 +15,7 @@ interface IUserController {
     updateBloodDonation(req: Request, res: Response): Promise<void>
     blood_request(req: CustomRequest, res: Response): Promise<void>
     blood_donate(req: CustomRequest, res: Response): Promise<void>
-    findNearBy(req: Request, res: Response): Promise<void>
+    findBloodRequirement(req: Request, res: Response): Promise<void>
     bloodAvailability(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
     getSingleProfile(req: Request, res: Response): Promise<void>
@@ -36,7 +36,7 @@ class UserController implements IUserController {
         this.updateBloodDonation = this.updateBloodDonation.bind(this)
         this.blood_request = this.blood_request.bind(this)
         this.blood_donate = this.blood_donate.bind(this)
-        this.findNearBy = this.findNearBy.bind(this)
+        this.findBloodRequirement = this.findBloodRequirement.bind(this)
         this.bloodAvailability = this.bloodAvailability.bind(this)
         this.closeRequest = this.closeRequest.bind(this)
         this.getSingleProfile = this.getSingleProfile.bind(this)
@@ -151,7 +151,17 @@ class UserController implements IUserController {
 
     async updateBloodDonation(req: Request, res: Response) { }
 
-    async findNearBy(req: Request, res: Response) { }
+    async findBloodRequirement(req: Request, res: Response) {
+        const page: number = +req.params.page;
+        const limit: number = +req.params.limit;
+
+        const findReq: HelperFunctionResponse = await this.bloodService.findActivePaginatedBloodRequirements(page, limit);
+        res.status(findReq.statusCode).json({
+            status: findReq.status,
+            msg: findReq.msg,
+            data: findReq.data
+        })
+    }
 
     async bloodAvailability(req: Request, res: Response) {
 

@@ -18,6 +18,12 @@ class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
     }
+    findActiveBloodReqPaginted(limit, skip) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Pending }).skip(skip).limit(limit);
+            return bloodGroup;
+        });
+    }
     findActiveBloodReq(blood_group) {
         return __awaiter(this, void 0, void 0, function* () {
             const bloodGroup = yield this.BloodReq.find({ blood_group, status: Enum_1.BloodStatus.Pending });
