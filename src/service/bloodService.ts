@@ -24,6 +24,7 @@ interface IBloodService {
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
     donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
+    findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -46,6 +47,27 @@ class BloodService implements IBloodService {
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+
+    async findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse> {
+        const findReq = await this.bloodReqRepo.findActiveBloodReqPaginted(page, (limit - 1) * page);
+        if (findReq.length) {
+            return {
+                status: true,
+                msg: "Request fetched",
+                statusCode: StatusCode.OK,
+                data: {
+                    profile: findReq
+                }
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No data found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
     async findRequest(donor_id: string): Promise<HelperFunctionResponse> {
