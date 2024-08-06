@@ -22,6 +22,8 @@ class BloodReqDepo implements IBloodReqDepo {
     }
 
     async findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]> {
+        console.log(limit, skip);
+
         const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Pending }).skip(skip).limit(limit)
         return bloodGroup
     }

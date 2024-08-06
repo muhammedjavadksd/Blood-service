@@ -7,7 +7,7 @@ const authMiddleware = new AuthMiddleware();
 const userController = new UserController();
 
 
-organizationRouter.get("/find_nearby", authMiddleware.isAuthenitcated, userController.findNearBy)
+organizationRouter.get("/find_nearby", authMiddleware.isAuthenitcated, userController.bloodAvailability)
 organizationRouter.get("/blood_availability", authMiddleware.isAuthenitcated, userController.bloodAvailability)
 
 organizationRouter.post("/create", authMiddleware.isAuthenitcated, userController.createBloodDonation)

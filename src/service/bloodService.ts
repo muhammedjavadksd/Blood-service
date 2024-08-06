@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -9,6 +9,7 @@ import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 import BloodDonationRepo from "../repo/bloodDonation";
 import TokenHelper from "../Util/Helpers/tokenHelper";
+import e from "express";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -25,6 +26,7 @@ interface IBloodService {
     donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
+    showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -50,8 +52,44 @@ class BloodService implements IBloodService {
     }
 
 
+    async showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse> {
+        const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
+        if (findRequirement) {
+            const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+            if (findDonor?.status == BloodDonorStatus.Open) {
+                const newIntrest: string[] = [...findRequirement.shows_intrest_donors, donor_id];
+                this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
+                return {
+                    status: true,
+                    msg: "You have showed intrested on this request",
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            } else if (findDonor?.status == BloodDonorStatus.Blocked) {
+                const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
+                return {
+                    status: true,
+                    msg: blockedReason,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            } else {
+                return {
+                    status: false,
+                    msg: DonorAccountBlockedReason.AccountDeleted,
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            }
+        } else {
+            return {
+                status: false,
+                msg: "The patient no longer needs blood. Thank you.",
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
+    }
+
+
     async findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse> {
-        const findReq = await this.bloodReqRepo.findActiveBloodReqPaginted(page, (limit - 1) * page);
+        const findReq = await this.bloodReqRepo.findActiveBloodReqPaginted(limit, (page - 1) * limit);
         if (findReq.length) {
             return {
                 status: true,
@@ -110,7 +148,7 @@ class BloodService implements IBloodService {
 
                 if (saveData) {
                     if (status == BloodDonationStatus.Approved) {
-                        const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id)
+                        const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id, DonorAccountBlockedReason.AlreadyDonated)
                         return {
                             msg: "Please go through the email; you will receive the remaining details",
                             status: true,

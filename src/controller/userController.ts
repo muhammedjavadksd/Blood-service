@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
 import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
-import mongoose from 'mongoose';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
 import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
-import TokenHelper from '../Util/Helpers/tokenHelper';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
 
@@ -22,6 +20,8 @@ interface IUserController {
     updateBloodDonor(req: Request, res: Response): Promise<void>
     updateBloodGroup(req: Request, res: Response): Promise<void>
     findRequest(req: CustomRequest, res: Response): Promise<void>
+    showIntresrest(req: CustomRequest, res: Response): Promise<void>
+    getIntrest(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -45,9 +45,26 @@ class UserController implements IUserController {
         this.findRequest = this.findRequest.bind(this)
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this)
+        this.showIntresrest = this.showIntresrest.bind(this)
+        this.getIntrest = this.getIntrest.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
+    }
+
+
+    async showIntresrest(req: CustomRequest, res: Response): Promise<void> {
+        const contex = req.context;
+        if (contex) {
+            const donor_id = req.context?.donor_id;
+
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
+        }
+    }
+
+    getIntrest(req: CustomRequest, res: Response): Promise<void> {
+        throw new Error('Method not implemented.');
     }
 
 
@@ -156,6 +173,8 @@ class UserController implements IUserController {
         const limit: number = +req.params.limit;
 
         const findReq: HelperFunctionResponse = await this.bloodService.findActivePaginatedBloodRequirements(page, limit);
+        console.log(findReq);
+
         res.status(findReq.statusCode).json({
             status: findReq.status,
             msg: findReq.msg,

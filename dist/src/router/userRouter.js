@@ -16,6 +16,8 @@ userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userCont
 userRouter.get("/blood_availability/:blood_group/:status", authMiddleware.isValidDonor, userController.bloodAvailability); //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending
+userRouter.get("/intrest", authMiddleware.isValidDonor, userController.findRequest); //test pending
+userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, userController.createBloodDonation); //test pending
 userRouter.post("/create", authMiddleware.isValidDonor, userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request); //test pending
 userRouter.post("/blood_donate/:donation_id/:status", authMiddleware.isValidDonor, userController.blood_donate); //test pending

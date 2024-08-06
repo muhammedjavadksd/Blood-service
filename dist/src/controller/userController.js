@@ -32,9 +32,26 @@ class UserController {
         this.findRequest = this.findRequest.bind(this);
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this);
+        this.showIntresrest = this.showIntresrest.bind(this);
+        this.getIntrest = this.getIntrest.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
+    }
+    showIntresrest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const contex = req.context;
+            if (contex) {
+                const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
+            }
+        });
+    }
+    getIntrest(req, res) {
+        throw new Error('Method not implemented.');
     }
     findRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -135,6 +152,7 @@ class UserController {
             const page = +req.params.page;
             const limit = +req.params.limit;
             const findReq = yield this.bloodService.findActivePaginatedBloodRequirements(page, limit);
+            console.log(findReq);
             res.status(findReq.statusCode).json({
                 status: findReq.status,
                 msg: findReq.msg,

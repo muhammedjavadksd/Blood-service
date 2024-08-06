@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { BloodDonorStatus, BloodGroup } from "../../Util/Types/Enum";
+import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../../Util/Types/Enum";
 import { IBloodDonor, IBloodDonorTemplate } from "../../Util/Types/Interface/ModelInterface";
 
 
@@ -37,6 +37,10 @@ const bloodDonorScheme = new mongoose.Schema({
     blocked_date: {
         type: Date,
     },
+    blocked_reason: {
+        type: String,
+        enum: Object.values(DonorAccountBlockedReason),
+    }
 })
 
 

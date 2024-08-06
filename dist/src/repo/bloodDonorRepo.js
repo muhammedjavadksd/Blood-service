@@ -24,7 +24,7 @@ class BloodDonorRepo {
         this.unBlockDonor = this.unBlockDonor.bind(this);
         this.BloodDonor = donors_1.default;
     }
-    blockDonor(donor_id) {
+    blockDonor(donor_id, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             const blockedDate = new Date();
             const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: Enum_1.BloodDonorStatus.Blocked, blocked_date: blockedDate } });

@@ -64,6 +64,12 @@ enum Relationship {
 }
 
 
+enum DonorAccountBlockedReason {
+    AlreadyDonated = "You have already donated within the last 90 days. Please wait until 90 days have passed since your last donation before donating again.",
+    AccountDeleted = "It seems like your account has been deleted"
+}
+
+
 enum BloodDonationStatus {
     Approved = "approved",
     Rejected = "Rejected"
@@ -91,4 +97,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus }
+export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason }

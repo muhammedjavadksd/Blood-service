@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 import { BloodGroup, BloodStatus, Relationship } from '../../Util/Types/Enum'
 import IBloodRequirement from '../../Util/Types/Interface/ModelInterface';
-import { LocatedAt } from '../../Util/Types/Types'
 
 const LocatedAtSchema = new Schema({
     hospital_name: {
@@ -13,9 +12,6 @@ const LocatedAtSchema = new Schema({
         required: true
     }
 });
-
-
-
 
 const bloodRequirementScheme = new mongoose.Schema({
     blood_id: {
@@ -73,6 +69,10 @@ const bloodRequirementScheme = new mongoose.Schema({
     },
     is_closed: {
         type: Boolean,
+        required: true
+    },
+    shows_intrest_donors: {
+        type: [String],
         required: true
     }
 })

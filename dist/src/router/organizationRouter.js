@@ -9,7 +9,7 @@ const userController_1 = __importDefault(require("../controller/userController")
 const organizationRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
-organizationRouter.get("/find_nearby", authMiddleware.isAuthenitcated, userController.findNearBy);
+organizationRouter.get("/find_nearby", authMiddleware.isAuthenitcated, userController.bloodAvailability);
 organizationRouter.get("/blood_availability", authMiddleware.isAuthenitcated, userController.bloodAvailability);
 organizationRouter.post("/create", authMiddleware.isAuthenitcated, userController.createBloodDonation);
 organizationRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request);

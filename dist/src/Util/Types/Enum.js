@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = void 0;
+exports.DonorAccountBlockedReason = exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -63,6 +63,10 @@ var Relationship;
     Relationship["SPOUSE"] = "Spouse";
     Relationship["INLAW"] = "In-law";
 })(Relationship || (exports.Relationship = Relationship = {}));
+var DonorAccountBlockedReason;
+(function (DonorAccountBlockedReason) {
+    DonorAccountBlockedReason["AlreadDonated"] = "You have already donated within the last 90 days. Please wait until 90 days have passed since your last donation before donating again.";
+})(DonorAccountBlockedReason || (exports.DonorAccountBlockedReason = DonorAccountBlockedReason = {}));
 var BloodDonationStatus;
 (function (BloodDonationStatus) {
     BloodDonationStatus["Approved"] = "approved";

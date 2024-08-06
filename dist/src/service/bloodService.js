@@ -33,9 +33,19 @@ class BloodService {
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
     }
+    showIntrest(donor_id, request_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
+            if (findRequirement) {
+                const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+                if (findDonor.)
+                    ;
+            }
+        });
+    }
     findActivePaginatedBloodRequirements(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findReq = yield this.bloodReqRepo.findActiveBloodReqPaginted(page, (limit - 1) * page);
+            const findReq = yield this.bloodReqRepo.findActiveBloodReqPaginted(limit, (page - 1) * limit);
             if (findReq.length) {
                 return {
                     status: true,

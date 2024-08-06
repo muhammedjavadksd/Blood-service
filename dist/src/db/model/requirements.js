@@ -91,6 +91,10 @@ const bloodRequirementScheme = new mongoose_1.default.Schema({
     is_closed: {
         type: Boolean,
         required: true
+    },
+    shows_intrest_donors: {
+        type: [String],
+        required: true
     }
 });
 const BloodRequirement = mongoose_1.default.model("blood_requirement", bloodRequirementScheme);

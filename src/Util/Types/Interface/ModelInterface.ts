@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose"
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, Relationship } from "../Enum"
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, Relationship } from "../Enum"
 import { LocatedAt } from "../Types"
 // import { ÷ } from "./UtilInterface"
 
@@ -30,6 +30,7 @@ interface IBloodDonorTemplate {
     email_address: string,
     status: BloodDonorStatus,
     blocked_date?: Date
+    blocked_reason?: DonorAccountBlockedReason
 }
 
 interface IEditableBloodRequirementTemplate {
@@ -43,6 +44,7 @@ interface IEditableBloodRequirementTemplate {
     address?: String,
     phoneNumber?: number
     is_closed?: boolean
+    shows_intrest_donors?: string[]
 }
 
 interface IBloodRequirementTemplate {
@@ -59,6 +61,7 @@ interface IBloodRequirementTemplate {
     address: String,
     phoneNumber: number
     is_closed: boolean
+    shows_intrest_donors: string[]
 }
 
 interface IEditableGroupGroupRequest {

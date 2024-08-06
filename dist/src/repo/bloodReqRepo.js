@@ -20,6 +20,7 @@ class BloodReqDepo {
     }
     findActiveBloodReqPaginted(limit, skip) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(limit, skip);
             const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Pending }).skip(skip).limit(limit);
             return bloodGroup;
         });
