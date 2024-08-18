@@ -41,13 +41,23 @@ class BloodService {
             if (findRequirement) {
                 const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
                 if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Open) {
-                    const newIntrest = [...findRequirement.shows_intrest_donors, donor_id];
-                    this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
-                    return {
-                        status: true,
-                        msg: "You have showed intrested on this request",
-                        statusCode: Enum_1.StatusCode.OK
-                    };
+                    // const newIntrest: string[] = [...findRequirement.shows_intrest_donors, donor_id];
+                    // this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
+                    const newIntrest = yield this.bloodReqRepo.addIntrest(donor_id, request_id);
+                    if (newIntrest) {
+                        return {
+                            status: true,
+                            msg: "You have showed intrested on this request",
+                            statusCode: Enum_1.StatusCode.OK
+                        };
+                    }
+                    else {
+                        return {
+                            status: false,
+                            msg: "You've already shown interest in this.",
+                            statusCode: Enum_1.StatusCode.BAD_REQUEST
+                        };
+                    }
                 }
                 else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
                     const blockedReason = (_a = findDonor.blocked_reason) !== null && _a !== void 0 ? _a : Enum_1.DonorAccountBlockedReason.AlreadyDonated;

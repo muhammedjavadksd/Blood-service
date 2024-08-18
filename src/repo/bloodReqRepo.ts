@@ -10,6 +10,7 @@ interface IBloodReqDepo {
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
     findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]>
+    addIntrest(donor_id: string, blood_id: string): Promise<boolean>
     // findBloodReqDepo(req_id: string): Promise<IBloodRequirement[]>
 }
 
@@ -20,6 +21,12 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+
+    async addIntrest(donor_id: string, blood_id: string): Promise<boolean> {
+        const addIntrest = await this.BloodReq.updateOne({ blood_id }, { $addToSet: { shows_intrest_donors: donor_id } })
+        return !!addIntrest.modifiedCount
     }
 
 

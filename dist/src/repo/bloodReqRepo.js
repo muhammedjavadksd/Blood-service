@@ -18,6 +18,12 @@ class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
     }
+    addIntrest(donor_id, blood_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const addIntrest = yield this.BloodReq.updateOne({ blood_id }, { $addToSet: { shows_intrest_donors: donor_id } });
+            return !!addIntrest.modifiedCount;
+        });
+    }
     findActiveBloodReqPaginted(limit, skip) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(limit, skip);

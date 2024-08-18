@@ -62,12 +62,21 @@ class BloodService implements IBloodService {
         if (findRequirement) {
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             if (findDonor?.status == BloodDonorStatus.Open) {
-                const newIntrest: string[] = [...findRequirement.shows_intrest_donors, donor_id];
-                this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
-                return {
-                    status: true,
-                    msg: "You have showed intrested on this request",
-                    statusCode: StatusCode.OK
+                // const newIntrest: string[] = [...findRequirement.shows_intrest_donors, donor_id];
+                // this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
+                const newIntrest = await this.bloodReqRepo.addIntrest(donor_id, request_id);
+                if (newIntrest) {
+                    return {
+                        status: true,
+                        msg: "You have showed intrested on this request",
+                        statusCode: StatusCode.OK
+                    }
+                } else {
+                    return {
+                        status: false,
+                        msg: "You've already shown interest in this.",
+                        statusCode: StatusCode.BAD_REQUEST
+                    }
                 }
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
                 const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
