@@ -34,9 +34,23 @@ class UserController {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this);
         this.showIntresrest = this.showIntresrest.bind(this);
+        this.findMyIntrest = this.findMyIntrest.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
+    }
+    findMyIntrest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const donorId = (_a = req === null || req === void 0 ? void 0 : req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+            if (donorId) {
+                const findMyIntrest = yield this.bloodService.findMyIntrest(donorId);
+                res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data });
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", });
+            }
+        });
     }
     showIntresrest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,7 +77,7 @@ class UserController {
             if (req.context) {
                 const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
                 const findCases = yield this.bloodService.findRequest(donor_id);
-                res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg });
+                res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg, data: findCases.data });
             }
             else {
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });

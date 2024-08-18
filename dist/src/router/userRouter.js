@@ -19,6 +19,7 @@ userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitic
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending
 userRouter.get("/intrest/:request_id", authMiddleware.isValidDonor, userController.findRequest); //test pending
+userRouter.get("/interested_blood_requirements", authMiddleware.isValidDonor, userController.findMyIntrest); //test pending
 userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, userController.showIntresrest); //test pending
 userRouter.post("/create", userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request); //test pending

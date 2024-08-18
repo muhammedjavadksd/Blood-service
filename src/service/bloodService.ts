@@ -27,6 +27,7 @@ interface IBloodService {
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse>
+    findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -44,11 +45,33 @@ class BloodService implements IBloodService {
         this.createDonorId = this.createDonorId.bind(this)
         this.closeRequest = this.closeRequest.bind(this)
         this.createBloodRequirement = this.createBloodRequirement.bind(this)
+        this.findMyIntrest = this.findMyIntrest.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+    }
+
+
+    async findMyIntrest(donor_id: string): Promise<HelperFunctionResponse> {
+        const myIntrest = await this.bloodReqRepo.findMyIntrest(donor_id);
+        if (myIntrest.length) {
+            return {
+                status: true,
+                msg: "Fetched all intrest",
+                data: {
+                    profile: myIntrest
+                },
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No data found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
 
@@ -89,7 +112,7 @@ class BloodService implements IBloodService {
                 return {
                     status: false,
                     msg: DonorAccountBlockedReason.AccountDeleted,
-                    statusCode: StatusCode.BAD_REQUEST
+                    statusCode: StatusCode.UNAUTHORIZED
                 }
             }
         } else {

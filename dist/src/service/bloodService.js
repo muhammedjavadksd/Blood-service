@@ -27,11 +27,34 @@ class BloodService {
         this.createDonorId = this.createDonorId.bind(this);
         this.closeRequest = this.closeRequest.bind(this);
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
+        this.findMyIntrest = this.findMyIntrest.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
+    }
+    findMyIntrest(donor_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const myIntrest = yield this.bloodReqRepo.findMyIntrest(donor_id);
+            if (myIntrest.length) {
+                return {
+                    status: true,
+                    msg: "Fetched all intrest",
+                    data: {
+                        profile: myIntrest
+                    },
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No data found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
     }
     showIntrest(donor_id, request_id) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -71,7 +94,7 @@ class BloodService {
                     return {
                         status: false,
                         msg: Enum_1.DonorAccountBlockedReason.AccountDeleted,
-                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                        statusCode: Enum_1.StatusCode.UNAUTHORIZED
                     };
                 }
             }

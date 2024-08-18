@@ -22,6 +22,7 @@ interface IUserController {
     updateBloodGroup(req: Request, res: Response): Promise<void>
     findRequest(req: CustomRequest, res: Response): Promise<void>
     showIntresrest(req: CustomRequest, res: Response): Promise<void>
+    findMyIntrest(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -47,9 +48,21 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this)
         this.showIntresrest = this.showIntresrest.bind(this)
+        this.findMyIntrest = this.findMyIntrest.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
+    }
+
+
+    async findMyIntrest(req: CustomRequest, res: Response): Promise<void> {
+        const donorId = req?.context?.donor_id;
+        if (donorId) {
+            const findMyIntrest = await this.bloodService.findMyIntrest(donorId);
+            res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
+        }
     }
 
 
@@ -79,7 +92,7 @@ class UserController implements IUserController {
         if (req.context) {
             const donor_id = req.context?.donor_id;
             const findCases: HelperFunctionResponse = await this.bloodService.findRequest(donor_id);
-            res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg })
+            res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg, data: findCases.data })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }
