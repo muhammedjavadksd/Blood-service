@@ -10,7 +10,8 @@ const authMiddleware = new AuthMiddleware();
 const userController = new UserController();
 const uploadCertificate = multer({ storage: saveBloodRequestUpdateCertificate })
 
-userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
+// userRouter.get("/get_profile", authMiddleware.isValidDonor, userController.getSingleProfile) //get profile by token // test pending
+userRouter.get("/get_profile", authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
 userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability) //test
 userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics) //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement)

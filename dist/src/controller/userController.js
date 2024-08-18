@@ -118,14 +118,20 @@ class UserController {
     }
     getSingleProfile(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const profile_id = req.params.profile_id;
-            const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
-            console.log(profile_id);
-            if (profile) {
-                res.status(Enum_1.StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile });
+            var _a;
+            const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+            if (profile_id) {
+                const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+                console.log(profile_id);
+                if (profile) {
+                    res.status(Enum_1.StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile });
+                }
+                else {
+                    res.status(Enum_1.StatusCode.NOT_FOUND).json({ status: false, msg: "Invalid or wrong profile id" });
+                }
             }
             else {
-                res.status(Enum_1.StatusCode.NOT_FOUND).json({ status: false, msg: "Invalid or wrong profile id" });
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Invalid or wrong profile id" });
             }
         });
     }
