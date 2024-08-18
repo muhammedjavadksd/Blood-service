@@ -15,13 +15,13 @@ interface IUserController {
     blood_donate(req: CustomRequest, res: Response): Promise<void>
     findBloodRequirement(req: Request, res: Response): Promise<void>
     bloodAvailability(req: Request, res: Response): Promise<void>
+    bloodAvailabilityByStatitics(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
     getSingleProfile(req: Request, res: Response): Promise<void>
     updateBloodDonor(req: Request, res: Response): Promise<void>
     updateBloodGroup(req: Request, res: Response): Promise<void>
     findRequest(req: CustomRequest, res: Response): Promise<void>
     showIntresrest(req: CustomRequest, res: Response): Promise<void>
-    getIntrest(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -38,6 +38,7 @@ class UserController implements IUserController {
         this.blood_donate = this.blood_donate.bind(this)
         this.findBloodRequirement = this.findBloodRequirement.bind(this)
         this.bloodAvailability = this.bloodAvailability.bind(this)
+        this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this)
         this.closeRequest = this.closeRequest.bind(this)
         this.getSingleProfile = this.getSingleProfile.bind(this)
         this.updateBloodDonor = this.updateBloodDonor.bind(this)
@@ -46,26 +47,32 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this)
         this.showIntresrest = this.showIntresrest.bind(this)
-        this.getIntrest = this.getIntrest.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
     }
 
 
+
+
     async showIntresrest(req: CustomRequest, res: Response): Promise<void> {
         const contex = req.context;
+        const req_id: string = req.params.request_id;
+        console.log(req.params);
+
         if (contex) {
             const donor_id = req.context?.donor_id;
-
+            this.bloodService.showIntrest(donor_id, req_id).then((data) => {
+                res.status(data.statusCode).json({ status: data.status, msg: data.msg })
+            }).catch((err) => {
+                res.status(StatusCode.SERVER_ERROR).json({ status: false, msg: "Something went wrong" })
+            })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }
     }
 
-    getIntrest(req: CustomRequest, res: Response): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+
 
 
     async findRequest(req: CustomRequest, res: Response): Promise<void> {
@@ -189,6 +196,11 @@ class UserController implements IUserController {
         const findBloodDonors = await this.bloodService.findBloodAvailability(status, bloodGroup);
         res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status })
 
+    }
+
+    async bloodAvailabilityByStatitics(req: Request, res: Response): Promise<void> {
+        const findBloodDonors = await this.bloodService.findBloodAvailability(BloodDonorStatus.Open);
+        res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status })
     }
 
     async blood_request(req: CustomRequest, res: Response) {

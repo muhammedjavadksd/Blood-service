@@ -65,7 +65,8 @@ var Relationship;
 })(Relationship || (exports.Relationship = Relationship = {}));
 var DonorAccountBlockedReason;
 (function (DonorAccountBlockedReason) {
-    DonorAccountBlockedReason["AlreadDonated"] = "You have already donated within the last 90 days. Please wait until 90 days have passed since your last donation before donating again.";
+    DonorAccountBlockedReason["AlreadyDonated"] = "You have already donated within the last 90 days. Please wait until 90 days have passed since your last donation before donating again.";
+    DonorAccountBlockedReason["AccountDeleted"] = "It seems like your account has been deleted";
 })(DonorAccountBlockedReason || (exports.DonorAccountBlockedReason = DonorAccountBlockedReason = {}));
 var BloodDonationStatus;
 (function (BloodDonationStatus) {

@@ -13,12 +13,13 @@ const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
 const uploadCertificate = (0, multer_1.default)({ storage: multerMiddleware_1.saveBloodRequestUpdateCertificate });
 userRouter.get("/get_profile/:profile_id", authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
-userRouter.get("/blood_availability/:blood_group/:status", authMiddleware.isValidDonor, userController.bloodAvailability); //test
+userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability); //test
+userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics); //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending
-userRouter.get("/intrest", authMiddleware.isValidDonor, userController.findRequest); //test pending
-userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, userController.createBloodDonation); //test pending
-userRouter.post("/create", authMiddleware.isValidDonor, userController.createBloodDonation); //test pending
+userRouter.get("/intrest/:request_id", authMiddleware.isValidDonor, userController.findRequest); //test pending
+userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, userController.showIntresrest); //test pending
+userRouter.post("/create", userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request); //test pending
 userRouter.post("/blood_donate/:donation_id/:status", authMiddleware.isValidDonor, userController.blood_donate); //test pending
 userRouter.post("/group_change_request", authMiddleware.isValidDonor, userController.updateBloodGroup); //test pending

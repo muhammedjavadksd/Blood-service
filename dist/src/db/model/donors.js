@@ -39,6 +39,10 @@ const bloodDonorScheme = new mongoose_1.default.Schema({
     blocked_date: {
         type: Date,
     },
+    blocked_reason: {
+        type: String,
+        enum: Object.values(Enum_1.DonorAccountBlockedReason),
+    }
 });
 const BloodDonorCollection = mongoose_1.default.model("donors", bloodDonorScheme);
 exports.default = BloodDonorCollection;

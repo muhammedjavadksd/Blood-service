@@ -52,8 +52,13 @@ class BloodService implements IBloodService {
     }
 
 
+
+
+
     async showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse> {
         const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
+        console.log(request_id);
+
         if (findRequirement) {
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             if (findDonor?.status == BloodDonorStatus.Open) {
@@ -62,7 +67,7 @@ class BloodService implements IBloodService {
                 return {
                     status: true,
                     msg: "You have showed intrested on this request",
-                    statusCode: StatusCode.BAD_REQUEST
+                    statusCode: StatusCode.OK
                 }
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
                 const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
@@ -179,7 +184,7 @@ class BloodService implements IBloodService {
         }
     }
 
-    async findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse> {
+    async findBloodAvailability(status: BloodDonorStatus, blood_group?: BloodGroup): Promise<HelperFunctionResponse> {
         const findBloodAvailabilityFilter: ISearchBloodDonorTemplate = {}
         let result: IBloodAvailabilityResult = {
             [BloodGroup.A_POSITIVE]: 0,
@@ -198,14 +203,19 @@ class BloodService implements IBloodService {
             findBloodAvailabilityFilter.blood_group = blood_group
         }
         const findDonors = await this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
+
         if (findDonors.length) {
+
             for (let index = 0; index < findDonors.length; index++) {
-                if (result[findDonors[index].blood_group]) {
-                    result[findDonors[index].blood_group]++
+
+
+                if (result[findDonors[index].blood_group] != null) {
+                    console.log(result[findDonors[index].blood_group]);
                 } else {
                     result[findDonors[index].blood_group] = 0
                 }
             }
+
             return {
                 status: true,
                 msg: "Data fetched success",
@@ -375,7 +385,8 @@ class BloodService implements IBloodService {
     async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse> {
         const blood_id: string = await this.createBloodId(blood_group, unit)
         const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false)
-        console.log(createdBloodRequest);
+        const notification =
+            console.log(createdBloodRequest);
 
         if (createdBloodRequest) {
             return {

@@ -19,10 +19,13 @@ class AuthMiddleware implements IAuthMiddleware {
     }
 
     async isValidDonor(req: CustomRequest, res: Response, next: NextFunction) {
+        console.log("Eb");
+
         const utilHelper = new UtilHelper();
         const tokenHelper = new TokenHelper();
         console.log(req.headers);
         const headers = req.headers;
+
         const authToken = headers.authorization;
         const token = utilHelper.getTokenFromHeader(authToken);
         if (token) {
@@ -42,8 +45,6 @@ class AuthMiddleware implements IAuthMiddleware {
                 console.log("Donor middleware has passed");
                 console.log(donor_id);
                 console.log(tokenValidation);
-
-
                 next()
             } else {
                 res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })

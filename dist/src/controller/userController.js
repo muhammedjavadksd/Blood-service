@@ -25,6 +25,7 @@ class UserController {
         this.blood_donate = this.blood_donate.bind(this);
         this.findBloodRequirement = this.findBloodRequirement.bind(this);
         this.bloodAvailability = this.bloodAvailability.bind(this);
+        this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this);
         this.closeRequest = this.closeRequest.bind(this);
         this.getSingleProfile = this.getSingleProfile.bind(this);
         this.updateBloodDonor = this.updateBloodDonor.bind(this);
@@ -33,7 +34,6 @@ class UserController {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this);
         this.showIntresrest = this.showIntresrest.bind(this);
-        this.getIntrest = this.getIntrest.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
@@ -42,16 +42,20 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             const contex = req.context;
+            const req_id = req.params.request_id;
+            console.log(req.params);
             if (contex) {
                 const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
+                this.bloodService.showIntrest(donor_id, req_id).then((data) => {
+                    res.status(data.statusCode).json({ status: data.status, msg: data.msg });
+                }).catch((err) => {
+                    res.status(Enum_1.StatusCode.SERVER_ERROR).json({ status: false, msg: "Something went wrong" });
+                });
             }
             else {
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
             }
         });
-    }
-    getIntrest(req, res) {
-        throw new Error('Method not implemented.');
     }
     findRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -165,6 +169,12 @@ class UserController {
             const bloodGroup = req.params.blood_group;
             const status = req.params.status;
             const findBloodDonors = yield this.bloodService.findBloodAvailability(status, bloodGroup);
+            res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status });
+        });
+    }
+    bloodAvailabilityByStatitics(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findBloodDonors = yield this.bloodService.findBloodAvailability(Enum_1.BloodDonorStatus.Open);
             res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status });
         });
     }

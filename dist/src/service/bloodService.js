@@ -35,11 +35,42 @@ class BloodService {
     }
     showIntrest(donor_id, request_id) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
+            console.log(request_id);
             if (findRequirement) {
                 const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-                if (findDonor.)
-                    ;
+                if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Open) {
+                    const newIntrest = [...findRequirement.shows_intrest_donors, donor_id];
+                    this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
+                    return {
+                        status: true,
+                        msg: "You have showed intrested on this request",
+                        statusCode: Enum_1.StatusCode.OK
+                    };
+                }
+                else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
+                    const blockedReason = (_a = findDonor.blocked_reason) !== null && _a !== void 0 ? _a : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
+                    return {
+                        status: true,
+                        msg: blockedReason,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+                else {
+                    return {
+                        status: false,
+                        msg: Enum_1.DonorAccountBlockedReason.AccountDeleted,
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "The patient no longer needs blood. Thank you.",
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
             }
         });
     }
@@ -107,7 +138,7 @@ class BloodService {
                     const saveData = yield this.bloodDonationRepo.saveDonation(insertRequest);
                     if (saveData) {
                         if (status == Enum_1.BloodDonationStatus.Approved) {
-                            const blockDonor = yield this.bloodDonorRepo.blockDonor(donor_id);
+                            const blockDonor = yield this.bloodDonorRepo.blockDonor(donor_id, Enum_1.DonorAccountBlockedReason.AlreadyDonated);
                             return {
                                 msg: "Please go through the email; you will receive the remaining details",
                                 status: true,
@@ -162,8 +193,8 @@ class BloodService {
             const findDonors = yield this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
             if (findDonors.length) {
                 for (let index = 0; index < findDonors.length; index++) {
-                    if (result[findDonors[index].blood_group]) {
-                        result[findDonors[index].blood_group]++;
+                    if (result[findDonors[index].blood_group] != null) {
+                        console.log(result[findDonors[index].blood_group]);
                     }
                     else {
                         result[findDonors[index].blood_group] = 0;
@@ -346,7 +377,7 @@ class BloodService {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = yield this.createBloodId(blood_group, unit);
             const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false);
-            console.log(createdBloodRequest);
+            const notification = console.log(createdBloodRequest);
             if (createdBloodRequest) {
                 return {
                     msg: "Blood requirement created success",
