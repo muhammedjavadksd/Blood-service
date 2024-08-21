@@ -18,6 +18,12 @@ class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
     }
+    findUserRequirement(profile_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findReq = yield this.BloodReq.find({ profile_id });
+            return findReq;
+        });
+    }
     findMyIntrest(donor_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const findMyIntrest = yield this.BloodReq.find({ shows_intrest_donors: donor_id });

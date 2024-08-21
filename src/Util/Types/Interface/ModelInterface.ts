@@ -1,6 +1,7 @@
 import mongoose, { Document } from "mongoose"
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, Relationship } from "../Enum"
 import { LocatedAt } from "../Types"
+import { BloodDonationConcerns } from "./UtilInterface"
 // import { ÷ } from "./UtilInterface"
 
 
@@ -82,7 +83,9 @@ interface IBloodDonateTemplate {
     donor_id: string,
     donation_id: string
     date: Date,
-    status: BloodDonationStatus
+    status: BloodDonationStatus,
+    meet_expect: Date,
+    concerns: BloodDonationConcerns
 }
 
 // interface IBloodAvailabilityResult {

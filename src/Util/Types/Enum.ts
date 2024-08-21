@@ -71,8 +71,9 @@ enum DonorAccountBlockedReason {
 
 
 enum BloodDonationStatus {
-    Approved = "approved",
-    Rejected = "Rejected"
+    Approved = "Approved",
+    Rejected = "Rejected",
+    Pending = "Pending"
 }
 
 enum BloodGroupUpdateStatus {

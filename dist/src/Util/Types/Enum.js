@@ -70,8 +70,9 @@ var DonorAccountBlockedReason;
 })(DonorAccountBlockedReason || (exports.DonorAccountBlockedReason = DonorAccountBlockedReason = {}));
 var BloodDonationStatus;
 (function (BloodDonationStatus) {
-    BloodDonationStatus["Approved"] = "approved";
+    BloodDonationStatus["Approved"] = "Approved";
     BloodDonationStatus["Rejected"] = "Rejected";
+    BloodDonationStatus["Pending"] = "Pending";
 })(BloodDonationStatus || (exports.BloodDonationStatus = BloodDonationStatus = {}));
 var BloodGroupUpdateStatus;
 (function (BloodGroupUpdateStatus) {

@@ -16,6 +16,8 @@ class BloodDonationRepo implements IBloodDonationRepo {
     }
 
     async saveDonation(data: IBloodDonateTemplate): Promise<ObjectId | null> {
+        console.log(data);
+
         const saveData = await new this.BloodDonation(data).save();
         return saveData.id
     }

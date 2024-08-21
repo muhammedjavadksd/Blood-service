@@ -1,6 +1,18 @@
-import mongoose from "mongoose";
+
+import mongoose, { Schema } from "mongoose";
 import { BloodDonationStatus } from "../../Util/Types/Enum";
 import { IBloodDonate } from "../../Util/Types/Interface/ModelInterface";
+
+const bloodDonationConcers = new Schema({
+    seriousConditions: {
+        type: [String],
+    },
+    majorSurgeryOrIllness: {
+        type: String
+    },
+    chronicIllnesses: Boolean,
+    tobaco_use: Boolean
+})
 
 const bloodDonateScheme = new mongoose.Schema({
     donor_id: {
@@ -15,11 +27,19 @@ const bloodDonateScheme = new mongoose.Schema({
         type: Date,
         required: true
     },
+    meet_expect: {
+        type: Date,
+        required: true
+    },
     status: {
         type: String,
         enum: Object.values(BloodDonationStatus),
         required: true
     },
+    concerns: {
+        type: bloodDonationConcers,
+        required: true
+    }
 })
 
 const DonateBlood = mongoose.model<IBloodDonate>("donate_blood", bloodDonateScheme);

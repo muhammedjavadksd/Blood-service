@@ -22,7 +22,32 @@ interface IDonorJwtInterface {
     email_address: string
 }
 
+interface BloodDonationConcerns {
+    seriousConditions: string[]
+    majorSurgeryOrIllness: string | null,
+    chronicIllnesses: boolean
+    tobaco_use: boolean
+}
 
 
+interface BloodDonationValidationResult {
+    errors: string[];
+    concerns: BloodDonationConcerns;
+}
 
-export { HelperFunctionResponse, CustomRequest, IDonorJwtInterface }
+interface BloodDonationInterestData {
+    donatedLast90Days: boolean;
+    weight: string;
+    seriousConditions: string[];
+    majorSurgeryOrIllness: string;
+    surgeryOrIllnessDetails?: string; // Optional
+    chronicIllnesses: string;
+    tattooPiercingAcupuncture: string;
+    alcoholConsumption: string;
+    tobaccoUse: string;
+    pregnancyStatus: string;
+    date: Date;
+}
+
+
+export { BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface }

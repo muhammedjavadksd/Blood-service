@@ -1,6 +1,6 @@
 import mongoose, { ObjectId } from "mongoose";
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
-import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
@@ -10,6 +10,7 @@ import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 import BloodDonationRepo from "../repo/bloodDonation";
 import TokenHelper from "../Util/Helpers/tokenHelper";
 import e from "express";
+import BloodNotificationProvider from "../communication/Provider/notification_service";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -23,11 +24,12 @@ interface IBloodService {
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
-    donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
+    // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
-    showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse>
+    showIntrest(donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
+    findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -54,6 +56,30 @@ class BloodService implements IBloodService {
     }
 
 
+
+
+
+    async findMyRequest(profile_id: string): Promise<HelperFunctionResponse> {
+        const findRequest = await this.bloodReqRepo.findUserRequirement(profile_id);
+        if (findRequest.length) {
+            return {
+                status: true,
+                msg: "Fetch all profile",
+                data: {
+                    profile: findRequest
+                },
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No profile found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
+    }
+
+
     async findMyIntrest(donor_id: string): Promise<HelperFunctionResponse> {
         const myIntrest = await this.bloodReqRepo.findMyIntrest(donor_id);
         if (myIntrest.length) {
@@ -77,24 +103,115 @@ class BloodService implements IBloodService {
 
 
 
+    bloodDonationInterestValidation(data: BloodDonationInterestData) {
+        const errors: string[] = [];
+        const concerns: BloodDonationConcerns = {
+            seriousConditions: [],
+            majorSurgeryOrIllness: null,
+            chronicIllnesses: false,
+            tobaco_use: false
+        };
 
-    async showIntrest(donor_id: string, request_id: string): Promise<HelperFunctionResponse> {
+        const {
+            donatedLast90Days = true,
+            weight = '',
+            seriousConditions = [],
+            majorSurgeryOrIllness = false,
+            surgeryOrIllnessDetails = '',
+            chronicIllnesses = '',
+            tattooPiercingAcupuncture = '',
+            alcoholConsumption = '',
+            tobaccoUse = '',
+            pregnancyStatus = '',
+            date = new Date()
+        } = data;
+
+        if (!donatedLast90Days) {
+            errors.push('Donation status for the last 90 days is required.');
+        } else if (donatedLast90Days === true) {
+            errors.push("You can't donate since you have already donated in the last 90 days.");
+        }
+
+        if (!weight) {
+            errors.push('Weight is required.');
+        } else if (isNaN(Number(weight)) || Number(weight) < 50) {
+            errors.push("You can't donate since you do not have sufficient weight.");
+        }
+
+        if (seriousConditions.length > 0) {
+            concerns.seriousConditions = [...seriousConditions];
+        }
+
+        if (majorSurgeryOrIllness === 'true') {
+            concerns.majorSurgeryOrIllness = surgeryOrIllnessDetails;
+        }
+
+        if (chronicIllnesses === 'true') {
+            concerns.chronicIllnesses = true;
+        }
+
+        if (tattooPiercingAcupuncture === 'true') {
+            errors.push('You can\'t donate blood since you have had tattoos, piercings, or acupuncture recently.');
+        }
+
+        if (alcoholConsumption === 'true') {
+            errors.push('You can\'t donate blood since you have consumed alcohol in the last 48 hours.');
+        }
+
+        if (tobaccoUse == 'true') {
+            concerns.tobaco_use = true;
+        }
+
+        if (pregnancyStatus == "true") {
+            errors.push('You can\'t donate blood if you are pregnant.');
+        }
+
+        return {
+            errors,
+            concerns,
+        } as BloodDonationValidationResult;
+    }
+
+
+
+    async showIntrest(donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
         const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
         console.log(request_id);
 
+        console.log("7");
         if (findRequirement) {
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             if (findDonor?.status == BloodDonorStatus.Open) {
-                // const newIntrest: string[] = [...findRequirement.shows_intrest_donors, donor_id];
-                // this.bloodReqRepo.updateBloodDonor(request_id, { shows_intrest_donors: newIntrest });
-                const newIntrest = await this.bloodReqRepo.addIntrest(donor_id, request_id);
+                if (findRequirement.neededAt < date) {
+                    console.log("6");
+                    return {
+                        status: false,
+                        msg: "The selected date is beyond the expected range.",
+                        statusCode: StatusCode.BAD_REQUEST
+                    }
+                }
+
+                const bloodDonationData: IBloodDonateTemplate = {
+                    concerns,
+                    date: new Date(),
+                    meet_expect: date,
+                    donation_id: request_id,
+                    donor_id: donor_id,
+                    status: BloodDonationStatus.Pending
+                }
+
+                const newIntrest = await this.bloodDonationRepo.saveDonation(bloodDonationData) //  await this.bloodReqRepo.addIntrest(donor_id, request_id);
+                console.log(newIntrest);
+
                 if (newIntrest) {
+                    console.log("5");
                     return {
                         status: true,
                         msg: "You have showed intrested on this request",
                         statusCode: StatusCode.OK
                     }
                 } else {
+                    console.log("4");
                     return {
                         status: false,
                         msg: "You've already shown interest in this.",
@@ -103,12 +220,14 @@ class BloodService implements IBloodService {
                 }
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
                 const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
+                console.log("3");
                 return {
                     status: true,
                     msg: blockedReason,
                     statusCode: StatusCode.BAD_REQUEST
                 }
             } else {
+                console.log("2");
                 return {
                     status: false,
                     msg: DonorAccountBlockedReason.AccountDeleted,
@@ -116,6 +235,8 @@ class BloodService implements IBloodService {
                 }
             }
         } else {
+            console.log("1");
+
             return {
                 status: false,
                 msg: "The patient no longer needs blood. Thank you.",
@@ -165,56 +286,56 @@ class BloodService implements IBloodService {
     }
 
 
-    async donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
-        const insertRequest: IBloodDonateTemplate = {
-            date: new Date(),
-            donation_id,
-            status,
-            donor_id
-        }
-        const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-        if (findDonor) {
-            if (findDonor.status == BloodDonorStatus.Blocked || findDonor.status == BloodDonorStatus.Deleted) {
-                return {
-                    msg: "You cannot process this request as your account is blocked for 90 days.",
-                    status: false,
-                    statusCode: StatusCode.BAD_REQUEST
-                }
-            } else {
-                const saveData = await this.bloodDonationRepo.saveDonation(insertRequest);
+    // async donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
+    //     const insertRequest: IBloodDonateTemplate = {
+    //         date: new Date(),
+    //         donation_id,
+    //         status,
+    //         donor_id
+    //     }
+    //     const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
+    //     if (findDonor) {
+    //         if (findDonor.status == BloodDonorStatus.Blocked || findDonor.status == BloodDonorStatus.Deleted) {
+    //             return {
+    //                 msg: "You cannot process this request as your account is blocked for 90 days.",
+    //                 status: false,
+    //                 statusCode: StatusCode.BAD_REQUEST
+    //             }
+    //         } else {
+    //             const saveData = await this.bloodDonationRepo.saveDonation(insertRequest);
 
-                if (saveData) {
-                    if (status == BloodDonationStatus.Approved) {
-                        const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id, DonorAccountBlockedReason.AlreadyDonated)
-                        return {
-                            msg: "Please go through the email; you will receive the remaining details",
-                            status: true,
-                            statusCode: StatusCode.OK
-                        }
-                    } else {
-                        return {
-                            msg: "Rejected success",
-                            status: true,
-                            statusCode: StatusCode.OK
-                        }
-                    }
-                } else {
-                    return {
-                        msg: "Internal server error",
-                        status: false,
-                        statusCode: StatusCode.SERVER_ERROR
-                    }
-                }
+    //             if (saveData) {
+    //                 if (status == BloodDonationStatus.Approved) {
+    //                     const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id, DonorAccountBlockedReason.AlreadyDonated)
+    //                     return {
+    //                         msg: "Please go through the email; you will receive the remaining details",
+    //                         status: true,
+    //                         statusCode: StatusCode.OK
+    //                     }
+    //                 } else {
+    //                     return {
+    //                         msg: "Rejected success",
+    //                         status: true,
+    //                         statusCode: StatusCode.OK
+    //                     }
+    //                 }
+    //             } else {
+    //                 return {
+    //                     msg: "Internal server error",
+    //                     status: false,
+    //                     statusCode: StatusCode.SERVER_ERROR
+    //                 }
+    //             }
 
-            }
-        } else {
-            return {
-                msg: "We couldn't find the donor",
-                status: false,
-                statusCode: StatusCode.UNAUTHORIZED
-            }
-        }
-    }
+    //         }
+    //     } else {
+    //         return {
+    //             msg: "We couldn't find the donor",
+    //             status: false,
+    //             statusCode: StatusCode.UNAUTHORIZED
+    //         }
+    //     }
+    // }
 
     async findBloodAvailability(status: BloodDonorStatus, blood_group?: BloodGroup): Promise<HelperFunctionResponse> {
         const findBloodAvailabilityFilter: ISearchBloodDonorTemplate = {}
@@ -417,8 +538,22 @@ class BloodService implements IBloodService {
     async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse> {
         const blood_id: string = await this.createBloodId(blood_group, unit)
         const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false)
-        const notification =
-            console.log(createdBloodRequest);
+        // const notification =
+        //     console.log(createdBloodRequest);
+
+        console.log("Passed one");
+
+
+        const matchedProfile = await this.bloodDonorRepo.findDonors({ status: BloodDonorStatus.Open, blood_group: blood_group });
+        const profileEmails = matchedProfile.map((pro) => { return { name: pro.full_name, email: pro.email_address } })
+
+        console.log("Passed two");
+        const notificationQueue: string = process.env.BLOOD_REQUEST_NOTIFICATION + "";
+        const notificationService = new BloodNotificationProvider(notificationQueue)
+        console.log("Passed three");
+        await notificationService._init_();
+        notificationService.sendBloodRequest(profileEmails, blood_group, neededAt, locatedAt.hospital_name)
+        console.log("Passed four");
 
         if (createdBloodRequest) {
             return {

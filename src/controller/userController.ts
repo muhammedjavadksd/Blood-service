@@ -1,18 +1,19 @@
 import { Request, Response } from 'express';
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
-import { CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
+import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
 import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
+import BloodNotificationProvider from '../communication/Provider/notification_service';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
     updateBloodDonation(req: Request, res: Response): Promise<void>
     blood_request(req: CustomRequest, res: Response): Promise<void>
-    blood_donate(req: CustomRequest, res: Response): Promise<void>
+    // blood_donate(req: CustomRequest, res: Response): Promise<void>
     findBloodRequirement(req: Request, res: Response): Promise<void>
     bloodAvailability(req: Request, res: Response): Promise<void>
     bloodAvailabilityByStatitics(req: Request, res: Response): Promise<void>
@@ -23,6 +24,7 @@ interface IUserController {
     findRequest(req: CustomRequest, res: Response): Promise<void>
     showIntresrest(req: CustomRequest, res: Response): Promise<void>
     findMyIntrest(req: CustomRequest, res: Response): Promise<void>
+    myBloodRequest(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -36,7 +38,7 @@ class UserController implements IUserController {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.updateBloodDonation = this.updateBloodDonation.bind(this)
         this.blood_request = this.blood_request.bind(this)
-        this.blood_donate = this.blood_donate.bind(this)
+        // this.blood_donate = this.blood_donate.bind(this)
         this.findBloodRequirement = this.findBloodRequirement.bind(this)
         this.bloodAvailability = this.bloodAvailability.bind(this)
         this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this)
@@ -49,9 +51,21 @@ class UserController implements IUserController {
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this)
         this.showIntresrest = this.showIntresrest.bind(this)
         this.findMyIntrest = this.findMyIntrest.bind(this)
+        this.myBloodRequest = this.myBloodRequest.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
+    }
+
+
+    async myBloodRequest(req: CustomRequest, res: Response): Promise<void> {
+        const profile_id = req.context?.profile_id;
+        if (profile_id) {
+            const findProfile = await this.bloodService.findMyRequest(profile_id);
+            res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
+        }
     }
 
 
@@ -69,18 +83,57 @@ class UserController implements IUserController {
 
 
     async showIntresrest(req: CustomRequest, res: Response): Promise<void> {
-        const contex = req.context;
+        const context = req.context;
         const req_id: string = req.params.request_id;
-        console.log(req.params);
+        console.log("Worked mainain");
 
-        if (contex) {
-            const donor_id = req.context?.donor_id;
-            this.bloodService.showIntrest(donor_id, req_id).then((data) => {
-                res.status(data.statusCode).json({ status: data.status, msg: data.msg })
-            }).catch((err) => {
-                res.status(StatusCode.SERVER_ERROR).json({ status: false, msg: "Something went wrong" })
-            })
+
+        const {
+            donatedLast90Days = '',
+            weight = '',
+            seriousConditions = '',
+            majorSurgeryOrIllness = '',
+            surgeryOrIllnessDetails = '',
+            chronicIllnesses = '',
+            tattooPiercingAcupuncture = '',
+            alcoholConsumption = '',
+            tobaccoUse = '',
+            pregnancyStatus = '',
+            date = new Date()
+        } = req.body;
+
+        const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
+            donatedLast90Days,
+            weight,
+            seriousConditions,
+            majorSurgeryOrIllness,
+            surgeryOrIllnessDetails,
+            chronicIllnesses,
+            tattooPiercingAcupuncture,
+            alcoholConsumption,
+            tobaccoUse,
+            pregnancyStatus,
+            date
+        })
+        if (validateDonorDetails.errors.length) {
+            console.log(validateDonorDetails.errors);
+
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] })
+            return;
+        }
+        let concerns: BloodDonationConcerns = validateDonorDetails.concerns;
+        if (context) {
+            console.log("Reached w");
+
+            console.log(concerns);
+
+            const donor_id = context?.donor_id;
+            const data = await this.bloodService.showIntrest(donor_id, req_id, concerns, date)
+            console.log(data);
+            res.status(data.statusCode).json({ status: data.status, msg: data.msg })
         } else {
+            console.log("Token not found");
+
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }
     }
@@ -256,6 +309,9 @@ class UserController implements IUserController {
             const profile_id = req.context?.profile_id;
 
             const createdBloodRequest: HelperFunctionResponse = await this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+
+
+
             console.log("Worked this");
 
             res.status(createdBloodRequest.statusCode).json({
@@ -285,19 +341,19 @@ class UserController implements IUserController {
         }
     }
 
-    async blood_donate(req: CustomRequest, res: Response) {
-        const context = req.context;
-        if (context) {
-            const donor_id: string = context.donor_id;
-            const donation_id: string = req.params.donation_id;
-            const status: BloodDonationStatus = req.params.status as BloodDonationStatus;
+    // async blood_donate(req: CustomRequest, res: Response) {
+    //     const context = req.context;
+    //     if (context) {
+    //         const donor_id: string = context.donor_id;
+    //         const donation_id: string = req.params.donation_id;
+    //         const status: BloodDonationStatus = req.params.status as BloodDonationStatus;
 
-            const donateBlood = await this.bloodService.donateBlood(donor_id, donation_id, status);
-            res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg })
-        } else {
-            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
-        }
-    }
+    //         const donateBlood = await this.bloodService.donateBlood(donor_id, donation_id, status);
+    //         res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg })
+    //     } else {
+    //         res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
+    //     }
+    // }
 
 }
 

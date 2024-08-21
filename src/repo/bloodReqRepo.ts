@@ -12,7 +12,7 @@ interface IBloodReqDepo {
     findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]>
     addIntrest(donor_id: string, blood_id: string): Promise<boolean>
     findMyIntrest(donor_id: string): Promise<IBloodRequirement[]>
-    // findBloodReqDepo(req_id: string): Promise<IBloodRequirement[]>
+    findUserRequirement(profile_id: string): Promise<IBloodRequirement[]>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -22,6 +22,12 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+
+    async findUserRequirement(profile_id: string): Promise<IBloodRequirement[]> {
+        const findReq = await this.BloodReq.find({ profile_id });
+        return findReq;
     }
 
 

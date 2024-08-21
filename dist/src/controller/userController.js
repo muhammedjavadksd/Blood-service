@@ -22,7 +22,7 @@ class UserController {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.updateBloodDonation = this.updateBloodDonation.bind(this);
         this.blood_request = this.blood_request.bind(this);
-        this.blood_donate = this.blood_donate.bind(this);
+        // this.blood_donate = this.blood_donate.bind(this)
         this.findBloodRequirement = this.findBloodRequirement.bind(this);
         this.bloodAvailability = this.bloodAvailability.bind(this);
         this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this);
@@ -35,9 +35,23 @@ class UserController {
         this.generatePresignedUrlForBloodGroupChange = this.generatePresignedUrlForBloodGroupChange.bind(this);
         this.showIntresrest = this.showIntresrest.bind(this);
         this.findMyIntrest = this.findMyIntrest.bind(this);
+        this.myBloodRequest = this.myBloodRequest.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
+    }
+    myBloodRequest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
+            if (profile_id) {
+                const findProfile = yield this.bloodService.findMyRequest(profile_id);
+                res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", });
+            }
+        });
     }
     findMyIntrest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -54,19 +68,39 @@ class UserController {
     }
     showIntresrest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            const contex = req.context;
+            const context = req.context;
             const req_id = req.params.request_id;
-            console.log(req.params);
-            if (contex) {
-                const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
-                this.bloodService.showIntrest(donor_id, req_id).then((data) => {
-                    res.status(data.statusCode).json({ status: data.status, msg: data.msg });
-                }).catch((err) => {
-                    res.status(Enum_1.StatusCode.SERVER_ERROR).json({ status: false, msg: "Something went wrong" });
-                });
+            console.log("Worked mainain");
+            const { donatedLast90Days = '', weight = '', seriousConditions = '', majorSurgeryOrIllness = '', surgeryOrIllnessDetails = '', chronicIllnesses = '', tattooPiercingAcupuncture = '', alcoholConsumption = '', tobaccoUse = '', pregnancyStatus = '', date = new Date() } = req.body;
+            const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
+                donatedLast90Days,
+                weight,
+                seriousConditions,
+                majorSurgeryOrIllness,
+                surgeryOrIllnessDetails,
+                chronicIllnesses,
+                tattooPiercingAcupuncture,
+                alcoholConsumption,
+                tobaccoUse,
+                pregnancyStatus,
+                date
+            });
+            if (validateDonorDetails.errors.length) {
+                console.log(validateDonorDetails.errors);
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] });
+                return;
+            }
+            let concerns = validateDonorDetails.concerns;
+            if (context) {
+                console.log("Reached w");
+                console.log(concerns);
+                const donor_id = context === null || context === void 0 ? void 0 : context.donor_id;
+                const data = yield this.bloodService.showIntrest(donor_id, req_id, concerns, date);
+                console.log(data);
+                res.status(data.statusCode).json({ status: data.status, msg: data.msg });
             }
             else {
+                console.log("Token not found");
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
             }
         });
@@ -252,21 +286,6 @@ class UserController {
             }
             else {
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "User not found" });
-            }
-        });
-    }
-    blood_donate(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const context = req.context;
-            if (context) {
-                const donor_id = context.donor_id;
-                const donation_id = req.params.donation_id;
-                const status = req.params.status;
-                const donateBlood = yield this.bloodService.donateBlood(donor_id, donation_id, status);
-                res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg });
-            }
-            else {
-                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
             }
         });
     }

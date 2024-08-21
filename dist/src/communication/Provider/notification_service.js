@@ -41,6 +41,25 @@ class BloodNotificationProvider {
         this.channel = null;
         this.NOTIFICATION_QUEUE = queue;
     }
+    sendBloodRequest(emails, blood_group, dead_line, location) {
+        var _a;
+        try {
+            let data = {
+                recipients: emails,
+                blood_group: blood_group,
+                deadLine: dead_line,
+                location: location
+            };
+            console.log("Profile sending to emails");
+            console.log(data);
+            (_a = this.channel) === null || _a === void 0 ? void 0 : _a.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data)));
+            return true;
+        }
+        catch (e) {
+            console.log(e);
+            return false;
+        }
+    }
     _init_() {
         return __awaiter(this, void 0, void 0, function* () {
             this.connection = yield amqplib.connect("amqp://localhost");

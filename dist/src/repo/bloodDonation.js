@@ -19,6 +19,7 @@ class BloodDonationRepo {
     }
     saveDonation(data) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(data);
             const saveData = yield new this.BloodDonation(data).save();
             return saveData.id;
         });
