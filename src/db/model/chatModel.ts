@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import { ChatFrom } from "../../Util/Types/Enum";
+import { IChatCollection } from "../../Util/Types/Interface/ModelInterface";
 
 const messageSchema = new Schema({
     from: {
@@ -40,6 +41,6 @@ const chatSchema = new Schema({
     }
 })
 
-const ChatCollection = model("chat", chatSchema)
+const ChatCollection = model<IChatCollection>("chat", chatSchema)
 
 export default ChatCollection
