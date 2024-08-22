@@ -85,9 +85,6 @@ class UserController implements IUserController {
     async showIntresrest(req: CustomRequest, res: Response): Promise<void> {
         const context = req.context;
         const req_id: string = req.params.request_id;
-        console.log("Worked mainain");
-
-
         const {
             donatedLast90Days = '',
             weight = '',
@@ -116,28 +113,18 @@ class UserController implements IUserController {
             date
         })
         if (validateDonorDetails.errors.length) {
-            console.log(validateDonorDetails.errors);
-
             res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] })
             return;
         }
         let concerns: BloodDonationConcerns = validateDonorDetails.concerns;
         if (context) {
-            console.log("Reached w");
-
-            console.log(concerns);
-
             const donor_id = context?.donor_id;
             const data = await this.bloodService.showIntrest(donor_id, req_id, concerns, date)
-            console.log(data);
             res.status(data.statusCode).json({ status: data.status, msg: data.msg })
         } else {
-            console.log("Token not found");
-
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }
     }
-
 
 
 

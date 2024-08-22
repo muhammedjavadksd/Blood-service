@@ -17,6 +17,12 @@ class BloodDonationRepo {
     constructor() {
         this.BloodDonation = donateBlood_1.default;
     }
+    findExistanceOfDonation(donor_id, case_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const find = yield this.BloodDonation.findOne({ donor_id, donation_id: case_id });
+            return find;
+        });
+    }
     saveDonation(data) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(data);

@@ -40,6 +40,8 @@ class BloodService implements IBloodService {
     private readonly bloodDonationRepo: BloodDonationRepo;
     private readonly utilHelper: UtilHelper;
 
+
+
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this)
         this.createBloodId = this.createBloodId.bind(this)
@@ -176,14 +178,20 @@ class BloodService implements IBloodService {
 
     async showIntrest(donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
         const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
-        console.log(request_id);
+        const findExistance = await this.bloodDonationRepo.findExistanceOfDonation(donor_id, request_id);
+        if (findExistance) {
+            return {
+                status: false,
+                msg: "You have already showed intrest for this donation",
+                statusCode: StatusCode.BAD_REQUEST,
 
-        console.log("7");
+            }
+        }
+
         if (findRequirement) {
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             if (findDonor?.status == BloodDonorStatus.Open) {
                 if (findRequirement.neededAt < date) {
-                    console.log("6");
                     return {
                         status: false,
                         msg: "The selected date is beyond the expected range.",
@@ -201,17 +209,14 @@ class BloodService implements IBloodService {
                 }
 
                 const newIntrest = await this.bloodDonationRepo.saveDonation(bloodDonationData) //  await this.bloodReqRepo.addIntrest(donor_id, request_id);
-                console.log(newIntrest);
 
                 if (newIntrest) {
-                    console.log("5");
                     return {
                         status: true,
                         msg: "You have showed intrested on this request",
                         statusCode: StatusCode.OK
                     }
                 } else {
-                    console.log("4");
                     return {
                         status: false,
                         msg: "You've already shown interest in this.",
@@ -220,14 +225,12 @@ class BloodService implements IBloodService {
                 }
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
                 const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
-                console.log("3");
                 return {
                     status: true,
                     msg: blockedReason,
                     statusCode: StatusCode.BAD_REQUEST
                 }
             } else {
-                console.log("2");
                 return {
                     status: false,
                     msg: DonorAccountBlockedReason.AccountDeleted,
@@ -235,8 +238,6 @@ class BloodService implements IBloodService {
                 }
             }
         } else {
-            console.log("1");
-
             return {
                 status: false,
                 msg: "The patient no longer needs blood. Thank you.",

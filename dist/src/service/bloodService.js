@@ -130,13 +130,18 @@ class BloodService {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
-            console.log(request_id);
-            console.log("7");
+            const findExistance = yield this.bloodDonationRepo.findExistanceOfDonation(donor_id, request_id);
+            if (findExistance) {
+                return {
+                    status: false,
+                    msg: "You have already showed intrest for this donation",
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST,
+                };
+            }
             if (findRequirement) {
                 const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
                 if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Open) {
                     if (findRequirement.neededAt < date) {
-                        console.log("6");
                         return {
                             status: false,
                             msg: "The selected date is beyond the expected range.",

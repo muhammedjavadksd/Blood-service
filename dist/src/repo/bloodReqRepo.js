@@ -20,7 +20,20 @@ class BloodReqDepo {
     }
     findUserRequirement(profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findReq = yield this.BloodReq.find({ profile_id });
+            const findReq = yield this.BloodReq.aggregate([
+                {
+                    $match: {
+                        profile_id
+                    }
+                }, {
+                    $lookup: {
+                        from: "donate_bloods",
+                        foreignField: "donation_id",
+                        localField: "blood_id",
+                        as: "intrest_submission"
+                    }
+                }
+            ]);
             return findReq;
         });
     }

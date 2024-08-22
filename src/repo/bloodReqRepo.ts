@@ -26,7 +26,20 @@ class BloodReqDepo implements IBloodReqDepo {
 
 
     async findUserRequirement(profile_id: string): Promise<IBloodRequirement[]> {
-        const findReq = await this.BloodReq.find({ profile_id });
+        const findReq = await this.BloodReq.aggregate([
+            {
+                $match: {
+                    profile_id
+                }
+            }, {
+                $lookup: {
+                    from: "donate_bloods",
+                    foreignField: "donation_id",
+                    localField: "blood_id",
+                    as: "intrest_submission"
+                }
+            }
+        ]);
         return findReq;
     }
 

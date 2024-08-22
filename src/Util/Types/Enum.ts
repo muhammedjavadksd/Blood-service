@@ -86,6 +86,11 @@ enum S3BucketsNames {
     bloodCertificate = "blood-certificate"
 }
 
+enum ChatFrom {
+    Donor = "Donor",
+    Patient = "Patient"
+}
+
 
 enum StatusCode {
     OK = 200,
@@ -98,4 +103,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason }
+export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom }

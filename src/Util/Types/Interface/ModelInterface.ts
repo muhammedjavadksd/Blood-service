@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose"
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, Relationship } from "../Enum"
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, Relationship } from "../Enum"
 import { LocatedAt } from "../Types"
 import { BloodDonationConcerns } from "./UtilInterface"
 // import { ÷ } from "./UtilInterface"
@@ -88,10 +88,19 @@ interface IBloodDonateTemplate {
     concerns: BloodDonationConcerns
 }
 
-// interface IBloodAvailabilityResult {
-//     [key in BloodGroup]: number,
-// }
+interface IMessageTemplate {
+    from: ChatFrom
+    timeline: Date,
+    msg: string
+}
 
+interface IChatTemplate {
+    donor_id: string
+    requirement_id: string
+    intrest_id: string
+    chat_started: Date,
+    chats: IMessageTemplate[]
+}
 
 interface IBloodRequirement extends Document, IBloodRequirementTemplate {
     locatedAt: LocatedAt
@@ -99,9 +108,9 @@ interface IBloodRequirement extends Document, IBloodRequirementTemplate {
 interface IBloodDonor extends Document, IBloodDonorTemplate { }
 interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }
 interface IBloodDonate extends Document, IBloodDonateTemplate { }
+interface IChatCollection extends Document, IChatTemplate { }
 
 
 
-
-export { IBloodRequirementTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IBloodDonate, IBloodDonateTemplate }
+export { IChatCollection, IBloodRequirementTemplate, IChatTemplate, IMessageTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IBloodDonate, IBloodDonateTemplate }
 export default IBloodRequirement
