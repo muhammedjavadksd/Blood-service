@@ -174,15 +174,7 @@ class BloodService {
                     const concernsChat = concernsMessage.length
                         ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
                         : '';
-                    const msg = `
-                    Hi ${findRequirement.patientName},
-                    
-                    ${concernsChat}
-                    
-                    I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.
-                    
-                    Please let me know if there’s anything else I should be aware of.
-                `;
+                    const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
                     console.log(`To profile id ${findRequirement.profile_id}`);
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
                     console.log(newInterest);

@@ -17,6 +17,7 @@ const bloodService_1 = __importDefault(require("../service/bloodService"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const ImageService_1 = __importDefault(require("../service/ImageService"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
+const chatService_1 = __importDefault(require("../service/chatService"));
 class UserController {
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
@@ -36,9 +37,24 @@ class UserController {
         this.showIntresrest = this.showIntresrest.bind(this);
         this.findMyIntrest = this.findMyIntrest.bind(this);
         this.myBloodRequest = this.myBloodRequest.bind(this);
+        this.getMyChats = this.getMyChats.bind(this);
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
+        this.chatService = new chatService_1.default();
+    }
+    getMyChats(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
+            if (profile_id) {
+                const getMyChats = yield this.chatService.getMyChats(profile_id);
+                res.status(getMyChats.statusCode).json({ status: getMyChats.status, msg: getMyChats.msg, data: getMyChats.data });
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", });
+            }
+        });
     }
     myBloodRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

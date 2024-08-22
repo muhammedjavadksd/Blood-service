@@ -17,6 +17,62 @@ class ChatRepository {
     constructor() {
         this.chatCollection = chatModel_1.default;
     }
+    findChatMyChat(profile_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const myChat = yield this.chatCollection.aggregate([
+                {
+                    $match: {
+                        $or: [
+                            {
+                                from_profile_id: profile_id
+                            },
+                            {
+                                to_profile_id: profile_id,
+                            }
+                        ]
+                    }
+                },
+                {
+                    $addFields: {
+                        intrest_id: { $toObjectId: "$intrest_id" } // Convert string to ObjectId
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "donors",
+                        foreignField: "donor_id",
+                        localField: "donor_id",
+                        as: "donor"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "blood_requirements",
+                        foreignField: "blood_id",
+                        localField: "requirement_id",
+                        as: "blood_requirements"
+                    }
+                },
+                {
+                    $addFields: {
+                        blood_intrest: { $arrayElemAt: ['$blood_intrest', 0] },
+                        donor: { $arrayElemAt: ['$donor', 0] },
+                        blood_requirements: { $arrayElemAt: ['$blood_requirements', 0] }
+                    }
+                }
+            ]);
+            //     await this.chatCollection.find({
+            //     $or: [{
+            //         from_profile_id: profile_id
+            //     },
+            //     {
+            //         to_profile_id: profile_id,
+            //     }]
+            // })
+            console.log(myChat);
+            return myChat;
+        });
+    }
     createChat(chat) {
         return __awaiter(this, void 0, void 0, function* () {
             const newChat = new this.chatCollection(chat);

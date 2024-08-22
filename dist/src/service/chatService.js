@@ -14,9 +14,37 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const chatRepo_1 = __importDefault(require("../repo/chatRepo"));
 const Enum_1 = require("../Util/Types/Enum");
+const bloodReqRepo_1 = __importDefault(require("../repo/bloodReqRepo"));
+const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
+const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 class ChatService {
     constructor() {
         this.chatRepo = new chatRepo_1.default();
+        this.reqRepo = new bloodReqRepo_1.default();
+        this.donationRepo = new bloodDonation_1.default();
+        this.donorRepo = new bloodDonorRepo_1.default();
+    }
+    getMyChats(profile_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findMyChats = yield this.chatRepo.findChatMyChat(profile_id);
+            if (findMyChats.length) {
+                return {
+                    statusCode: Enum_1.StatusCode.OK,
+                    status: true,
+                    msg: "Chat fetched",
+                    data: {
+                        chats: findMyChats
+                    }
+                };
+            }
+            else {
+                return {
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST,
+                    status: false,
+                    msg: "No chat found",
+                };
+            }
+        });
     }
     startChat(from_profile_id, to_profile_id, requirement_id, msg, started, donor_id, intrest_id) {
         return __awaiter(this, void 0, void 0, function* () {

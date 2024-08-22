@@ -3,17 +3,49 @@ import ChatRepository from "../repo/chatRepo";
 import { ChatFrom, StatusCode } from "../Util/Types/Enum";
 import { IChatTemplate } from "../Util/Types/Interface/ModelInterface";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import BloodReqDepo from "../repo/bloodReqRepo";
+import BloodDonationRepo from "../repo/bloodDonation";
+import BloodDonorRepo from "../repo/bloodDonorRepo";
 
 interface IChatService {
     startChat(from_profile_id: string, to_profile_id: string, requirement_id: string, msg: string, started: ChatFrom, donor_id: string, intrest_id: ObjectId): Promise<HelperFunctionResponse>
+    getMyChats(profile_id: string): Promise<HelperFunctionResponse>
 }
 
 class ChatService implements IChatService {
 
     chatRepo;
+    reqRepo;
+    donationRepo;
+    donorRepo;
 
     constructor() {
         this.chatRepo = new ChatRepository();
+        this.reqRepo = new BloodReqDepo()
+        this.donationRepo = new BloodDonationRepo()
+        this.donorRepo = new BloodDonorRepo()
+    }
+
+
+    async getMyChats(profile_id: string): Promise<HelperFunctionResponse> {
+        const findMyChats = await this.chatRepo.findChatMyChat(profile_id);
+        if (findMyChats.length) {
+            return {
+                statusCode: StatusCode.OK,
+                status: true,
+                msg: "Chat fetched",
+                data: {
+                    chats: findMyChats
+                }
+            }
+        } else {
+            return {
+                statusCode: StatusCode.BAD_REQUEST,
+                status: false,
+                msg: "No chat found",
+            }
+        }
+
     }
 
     async startChat(from_profile_id: string, to_profile_id: string, requirement_id: string, msg: string, started: ChatFrom, donor_id: string, intrest_id: ObjectId): Promise<HelperFunctionResponse> {
