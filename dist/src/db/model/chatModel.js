@@ -1,18 +1,17 @@
-import { model, Schema } from "mongoose";
-import { ChatFrom } from "../../Util/Types/Enum";
-import { IChatCollection } from "../../Util/Types/Interface/ModelInterface";
-
-const messageSchema = new Schema({
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = require("mongoose");
+const Enum_1 = require("../../Util/Types/Enum");
+const messageSchema = new mongoose_1.Schema({
     from: {
         required: true,
         type: String,
-        enum: Object.values(ChatFrom)
+        enum: Object.values(Enum_1.ChatFrom)
     },
     timeline: {
         type: String,
         required: true
     },
-
     msg: {
         type: String,
         required: true
@@ -21,9 +20,8 @@ const messageSchema = new Schema({
         type: Boolean,
         required: true
     }
-})
-
-const chatSchema = new Schema({
+});
+const chatSchema = new mongoose_1.Schema({
     donor_id: {
         type: String,
         required: true
@@ -52,8 +50,6 @@ const chatSchema = new Schema({
         type: [messageSchema],
         required: true
     }
-})
-
-const ChatCollection = model<IChatCollection>("chat", chatSchema)
-
-export default ChatCollection
+});
+const ChatCollection = (0, mongoose_1.model)("chat", chatSchema);
+exports.default = ChatCollection;

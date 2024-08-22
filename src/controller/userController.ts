@@ -73,6 +73,8 @@ class UserController implements IUserController {
         const donorId = req?.context?.donor_id;
         if (donorId) {
             const findMyIntrest = await this.bloodService.findMyIntrest(donorId);
+            console.log(findMyIntrest);
+
             res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
@@ -85,42 +87,49 @@ class UserController implements IUserController {
     async showIntresrest(req: CustomRequest, res: Response): Promise<void> {
         const context = req.context;
         const req_id: string = req.params.request_id;
-        const {
-            donatedLast90Days = '',
-            weight = '',
-            seriousConditions = '',
-            majorSurgeryOrIllness = '',
-            surgeryOrIllnessDetails = '',
-            chronicIllnesses = '',
-            tattooPiercingAcupuncture = '',
-            alcoholConsumption = '',
-            tobaccoUse = '',
-            pregnancyStatus = '',
-            date = new Date()
-        } = req.body;
+        const profile_id: string = context?.profile_id;
 
-        const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
-            donatedLast90Days,
-            weight,
-            seriousConditions,
-            majorSurgeryOrIllness,
-            surgeryOrIllnessDetails,
-            chronicIllnesses,
-            tattooPiercingAcupuncture,
-            alcoholConsumption,
-            tobaccoUse,
-            pregnancyStatus,
-            date
-        })
-        if (validateDonorDetails.errors.length) {
-            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] })
-            return;
-        }
-        let concerns: BloodDonationConcerns = validateDonorDetails.concerns;
-        if (context) {
-            const donor_id = context?.donor_id;
-            const data = await this.bloodService.showIntrest(donor_id, req_id, concerns, date)
-            res.status(data.statusCode).json({ status: data.status, msg: data.msg })
+        if (profile_id) {
+
+            const {
+                donatedLast90Days = '',
+                weight = '',
+                seriousConditions = '',
+                majorSurgeryOrIllness = '',
+                surgeryOrIllnessDetails = '',
+                chronicIllnesses = '',
+                tattooPiercingAcupuncture = '',
+                alcoholConsumption = '',
+                tobaccoUse = '',
+                pregnancyStatus = '',
+                date = new Date()
+            } = req.body;
+
+            const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
+                donatedLast90Days,
+                weight,
+                seriousConditions,
+                majorSurgeryOrIllness,
+                surgeryOrIllnessDetails,
+                chronicIllnesses,
+                tattooPiercingAcupuncture,
+                alcoholConsumption,
+                tobaccoUse,
+                pregnancyStatus,
+                date
+            })
+            if (validateDonorDetails.errors.length) {
+                res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] })
+                return;
+            }
+            let concerns: BloodDonationConcerns = validateDonorDetails.concerns;
+            if (context) {
+                const donor_id = context?.donor_id;
+                const data = await this.bloodService.showIntrest(profile_id, donor_id, req_id, concerns, date)
+                res.status(data.statusCode).json({ status: data.status, msg: data.msg })
+            } else {
+                res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
+            }
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
         }

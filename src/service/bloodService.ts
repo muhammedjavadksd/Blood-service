@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
 import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -11,6 +11,7 @@ import BloodDonationRepo from "../repo/bloodDonation";
 import TokenHelper from "../Util/Helpers/tokenHelper";
 import e from "express";
 import BloodNotificationProvider from "../communication/Provider/notification_service";
+import ChatService from "./chatService";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -27,7 +28,7 @@ interface IBloodService {
     // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
-    showIntrest(donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
+    showIntrest(profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
 }
@@ -39,6 +40,7 @@ class BloodService implements IBloodService {
     private readonly bloodGroupUpdateRepo: BloodGroupUpdateRepo;
     private readonly bloodDonationRepo: BloodDonationRepo;
     private readonly utilHelper: UtilHelper;
+    private readonly chatService: ChatService
 
 
 
@@ -55,6 +57,7 @@ class BloodService implements IBloodService {
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+        this.chatService = new ChatService();
     }
 
 
@@ -83,7 +86,7 @@ class BloodService implements IBloodService {
 
 
     async findMyIntrest(donor_id: string): Promise<HelperFunctionResponse> {
-        const myIntrest = await this.bloodReqRepo.findMyIntrest(donor_id);
+        const myIntrest = await this.bloodDonationRepo.findMyIntrest(donor_id) //this.bloodReqRepo.findMyIntrest(donor_id);
         if (myIntrest.length) {
             return {
                 status: true,
@@ -176,7 +179,8 @@ class BloodService implements IBloodService {
 
 
 
-    async showIntrest(donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
+    async showIntrest(profile_id: string, donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
+
         const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
         const findExistance = await this.bloodDonationRepo.findExistanceOfDonation(donor_id, request_id);
         if (findExistance) {
@@ -184,9 +188,11 @@ class BloodService implements IBloodService {
                 status: false,
                 msg: "You have already showed intrest for this donation",
                 statusCode: StatusCode.BAD_REQUEST,
-
             }
         }
+
+
+
 
         if (findRequirement) {
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
@@ -204,13 +210,54 @@ class BloodService implements IBloodService {
                     date: new Date(),
                     meet_expect: date,
                     donation_id: request_id,
-                    donor_id: donor_id,
+                    donor_id,
                     status: BloodDonationStatus.Pending
+                };
+
+                let concernsMessage: string[] = [];
+
+                if (concerns.seriousConditions.length) {
+                    concernsMessage.push(`I have serious conditions such as ${concerns.seriousConditions.join(", ")}`);
                 }
 
-                const newIntrest = await this.bloodDonationRepo.saveDonation(bloodDonationData) //  await this.bloodReqRepo.addIntrest(donor_id, request_id);
+                if (concerns.majorSurgeryOrIllness) {
+                    concernsMessage.push(`I had major surgery on ${concerns.majorSurgeryOrIllness}`);
+                }
 
-                if (newIntrest) {
+                if (concerns.tobaco_use) {
+                    concernsMessage.push(`I use tobacco`);
+                }
+
+                if (concerns.chronicIllnesses) {
+                    concernsMessage.push(`I have chronic illnesses like diabetes or hypertension`);
+                }
+
+                const concernsChat = concernsMessage.length
+                    ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
+                    : '';
+
+                const msg = `
+                    Hi ${findRequirement.patientName},
+                    
+                    ${concernsChat}
+                    
+                    I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.
+                    
+                    Please let me know if there’s anything else I should be aware of.
+                `;
+
+                console.log(`To profile id ${findRequirement.profile_id}`)
+                const newInterest = await this.bloodDonationRepo.saveDonation(bloodDonationData);
+
+                console.log(newInterest);
+
+
+                if (newInterest) {
+                    const saveChat = await this.chatService.startChat(profile_id, findRequirement.profile_id, request_id, msg, ChatFrom.Donor, donor_id, newInterest)
+                    console.log("Chat Details");
+
+                    console.log(saveChat);
+
                     return {
                         status: true,
                         msg: "You have showed intrested on this request",

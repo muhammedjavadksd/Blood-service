@@ -8,14 +8,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_s3_1 = require("@aws-sdk/client-s3");
 const credential_provider_env_1 = require("@aws-sdk/credential-provider-env");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
-const axios_1 = __importDefault(require("axios"));
 class S3BucketHelper {
     constructor(bucketName) {
         this.bucketName = bucketName;
@@ -31,19 +27,6 @@ class S3BucketHelper {
             const url = yield (0, s3_request_presigner_1.getSignedUrl)(this.s3Config, new client_s3_1.PutObjectCommand({ Bucket: this.bucketName, Key: key }), { expiresIn: 3600 });
             return url;
         });
-    }
-    uploadFile(file, presigned_url, fileType, imageName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield axios_1.default.put(presigned_url, file);
-            }
-            finally { }
-            const imageUrl = `http://localhost:4566/${this.bucketName}/${imageName}`;
-            return imageUrl;
-        });
-    }
-    catch(e) {
-        return false;
     }
 }
 exports.default = S3BucketHelper;

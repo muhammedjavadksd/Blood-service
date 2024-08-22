@@ -17,6 +17,53 @@ class BloodDonationRepo {
     constructor() {
         this.BloodDonation = donateBlood_1.default;
     }
+    findMyIntrest(donor_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log(donor_id);
+            const find = yield this.BloodDonation.aggregate([
+                {
+                    $match: {
+                        donor_id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "chats",
+                        foreignField: "requirement_id",
+                        localField: "donation_id",
+                        as: "chats_count",
+                        pipeline: [{
+                                $match: {
+                                    'chats.seen': false
+                                }
+                            }]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "blood_requirements",
+                        foreignField: "blood_id",
+                        localField: "donation_id",
+                        as: "requirement",
+                    }
+                },
+                {
+                    $addFields: {
+                        "message_count": { $size: "$chats_count" },
+                        "requirement": { $arrayElemAt: ['$requirement', 0] }
+                    }
+                },
+                {
+                    $project: {
+                        chats_count: 0
+                    }
+                }
+            ]);
+            console.log("Find data");
+            console.log(find);
+            return find;
+        });
+    }
     findExistanceOfDonation(donor_id, case_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const find = yield this.BloodDonation.findOne({ donor_id, donation_id: case_id });

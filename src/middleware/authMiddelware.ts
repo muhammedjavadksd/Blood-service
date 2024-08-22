@@ -26,35 +26,47 @@ class AuthMiddleware implements IAuthMiddleware {
         console.log(req.headers);
         const headers = req.headers;
 
-        const authToken = headers.authorization;
-        const token = utilHelper.getTokenFromHeader(authToken);
-        if (token) {
+        const authToken = headers.bloodauthorization;
+        console.log(authToken);
+        if (authToken && typeof authToken == "string") {
+            const token = utilHelper.getBloodTokenFromHeader(authToken);
 
-            // "blood_group": "A+",
-            // "donor_id": "MUANBVMA+",
-            // "email_address": "muhammedjavad119144@gmail.com",
-            // "full_name": "Muhammed Javad",
-            // "phone_number": "9744727684",
-            const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
-            if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {
-                const donor_id = tokenValidation.donor_id;
-                if (!req.context) {
-                    req.context = {}
+
+            if (token) {
+
+                // "blood_group": "A+",
+                // "donor_id": "MUANBVMA+",
+                // "email_address": "muhammedjavad119144@gmail.com",
+                // "full_name": "Muhammed Javad",
+                // "phone_number": "9744727684",
+                const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
+                if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {
+                    const donor_id = tokenValidation.donor_id;
+                    if (!req.context) {
+                        req.context = {}
+                    }
+                    req.context.donor_id = donor_id;
+                    console.log("Donor middleware has passed");
+                    console.log(donor_id);
+                    console.log(tokenValidation);
+                    next()
+                } else {
+                    res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
                 }
-                req.context.donor_id = donor_id;
-                console.log("Donor middleware has passed");
-                console.log(donor_id);
-                console.log(tokenValidation);
-                next()
             } else {
                 res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
             }
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
         }
+
     }
 
+
+
     async isAuthenitcated(req: CustomRequest, res: Response, next: NextFunction) {
+        console.log("Reached");
+
         const utilHelper = new UtilHelper();
         const tokenHelper = new TokenHelper();
         console.log(req.headers);

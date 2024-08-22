@@ -20,6 +20,7 @@ const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
 const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 const notification_service_1 = __importDefault(require("../communication/Provider/notification_service"));
+const chatService_1 = __importDefault(require("./chatService"));
 class BloodService {
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
@@ -34,6 +35,7 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
+        this.chatService = new chatService_1.default();
     }
     findMyRequest(profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,7 +61,7 @@ class BloodService {
     }
     findMyIntrest(donor_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const myIntrest = yield this.bloodReqRepo.findMyIntrest(donor_id);
+            const myIntrest = yield this.bloodDonationRepo.findMyIntrest(donor_id); //this.bloodReqRepo.findMyIntrest(donor_id);
             if (myIntrest.length) {
                 return {
                     status: true,
@@ -126,7 +128,7 @@ class BloodService {
             concerns,
         };
     }
-    showIntrest(donor_id, request_id, concerns, date) {
+    showIntrest(profile_id, donor_id, request_id, concerns, date) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
@@ -153,13 +155,41 @@ class BloodService {
                         date: new Date(),
                         meet_expect: date,
                         donation_id: request_id,
-                        donor_id: donor_id,
+                        donor_id,
                         status: Enum_1.BloodDonationStatus.Pending
                     };
-                    const newIntrest = yield this.bloodDonationRepo.saveDonation(bloodDonationData); //  await this.bloodReqRepo.addIntrest(donor_id, request_id);
-                    console.log(newIntrest);
-                    if (newIntrest) {
-                        console.log("5");
+                    let concernsMessage = [];
+                    if (concerns.seriousConditions.length) {
+                        concernsMessage.push(`I have serious conditions such as ${concerns.seriousConditions.join(", ")}`);
+                    }
+                    if (concerns.majorSurgeryOrIllness) {
+                        concernsMessage.push(`I had major surgery on ${concerns.majorSurgeryOrIllness}`);
+                    }
+                    if (concerns.tobaco_use) {
+                        concernsMessage.push(`I use tobacco`);
+                    }
+                    if (concerns.chronicIllnesses) {
+                        concernsMessage.push(`I have chronic illnesses like diabetes or hypertension`);
+                    }
+                    const concernsChat = concernsMessage.length
+                        ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
+                        : '';
+                    const msg = `
+                    Hi ${findRequirement.patientName},
+                    
+                    ${concernsChat}
+                    
+                    I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.
+                    
+                    Please let me know if there’s anything else I should be aware of.
+                `;
+                    console.log(`To profile id ${findRequirement.profile_id}`);
+                    const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
+                    console.log(newInterest);
+                    if (newInterest) {
+                        const saveChat = yield this.chatService.startChat(profile_id, findRequirement.profile_id, request_id, msg, Enum_1.ChatFrom.Donor, donor_id, newInterest);
+                        console.log("Chat Details");
+                        console.log(saveChat);
                         return {
                             status: true,
                             msg: "You have showed intrested on this request",
@@ -167,7 +197,6 @@ class BloodService {
                         };
                     }
                     else {
-                        console.log("4");
                         return {
                             status: false,
                             msg: "You've already shown interest in this.",
@@ -177,7 +206,6 @@ class BloodService {
                 }
                 else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
                     const blockedReason = (_a = findDonor.blocked_reason) !== null && _a !== void 0 ? _a : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
-                    console.log("3");
                     return {
                         status: true,
                         msg: blockedReason,
@@ -185,7 +213,6 @@ class BloodService {
                     };
                 }
                 else {
-                    console.log("2");
                     return {
                         status: false,
                         msg: Enum_1.DonorAccountBlockedReason.AccountDeleted,
@@ -194,7 +221,6 @@ class BloodService {
                 }
             }
             else {
-                console.log("1");
                 return {
                     status: false,
                     msg: "The patient no longer needs blood. Thank you.",

@@ -7,10 +7,26 @@ interface IUtilHelper {
     createRandomText(length: number): string
     extractImageNameFromPresignedUrl(presigned_url: string): string | boolean
     getTokenFromHeader(headers: Request['headers']['authorization']): string | false
+    getBloodTokenFromHeader(headers: Request['headers']['authorization']): string | false
 }
 
 class UtilHelper implements IUtilHelper {
 
+
+    getBloodTokenFromHeader(headers: Request['headers']['authorization']): string | false {
+        console.log(headers);
+
+        if (headers && typeof headers == "string") {
+            const splitAuth = headers.split(" ");
+            if (splitAuth && splitAuth[0] == "Bearer") {
+                const token: string | undefined = splitAuth[1];
+                if (token) {
+                    return token
+                }
+            }
+        }
+        return false
+    }
 
     getTokenFromHeader(headers: Request['headers']['authorization']): string | false {
         const splitAuth = headers?.split(" ");

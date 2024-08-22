@@ -5,6 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const url_1 = __importDefault(require("url"));
 class UtilHelper {
+    getBloodTokenFromHeader(headers) {
+        console.log(headers);
+        if (headers && typeof headers == "string") {
+            const splitAuth = headers.split(" ");
+            if (splitAuth && splitAuth[0] == "Bearer") {
+                const token = splitAuth[1];
+                if (token) {
+                    return token;
+                }
+            }
+        }
+        return false;
+    }
     getTokenFromHeader(headers) {
         const splitAuth = headers === null || headers === void 0 ? void 0 : headers.split(" ");
         if (splitAuth && splitAuth[0] == "Bearer") {

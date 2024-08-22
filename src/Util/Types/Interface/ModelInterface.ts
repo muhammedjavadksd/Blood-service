@@ -1,4 +1,4 @@
-import mongoose, { Document } from "mongoose"
+import mongoose, { Document, ObjectId } from "mongoose"
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, Relationship } from "../Enum"
 import { LocatedAt } from "../Types"
 import { BloodDonationConcerns } from "./UtilInterface"
@@ -90,14 +90,17 @@ interface IBloodDonateTemplate {
 
 interface IMessageTemplate {
     from: ChatFrom
-    timeline: Date,
+    timeline: string
     msg: string
+    seen: boolean
 }
 
 interface IChatTemplate {
     donor_id: string
     requirement_id: string
-    intrest_id: string
+    from_profile_id: string
+    to_profile_id: string
+    intrest_id: ObjectId
     chat_started: Date,
     chats: IMessageTemplate[]
 }

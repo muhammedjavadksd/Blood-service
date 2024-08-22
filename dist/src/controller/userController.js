@@ -59,6 +59,7 @@ class UserController {
             const donorId = (_a = req === null || req === void 0 ? void 0 : req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             if (donorId) {
                 const findMyIntrest = yield this.bloodService.findMyIntrest(donorId);
+                console.log(findMyIntrest);
                 res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data });
             }
             else {
@@ -70,37 +71,37 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const context = req.context;
             const req_id = req.params.request_id;
-            console.log("Worked mainain");
-            const { donatedLast90Days = '', weight = '', seriousConditions = '', majorSurgeryOrIllness = '', surgeryOrIllnessDetails = '', chronicIllnesses = '', tattooPiercingAcupuncture = '', alcoholConsumption = '', tobaccoUse = '', pregnancyStatus = '', date = new Date() } = req.body;
-            const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
-                donatedLast90Days,
-                weight,
-                seriousConditions,
-                majorSurgeryOrIllness,
-                surgeryOrIllnessDetails,
-                chronicIllnesses,
-                tattooPiercingAcupuncture,
-                alcoholConsumption,
-                tobaccoUse,
-                pregnancyStatus,
-                date
-            });
-            if (validateDonorDetails.errors.length) {
-                console.log(validateDonorDetails.errors);
-                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] });
-                return;
-            }
-            let concerns = validateDonorDetails.concerns;
-            if (context) {
-                console.log("Reached w");
-                console.log(concerns);
-                const donor_id = context === null || context === void 0 ? void 0 : context.donor_id;
-                const data = yield this.bloodService.showIntrest(donor_id, req_id, concerns, date);
-                console.log(data);
-                res.status(data.statusCode).json({ status: data.status, msg: data.msg });
+            const profile_id = context === null || context === void 0 ? void 0 : context.profile_id;
+            if (profile_id) {
+                const { donatedLast90Days = '', weight = '', seriousConditions = '', majorSurgeryOrIllness = '', surgeryOrIllnessDetails = '', chronicIllnesses = '', tattooPiercingAcupuncture = '', alcoholConsumption = '', tobaccoUse = '', pregnancyStatus = '', date = new Date() } = req.body;
+                const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
+                    donatedLast90Days,
+                    weight,
+                    seriousConditions,
+                    majorSurgeryOrIllness,
+                    surgeryOrIllnessDetails,
+                    chronicIllnesses,
+                    tattooPiercingAcupuncture,
+                    alcoholConsumption,
+                    tobaccoUse,
+                    pregnancyStatus,
+                    date
+                });
+                if (validateDonorDetails.errors.length) {
+                    res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: validateDonorDetails.errors[0] });
+                    return;
+                }
+                let concerns = validateDonorDetails.concerns;
+                if (context) {
+                    const donor_id = context === null || context === void 0 ? void 0 : context.donor_id;
+                    const data = yield this.bloodService.showIntrest(profile_id, donor_id, req_id, concerns, date);
+                    res.status(data.statusCode).json({ status: data.status, msg: data.msg });
+                }
+                else {
+                    res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
+                }
             }
             else {
-                console.log("Token not found");
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" });
             }
         });
