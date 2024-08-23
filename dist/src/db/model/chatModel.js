@@ -34,11 +34,11 @@ const chatSchema = new mongoose_1.Schema({
         type: String,
         required: true
     },
-    from_profile_id: {
+    profile_one: {
         type: String,
         required: true
     },
-    to_profile_id: {
+    profile_one: {
         type: String,
         required: true
     },
