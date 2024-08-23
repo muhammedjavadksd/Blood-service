@@ -20,8 +20,9 @@ const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
 const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 const notification_service_1 = __importDefault(require("../communication/Provider/notification_service"));
-const chatService_1 = __importDefault(require("./chatService"));
+const ProfileChatApiCommunication_1 = __importDefault(require("../communication/ApiCommunication/ProfileChatApiCommunication"));
 class BloodService {
+    // private readonly chatService: ChatService
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
         this.createBloodId = this.createBloodId.bind(this);
@@ -35,7 +36,7 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
-        this.chatService = new chatService_1.default();
+        // this.chatService = new ChatService();
     }
     findMyRequest(profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -128,7 +129,7 @@ class BloodService {
             concerns,
         };
     }
-    showIntrest(profile_id, donor_id, request_id, concerns, date) {
+    showIntrest(auth_token, profile_id, donor_id, request_id, concerns, date) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
@@ -179,9 +180,8 @@ class BloodService {
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
                     console.log(newInterest);
                     if (newInterest) {
-                        const saveChat = yield this.chatService.startChat(profile_id, findRequirement.profile_id, request_id, msg, Enum_1.ChatFrom.Donor, donor_id, newInterest);
-                        console.log("Chat Details");
-                        console.log(saveChat);
+                        const profileCommunication = new ProfileChatApiCommunication_1.default();
+                        profileCommunication.createChatRoom(msg, findRequirement.profile_id, auth_token);
                         return {
                             status: true,
                             msg: "You have showed intrested on this request",

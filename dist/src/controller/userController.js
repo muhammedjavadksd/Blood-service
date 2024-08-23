@@ -17,8 +17,8 @@ const bloodService_1 = __importDefault(require("../service/bloodService"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const ImageService_1 = __importDefault(require("../service/ImageService"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
-const chatService_1 = __importDefault(require("../service/chatService"));
 class UserController {
+    // private readonly chatService: ChatService;
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.updateBloodDonation = this.updateBloodDonation.bind(this);
@@ -37,25 +37,21 @@ class UserController {
         this.showIntresrest = this.showIntresrest.bind(this);
         this.findMyIntrest = this.findMyIntrest.bind(this);
         this.myBloodRequest = this.myBloodRequest.bind(this);
-        this.getMyChats = this.getMyChats.bind(this);
+        // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
-        this.chatService = new chatService_1.default();
+        // this.chatService = new ChatService()
     }
-    getMyChats(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
-            if (profile_id) {
-                const getMyChats = yield this.chatService.getMyChats(profile_id);
-                res.status(getMyChats.statusCode).json({ status: getMyChats.status, msg: getMyChats.msg, data: getMyChats.data });
-            }
-            else {
-                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", });
-            }
-        });
-    }
+    // async getMyChats(req: CustomRequest, res: Response): Promise<void> {
+    //     const profile_id = req.context?.profile_id;
+    //     if (profile_id) {
+    //         const getMyChats = await this.chatService.getMyChats(profile_id);
+    //         res.status(getMyChats.statusCode).json({ status: getMyChats.status, msg: getMyChats.msg, data: getMyChats.data })
+    //     } else {
+    //         res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
+    //     }
+    // }
     myBloodRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -88,7 +84,9 @@ class UserController {
             const context = req.context;
             const req_id = req.params.request_id;
             const profile_id = context === null || context === void 0 ? void 0 : context.profile_id;
-            if (profile_id) {
+            const utilHelper = new UtilHelpers_1.default();
+            const token = utilHelper.getTokenFromHeader(req.headers['authorization']);
+            if (profile_id && token) {
                 const { donatedLast90Days = '', weight = '', seriousConditions = '', majorSurgeryOrIllness = '', surgeryOrIllnessDetails = '', chronicIllnesses = '', tattooPiercingAcupuncture = '', alcoholConsumption = '', tobaccoUse = '', pregnancyStatus = '', date = new Date() } = req.body;
                 const validateDonorDetails = this.bloodService.bloodDonationInterestValidation({
                     donatedLast90Days,
@@ -110,7 +108,7 @@ class UserController {
                 let concerns = validateDonorDetails.concerns;
                 if (context) {
                     const donor_id = context === null || context === void 0 ? void 0 : context.donor_id;
-                    const data = yield this.bloodService.showIntrest(profile_id, donor_id, req_id, concerns, date);
+                    const data = yield this.bloodService.showIntrest(token, profile_id, donor_id, req_id, concerns, date);
                     res.status(data.statusCode).json({ status: data.status, msg: data.msg });
                 }
                 else {

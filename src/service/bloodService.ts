@@ -11,7 +11,9 @@ import BloodDonationRepo from "../repo/bloodDonation";
 import TokenHelper from "../Util/Helpers/tokenHelper";
 import e from "express";
 import BloodNotificationProvider from "../communication/Provider/notification_service";
-import ChatService from "./chatService";
+import axios from "axios";
+import ProfileChat from "../communication/ApiCommunication/ProfileChatApiCommunication";
+// import ChatService from "./chatService";
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
@@ -28,7 +30,7 @@ interface IBloodService {
     // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
-    showIntrest(profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
+    showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
 }
@@ -40,7 +42,7 @@ class BloodService implements IBloodService {
     private readonly bloodGroupUpdateRepo: BloodGroupUpdateRepo;
     private readonly bloodDonationRepo: BloodDonationRepo;
     private readonly utilHelper: UtilHelper;
-    private readonly chatService: ChatService
+    // private readonly chatService: ChatService
 
 
 
@@ -57,7 +59,7 @@ class BloodService implements IBloodService {
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
-        this.chatService = new ChatService();
+        // this.chatService = new ChatService();
     }
 
 
@@ -179,7 +181,7 @@ class BloodService implements IBloodService {
 
 
 
-    async showIntrest(profile_id: string, donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
+    async showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concerns: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse> {
 
         const findRequirement = await this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
         const findExistance = await this.bloodDonationRepo.findExistanceOfDonation(donor_id, request_id);
@@ -245,10 +247,9 @@ class BloodService implements IBloodService {
 
 
                 if (newInterest) {
-                    const saveChat = await this.chatService.startChat(profile_id, findRequirement.profile_id, request_id, msg, ChatFrom.Donor, donor_id, newInterest)
-                    console.log("Chat Details");
+                    const profileCommunication = new ProfileChat();
+                    profileCommunication.createChatRoom(msg, findRequirement.profile_id, auth_token);
 
-                    console.log(saveChat);
 
                     return {
                         status: true,

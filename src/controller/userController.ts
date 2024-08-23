@@ -8,7 +8,7 @@ import { LocatedAt } from '../Util/Types/Types';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
 import BloodNotificationProvider from '../communication/Provider/notification_service';
-import ChatService from '../service/chatService';
+// import ChatService from '../service/chatService';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
@@ -26,7 +26,7 @@ interface IUserController {
     showIntresrest(req: CustomRequest, res: Response): Promise<void>
     findMyIntrest(req: CustomRequest, res: Response): Promise<void>
     myBloodRequest(req: CustomRequest, res: Response): Promise<void>
-    getMyChats(req: CustomRequest, res: Response): Promise<void>
+    // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
@@ -35,7 +35,7 @@ class UserController implements IUserController {
     private readonly bloodService: BloodService;
     private readonly imageService: ImageServices;
     private readonly bloodDonorRepo: BloodDonorRepo;
-    private readonly chatService: ChatService;
+    // private readonly chatService: ChatService;
 
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this)
@@ -55,23 +55,23 @@ class UserController implements IUserController {
         this.showIntresrest = this.showIntresrest.bind(this)
         this.findMyIntrest = this.findMyIntrest.bind(this)
         this.myBloodRequest = this.myBloodRequest.bind(this)
-        this.getMyChats = this.getMyChats.bind(this)
+        // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
-        this.chatService = new ChatService()
+        // this.chatService = new ChatService()
     }
 
 
-    async getMyChats(req: CustomRequest, res: Response): Promise<void> {
-        const profile_id = req.context?.profile_id;
-        if (profile_id) {
-            const getMyChats = await this.chatService.getMyChats(profile_id);
-            res.status(getMyChats.statusCode).json({ status: getMyChats.status, msg: getMyChats.msg, data: getMyChats.data })
-        } else {
-            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
-        }
-    }
+    // async getMyChats(req: CustomRequest, res: Response): Promise<void> {
+    //     const profile_id = req.context?.profile_id;
+    //     if (profile_id) {
+    //         const getMyChats = await this.chatService.getMyChats(profile_id);
+    //         res.status(getMyChats.statusCode).json({ status: getMyChats.status, msg: getMyChats.msg, data: getMyChats.data })
+    //     } else {
+    //         res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
+    //     }
+    // }
 
 
     async myBloodRequest(req: CustomRequest, res: Response): Promise<void> {
@@ -104,8 +104,10 @@ class UserController implements IUserController {
         const context = req.context;
         const req_id: string = req.params.request_id;
         const profile_id: string = context?.profile_id;
+        const utilHelper = new UtilHelper()
 
-        if (profile_id) {
+        const token = utilHelper.getTokenFromHeader(req.headers['authorization'])
+        if (profile_id && token) {
 
             const {
                 donatedLast90Days = '',
@@ -141,7 +143,7 @@ class UserController implements IUserController {
             let concerns: BloodDonationConcerns = validateDonorDetails.concerns;
             if (context) {
                 const donor_id = context?.donor_id;
-                const data = await this.bloodService.showIntrest(profile_id, donor_id, req_id, concerns, date)
+                const data = await this.bloodService.showIntrest(token, profile_id, donor_id, req_id, concerns, date)
                 res.status(data.statusCode).json({ status: data.status, msg: data.msg })
             } else {
                 res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
