@@ -62,6 +62,7 @@ interface IBloodRequirementTemplate {
     address: String,
     phoneNumber: number
     is_closed: boolean
+    email_id: string
     shows_intrest_donors: string[]
 }
 

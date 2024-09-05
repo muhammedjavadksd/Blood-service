@@ -19,7 +19,10 @@ const bloodRequirementScheme = new mongoose.Schema({
         required: true,
         unique: true
     },
-
+    email_id: {
+        type: String,
+        required: true,
+    },
     patientName: {
         type: String,
         required: true

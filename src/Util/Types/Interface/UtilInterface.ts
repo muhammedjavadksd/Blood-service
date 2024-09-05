@@ -30,6 +30,15 @@ interface BloodDonationConcerns {
 }
 
 
+interface IChatNotification {
+    msg: string,
+    subject: string,
+    email_id: string,
+    reciver_name: string,
+    from_name: string
+}
+
+
 interface BloodDonationValidationResult {
     errors: string[];
     concerns: BloodDonationConcerns;
@@ -50,4 +59,4 @@ interface BloodDonationInterestData {
 }
 
 
-export { BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface }
+export { BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface, IChatNotification }

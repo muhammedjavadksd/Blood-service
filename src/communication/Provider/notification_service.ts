@@ -20,6 +20,16 @@ class BloodNotificationProvider implements IBloodNotificationProvider {
         this.NOTIFICATION_QUEUE = queue;
     }
 
+
+    async transferData(data: Record<string, any>) {
+        try {
+            await this.channel?.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data)))
+            return true
+        } catch (e) {
+            return false
+        }
+    }
+
     sendBloodRequest(emails: any, blood_group: BloodGroup, dead_line: Date, location: string): boolean {
 
 

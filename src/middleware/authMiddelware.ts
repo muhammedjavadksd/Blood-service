@@ -4,6 +4,9 @@ import TokenHelper from '../Util/Helpers/tokenHelper'
 import { CustomRequest, IDonorJwtInterface } from '../Util/Types/Interface/UtilInterface'
 import { JwtPayload } from 'jsonwebtoken'
 import { StatusCode } from '../Util/Types/Enum'
+import BloodReqDepo from '../repo/bloodReqRepo'
+import BloodDonationRepo from '../repo/bloodDonation'
+import { ObjectId } from 'mongoose'
 
 interface IAuthMiddleware {
     isValidDonor(req: Request, res: Response, next: NextFunction): Promise<void>
@@ -16,6 +19,44 @@ class AuthMiddleware implements IAuthMiddleware {
 
     async isValidAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         next()
+    }
+
+    async isValidRequired(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+        const utilHelper = new UtilHelper();
+        const tokenHelper = new TokenHelper();
+        const headers = req.headers;
+        const requirement_id: ObjectId = req.params.requirement_id as unknown as ObjectId
+
+        const authToken = headers.authorization;
+
+        if (authToken && typeof authToken == "string") {
+            const token = utilHelper.getBloodTokenFromHeader(authToken);
+            if (token && requirement_id) {
+
+                const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
+                if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.profile_id) {
+                    const reqRepo = new BloodReqDepo();
+                    const bloodDonationRepo = new BloodDonationRepo()
+                    const findDonation = await bloodDonationRepo.findDonationById(requirement_id);
+                    if (findDonation && findDonation.donation_id) {
+                        const donate_id = findDonation.donation_id;
+                        const requirement = await reqRepo.findBloodRequirementByBloodId(donate_id);
+                        if (requirement && requirement.profile_id == tokenValidation.profile_id) {
+                            next()
+                            return;
+                        }
+                    }
+                }
+
+                res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
+
+            } else {
+                res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
+            }
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" })
+        }
     }
 
     async isValidDonor(req: CustomRequest, res: Response, next: NextFunction) {

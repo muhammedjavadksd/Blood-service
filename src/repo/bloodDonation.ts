@@ -1,10 +1,13 @@
 import { ObjectId } from "mongoose";
 import { IBloodDonate, IBloodDonateTemplate, IBloodDonorTemplate } from "../Util/Types/Interface/ModelInterface";
 import DonateBlood from "../db/model/donateBlood";
+import { BloodDonationStatus } from "../Util/Types/Enum";
 
 
 interface IBloodDonationRepo {
     saveDonation(data: IBloodDonateTemplate): Promise<ObjectId | null>
+    findDonationById(id: ObjectId): Promise<IBloodDonate | null>
+    updateStatus(id: ObjectId, newStatus: BloodDonationStatus): Promise<boolean>
 }
 
 class BloodDonationRepo implements IBloodDonationRepo {
@@ -13,6 +16,16 @@ class BloodDonationRepo implements IBloodDonationRepo {
 
     constructor() {
         this.BloodDonation = DonateBlood
+    }
+
+    async updateStatus(id: ObjectId, newStatus: BloodDonationStatus): Promise<boolean> {
+        const findUpdate = await this.BloodDonation.findOneAndUpdate({ _id: id }, { status: newStatus });
+        return !!findUpdate?.isModified()
+    }
+
+    async findDonationById(id: ObjectId): Promise<IBloodDonate | null> {
+        const find = await this.BloodDonation.findById(id);
+        return find
     }
 
     async findMyIntrest(donor_id: string): Promise<IBloodDonate[]> {

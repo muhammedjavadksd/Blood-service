@@ -8,6 +8,7 @@ import { LocatedAt } from '../Util/Types/Types';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
 import BloodNotificationProvider from '../communication/Provider/notification_service';
+import { ObjectId } from 'mongoose';
 // import ChatService from '../service/chatService';
 
 interface IUserController {
@@ -26,6 +27,8 @@ interface IUserController {
     showIntresrest(req: CustomRequest, res: Response): Promise<void>
     findMyIntrest(req: CustomRequest, res: Response): Promise<void>
     myBloodRequest(req: CustomRequest, res: Response): Promise<void>
+    updateAccountStatus(req: CustomRequest, res: Response): Promise<void>
+    requestUpdate(req: CustomRequest, res: Response): Promise<void>
     // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
@@ -55,11 +58,41 @@ class UserController implements IUserController {
         this.showIntresrest = this.showIntresrest.bind(this)
         this.findMyIntrest = this.findMyIntrest.bind(this)
         this.myBloodRequest = this.myBloodRequest.bind(this)
+        this.updateAccountStatus = this.updateAccountStatus.bind(this)
+        this.requestUpdate = this.requestUpdate.bind(this)
         // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
         // this.chatService = new ChatService()
+    }
+
+    async requestUpdate(req: CustomRequest, res: Response): Promise<void> {
+
+        const request_id: ObjectId = req.body.donate_id;
+        const status: BloodDonationStatus = req.body.status;
+        const profile_id: string = req.context?.profile_id;
+
+        if (profile_id) {
+            const updateStatus: HelperFunctionResponse = await this.bloodService.updateRequestStatus(request_id, status, profile_id)
+            res.status(updateStatus.statusCode).json({ status: updateStatus.status, msg: updateStatus.msg })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Un authraized access" })
+        }
+    }
+
+    async updateAccountStatus(req: CustomRequest, res: Response): Promise<void> {
+        const status: boolean = !!req.body.status;
+        const donor_id: string = req.context?.donor_id;
+        let editableBloodDonors = {
+            status: status
+        };
+
+        const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
+        res.status(updateDonor.statusCode).json({
+            status: updateDonor.status,
+            msg: updateDonor.msg
+        })
     }
 
 

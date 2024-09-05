@@ -1,6 +1,6 @@
 import mongoose, { ObjectId } from "mongoose";
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
-import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
@@ -33,6 +33,7 @@ interface IBloodService {
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
+    updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -54,12 +55,64 @@ class BloodService implements IBloodService {
         this.closeRequest = this.closeRequest.bind(this)
         this.createBloodRequirement = this.createBloodRequirement.bind(this)
         this.findMyIntrest = this.findMyIntrest.bind(this)
+        this.updateRequestStatus = this.updateRequestStatus.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
         // this.chatService = new ChatService();
+    }
+
+
+    async updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse> {
+
+        try {
+            const findRequest = await this.bloodDonationRepo.findDonationById(request_id);
+            if (findRequest) {
+                if (findRequest.status == BloodDonationStatus.Approved) {
+                    return {
+                        status: false,
+                        msg: "Its already approved",
+                        statusCode: StatusCode.BAD_REQUEST
+                    }
+                } else if (findRequest.status == status) {
+                    return {
+                        status: false,
+                        msg: "Please update with new status",
+                        statusCode: StatusCode.BAD_REQUEST
+                    }
+                } else {
+
+                    const updateRequest = await this.bloodDonationRepo.updateStatus(request_id, status);
+                    if (updateRequest) {
+                        return {
+                            status: true,
+                            msg: "Status has been updated",
+                            statusCode: StatusCode.OK
+                        }
+                    } else {
+                        return {
+                            status: false,
+                            msg: "Something went wrong",
+                            statusCode: StatusCode.BAD_REQUEST
+                        }
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    msg: "Invalid request",
+                    statusCode: StatusCode.BAD_REQUEST
+                }
+            }
+        } catch (e) {
+            return {
+                status: false,
+                msg: "Internal server error",
+                statusCode: StatusCode.SERVER_ERROR
+            }
+        }
     }
 
 
@@ -247,8 +300,21 @@ class BloodService implements IBloodService {
 
 
                 if (newInterest) {
+
+
+                    const bloodNotification: IChatNotification = {
+                        msg,
+                        subject: `${findDonor.full_name} ready to donate blood for ${findRequirement.patientName}`,
+                        email_id: findRequirement.email_id,
+                        from_name: findDonor.full_name,
+                        reciver_name: findRequirement.patientName
+                    }
+
                     const profileCommunication = new ProfileChat();
+                    const communicationProvide = new BloodNotificationProvider(process.env.PROFILE_CHAT_UPDATE || "");
                     profileCommunication.createChatRoom(msg, findRequirement.profile_id, auth_token);
+                    await communicationProvide._init_()
+                    communicationProvide.transferData(bloodNotification);
 
 
                     return {
@@ -533,7 +599,7 @@ class BloodService implements IBloodService {
         }
     }
 
-    async updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse> {
+    async updateBloodDonors(editData: Record<string, any>, edit_id: string): Promise<HelperFunctionResponse> {
         const updateDonor = await this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
         console.log(updateDonor);
         console.log(edit_id, editData);

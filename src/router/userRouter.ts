@@ -27,8 +27,10 @@ userRouter.post("/group_change_request", authMiddleware.isValidDonor, userContro
 userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidDonor, userController.generatePresignedUrlForBloodGroupChange) //test pending
 
 
+userRouter.patch("/request_update/:requirement_id", authMiddleware.isAuthenitcated, authMiddleware.isValidRequired, userController.requestUpdate) //test pending
 userRouter.patch("/close_request", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.closeRequest) //test pending
 userRouter.patch("/update_donor", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.updateBloodDonor) //test pending
+userRouter.patch("/account_status", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.updateBloodDonor) //test pending
 
 
 export default userRouter
