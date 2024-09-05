@@ -38,6 +38,10 @@ interface IChatNotification {
     from_name: string
 }
 
+interface IPaginatedResponse<T> {
+    paginated: []
+    total_records: number
+}
 
 interface BloodDonationValidationResult {
     errors: string[];
@@ -59,4 +63,4 @@ interface BloodDonationInterestData {
 }
 
 
-export { BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface, IChatNotification }
+export { IPaginatedResponse, BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface, IChatNotification }

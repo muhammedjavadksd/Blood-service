@@ -29,6 +29,7 @@ interface IUserController {
     myBloodRequest(req: CustomRequest, res: Response): Promise<void>
     updateAccountStatus(req: CustomRequest, res: Response): Promise<void>
     requestUpdate(req: CustomRequest, res: Response): Promise<void>
+    findDonationHistory(req: CustomRequest, res: Response): Promise<void>
     // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
@@ -60,11 +61,24 @@ class UserController implements IUserController {
         this.myBloodRequest = this.myBloodRequest.bind(this)
         this.updateAccountStatus = this.updateAccountStatus.bind(this)
         this.requestUpdate = this.requestUpdate.bind(this)
+        this.findDonationHistory = this.findDonationHistory.bind(this)
         // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
         // this.chatService = new ChatService()
+    }
+
+    async findDonationHistory(req: CustomRequest, res: Response): Promise<void> {
+        const page: number = +req.params.page
+        const limit: number = +req.params.limit
+        const donor_id: string = req.context?.donor_id;
+        if (donor_id) {
+            const findHistory = await this.bloodService.donationHistory(donor_id, limit, page);
+            res.status(findHistory.statusCode).json({ status: findHistory.status, msg: findHistory.msg, data: findHistory.data })
+        } else {
+            res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Un authraized access" })
+        }
     }
 
     async requestUpdate(req: CustomRequest, res: Response): Promise<void> {
