@@ -33,12 +33,33 @@ class BloodService {
         this.findMyIntrest = this.findMyIntrest.bind(this);
         this.updateRequestStatus = this.updateRequestStatus.bind(this);
         this.donationHistory = this.donationHistory.bind(this);
+        this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
         // this.chatService = new ChatService();
+    }
+    findNearestBloodDonors(page, limit, location) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skip = (page - 1) * limit;
+            const find = yield this.bloodDonorRepo.nearBySearch(location, limit, skip);
+            if (find.total_records) {
+                return {
+                    status: true,
+                    msg: "Donors found",
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No data found",
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
+            }
+        });
     }
     advanceBloodBankSearch(page, limit, blood_group, urgency, hospital) {
         return __awaiter(this, void 0, void 0, function* () {

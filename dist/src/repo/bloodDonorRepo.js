@@ -62,5 +62,47 @@ class BloodDonorRepo {
             return save === null || save === void 0 ? void 0 : save.id;
         });
     }
+    nearBySearch(location, limit, skip) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const find = yield this.BloodDonor.aggregate([
+                    {
+                        $geoNear: {
+                            near: {
+                                type: "Point",
+                                coordinates: location
+                            },
+                            distanceField: "distance", // Adds the distance from the point
+                            spherical: true, // Use spherical distance calculation
+                            maxDistance: 5000, // Optional: Maximum distance in meters (e.g., 5 km)
+                        }
+                    },
+                    {
+                        $facet: {
+                            paginated: [
+                                { $skip: skip }, // Skip based on pagination offset
+                                { $limit: limit } // Limit number of documents
+                            ],
+                            total_records: [
+                                { $count: "total_records" } // Count total number of records
+                            ]
+                        }
+                    }
+                ]);
+                const response = {
+                    paginated: find[0].paginated,
+                    total_records: find[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                const response = {
+                    paginated: [],
+                    total_records: 0
+                };
+                return response;
+            }
+        });
+    }
 }
 exports.default = BloodDonorRepo;

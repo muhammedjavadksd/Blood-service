@@ -38,6 +38,7 @@ interface IBloodService {
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
     advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
+    findNearestBloodDonors(page: number, limit: number, location: [number, number]): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -61,12 +62,33 @@ class BloodService implements IBloodService {
         this.findMyIntrest = this.findMyIntrest.bind(this)
         this.updateRequestStatus = this.updateRequestStatus.bind(this)
         this.donationHistory = this.donationHistory.bind(this)
+        this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
         // this.chatService = new ChatService();
+    }
+
+
+    async findNearestBloodDonors(page: number, limit: number, location: [number, number]): Promise<HelperFunctionResponse> {
+
+        const skip: number = (page - 1) * limit;
+        const find = await this.bloodDonorRepo.nearBySearch(location, limit, skip);
+        if (find.total_records) {
+            return {
+                status: true,
+                msg: "Donors found",
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No data found",
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
     }
 
 

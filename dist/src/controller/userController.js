@@ -40,11 +40,21 @@ class UserController {
         this.updateAccountStatus = this.updateAccountStatus.bind(this);
         this.requestUpdate = this.requestUpdate.bind(this);
         this.findDonationHistory = this.findDonationHistory.bind(this);
+        this.findNearestDonors = this.findNearestDonors.bind(this);
         // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new bloodService_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
         // this.chatService = new ChatService()
+    }
+    findNearestDonors(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const limit = +req.params.limit;
+            const page = +req.params.page;
+            const location = req.body.location;
+            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location);
+            res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
+        });
     }
     advanceBloodRequirement(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

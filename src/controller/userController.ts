@@ -31,6 +31,7 @@ interface IUserController {
     requestUpdate(req: CustomRequest, res: Response): Promise<void>
     findDonationHistory(req: CustomRequest, res: Response): Promise<void>
     advanceBloodRequirement(req: CustomRequest, res: Response): Promise<void>
+    findNearestDonors(req: CustomRequest, res: Response): Promise<void>
     // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
@@ -63,11 +64,22 @@ class UserController implements IUserController {
         this.updateAccountStatus = this.updateAccountStatus.bind(this)
         this.requestUpdate = this.requestUpdate.bind(this)
         this.findDonationHistory = this.findDonationHistory.bind(this)
+        this.findNearestDonors = this.findNearestDonors.bind(this)
         // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
         // this.chatService = new ChatService()
+    }
+
+
+    async findNearestDonors(req: CustomRequest, res: Response): Promise<void> {
+        const limit: number = +req.params.limit;
+        const page: number = +req.params.page;
+        const location = req.body.location
+
+        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location);
+        res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data })
     }
 
 
