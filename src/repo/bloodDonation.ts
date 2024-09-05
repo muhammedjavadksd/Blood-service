@@ -82,53 +82,55 @@ class BloodDonationRepo implements IBloodDonationRepo {
         return find
     }
 
-    async findMyIntrest(donor_id: string): Promise<IBloodDonate[]> {
+    async findMyIntrest(donor_id: string, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonate[]>> {
         console.log(donor_id);
 
-        const find = await this.BloodDonation.aggregate([
-            {
-                $match: {
-                    donor_id
+        try {
+            const find = await this.BloodDonation.aggregate([
+                {
+                    $match: {
+                        donor_id
+                    }
+                },
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip,
+                            },
+                            {
+                                $limit: limit
+                            }
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
                 }
-            },
-            {
-                $lookup: {
-                    from: "chats",
-                    foreignField: "requirement_id",
-                    localField: "donation_id",
-                    as: "chats_count",
-                    pipeline: [{
-                        $match: {
-                            'chats.seen': false
-                        }
-                    }]
-                }
-            },
-            {
-                $lookup: {
-                    from: "blood_requirements",
-                    foreignField: "blood_id",
-                    localField: "donation_id",
-                    as: "requirement",
-                }
-            },
-            {
-                $addFields: {
-                    "message_count": { $size: "$chats_count" },
-                    "requirement": { $arrayElemAt: ['$requirement', 0] }
-                }
-            },
-            {
-                $project: {
-                    chats_count: 0
-                }
+            ])
+            const response: IPaginatedResponse<IBloodDonate[]> = {
+                paginated: find[0].paginated,
+                total_records: find[0].total_records
             }
-        ])
-        console.log("Find data");
-
-        console.log(find);
-
-        return find
+            return response;
+        } catch (e) {
+            const response: IPaginatedResponse<IBloodDonate[]> = {
+                paginated: [],
+                total_records: 0
+            }
+            return response;
+        }
     }
 
 

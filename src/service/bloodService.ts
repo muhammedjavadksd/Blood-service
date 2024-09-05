@@ -32,7 +32,7 @@ interface IBloodService {
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
-    findMyIntrest(donor_id: string): Promise<HelperFunctionResponse>
+    findMyIntrest(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
@@ -162,15 +162,14 @@ class BloodService implements IBloodService {
     }
 
 
-    async findMyIntrest(donor_id: string): Promise<HelperFunctionResponse> {
-        const myIntrest = await this.bloodDonationRepo.findMyIntrest(donor_id) //this.bloodReqRepo.findMyIntrest(donor_id);
-        if (myIntrest.length) {
+    async findMyIntrest(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse> {
+        const skip: number = (page - 1) * limit;
+        const myIntrest = await this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit) //this.bloodReqRepo.findMyIntrest(donor_id);
+        if (myIntrest.total_records) {
             return {
                 status: true,
                 msg: "Fetched all intrest",
-                data: {
-                    profile: myIntrest
-                },
+                data: myIntrest,
                 statusCode: StatusCode.OK
             }
         } else {

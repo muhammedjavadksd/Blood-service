@@ -134,8 +134,11 @@ class UserController implements IUserController {
 
     async findMyIntrest(req: CustomRequest, res: Response): Promise<void> {
         const donorId = req?.context?.donor_id;
+        const page: number = +req.params.page;
+        const limit: number = +req.params.limit;
+
         if (donorId) {
-            const findMyIntrest = await this.bloodService.findMyIntrest(donorId);
+            const findMyIntrest = await this.bloodService.findMyIntrest(donorId, page, limit);
             console.log(findMyIntrest);
 
             res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data })

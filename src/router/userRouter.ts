@@ -17,7 +17,7 @@ userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodR
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest) //test pending // for getting request matched on my blood group
 userRouter.get("/blood-requests", authMiddleware.isAuthenitcated, userController.myBloodRequest) //test pending
 userRouter.get("/intrest/:request_id", authMiddleware.isValidDonor, userController.findRequest) //test pending
-userRouter.get("/interested_blood_requirements", authMiddleware.isValidDonor, userController.findMyIntrest) //test pending
+userRouter.get("/interested_blood_requirements/:page/:limit", authMiddleware.isValidDonor, userController.findMyIntrest) //test pending
 userRouter.get("/donation-history/:page/:limit", authMiddleware.isValidDonor, userController.findDonationHistory)
 // userRouter.get("/get_chats", authMiddleware.isValidDonor, authMiddleware.isAuthenitcated, userController.getMyChats) //test pending
 
