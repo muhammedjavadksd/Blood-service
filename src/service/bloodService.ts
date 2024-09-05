@@ -17,7 +17,7 @@ import { skip } from "node:test";
 // import ChatService from "./chatService";
 
 interface IBloodService {
-    createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
+    createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
@@ -37,6 +37,7 @@ interface IBloodService {
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
+    advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -66,6 +67,42 @@ class BloodService implements IBloodService {
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
         // this.chatService = new ChatService();
+    }
+
+
+    async advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse> {
+
+        const filter: Record<string, any> = {}
+        if (blood_group) {
+            filter['blood_group'] = blood_group
+        }
+
+        const date = new Date()
+        const maxDate = date.setDate(date.getDate() + 1);
+        if (urgency) {
+            filter['neededAt'] = {
+                $lte: maxDate
+            }
+        }
+        if (hospital) {
+            filter['locatedAt.hospital_id'] = hospital;
+        }
+
+        const skip = (page - 1) * limit
+        const findData: IPaginatedResponse<IBloodRequirement[]> = await this.bloodReqRepo.advanceFilter(filter, limit, skip)
+        if (findData.paginated) {
+            return {
+                status: true,
+                msg: "Found result",
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No data found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
 
@@ -711,9 +748,13 @@ class BloodService implements IBloodService {
     }
 
 
-    async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse> {
+    async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse> {
         const blood_id: string = await this.createBloodId(blood_group, unit)
-        const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false)
+        console.log("The location is ");
+        console.log(locatedAt);
+
+
+        const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address)
         // const notification =
         //     console.log(createdBloodRequest);
 

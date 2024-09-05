@@ -1,13 +1,18 @@
 import mongoose, { Schema } from 'mongoose'
 import { BloodGroup, BloodStatus, Relationship } from '../../Util/Types/Enum'
 import IBloodRequirement from '../../Util/Types/Interface/ModelInterface';
+import { LocatedAt } from '../../Util/Types/Types';
 
-const LocatedAtSchema = new Schema({
-    hospital_name: {
-        type: String,
+const LocatedAtSchema = new Schema<LocatedAt>({
+    coordinates: {
+        type: [String, String],
         required: true
     },
     hospital_id: {
+        type: String,
+        required: true
+    },
+    hospital_name: {
         type: String,
         required: true
     }

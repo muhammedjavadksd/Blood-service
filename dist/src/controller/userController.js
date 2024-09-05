@@ -46,6 +46,18 @@ class UserController {
         this.imageService = new ImageService_1.default();
         // this.chatService = new ChatService()
     }
+    advanceBloodRequirement(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // page/:limit/:blood_group/:urgency/:hospital
+            const page = +req.params.page;
+            const limit = +req.params.limit;
+            const blood_group = req.params.blood_group;
+            const urgency = Boolean(req.params.urgency);
+            const hospital = req.params.hospital;
+            const find = yield this.bloodService.advanceBloodBankSearch(page, limit, blood_group, urgency, hospital);
+            res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
+        });
+    }
     findDonationHistory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -320,9 +332,10 @@ class UserController {
                 const locatedAt = req.body.locatedAt;
                 const address = req.body.address;
                 const phoneNumber = req.body.phoneNumber;
+                const email_address = req.body.email_address;
                 const user_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user_id;
                 const profile_id = (_b = req.context) === null || _b === void 0 ? void 0 : _b.profile_id;
-                const createdBloodRequest = yield this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+                const createdBloodRequest = yield this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address);
                 console.log("Worked this");
                 res.status(createdBloodRequest.statusCode).json({
                     status: createdBloodRequest.status,

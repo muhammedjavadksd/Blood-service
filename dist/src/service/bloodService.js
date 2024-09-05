@@ -40,6 +40,40 @@ class BloodService {
         this.utilHelper = new UtilHelpers_1.default();
         // this.chatService = new ChatService();
     }
+    advanceBloodBankSearch(page, limit, blood_group, urgency, hospital) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const filter = {};
+            if (blood_group) {
+                filter['blood_group'] = blood_group;
+            }
+            const date = new Date();
+            const maxDate = date.setDate(date.getDate() + 1);
+            if (urgency) {
+                filter['neededAt'] = {
+                    $lte: maxDate
+                };
+            }
+            if (hospital) {
+                filter['locatedAt.hospital_id'] = hospital;
+            }
+            const skip = (page - 1) * limit;
+            const findData = yield this.bloodReqRepo.advanceFilter(filter, limit, skip);
+            if (findData.paginated) {
+                return {
+                    status: true,
+                    msg: "Found result",
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No data found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
+    }
     findDonorProfile(donor_id, profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -644,10 +678,12 @@ class BloodService {
             return blood_id;
         });
     }
-    createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber) {
+    createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address) {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = yield this.createBloodId(blood_group, unit);
-            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false);
+            console.log("The location is ");
+            console.log(locatedAt);
+            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address);
             // const notification =
             //     console.log(createdBloodRequest);
             console.log("Passed one");

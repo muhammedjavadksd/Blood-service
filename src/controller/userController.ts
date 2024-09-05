@@ -30,6 +30,7 @@ interface IUserController {
     updateAccountStatus(req: CustomRequest, res: Response): Promise<void>
     requestUpdate(req: CustomRequest, res: Response): Promise<void>
     findDonationHistory(req: CustomRequest, res: Response): Promise<void>
+    advanceBloodRequirement(req: CustomRequest, res: Response): Promise<void>
     // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
@@ -67,6 +68,19 @@ class UserController implements IUserController {
         this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
         // this.chatService = new ChatService()
+    }
+
+
+    async advanceBloodRequirement(req: CustomRequest, res: Response): Promise<void> {
+        // page/:limit/:blood_group/:urgency/:hospital
+        const page: number = +req.params.page;
+        const limit: number = +req.params.limit;
+        const blood_group: BloodGroup = req.params.blood_group as BloodGroup;
+        const urgency: boolean = Boolean(req.params.urgency);
+        const hospital: string = req.params.hospital;
+
+        const find = await this.bloodService.advanceBloodBankSearch(page, limit, blood_group, urgency, hospital);
+        res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
     }
 
     async findDonationHistory(req: CustomRequest, res: Response): Promise<void> {
@@ -326,7 +340,6 @@ class UserController implements IUserController {
         const status: BloodDonorStatus = req.params.status as BloodDonorStatus;
         const findBloodDonors = await this.bloodService.findBloodAvailability(status, bloodGroup);
         res.status(findBloodDonors.statusCode).json({ status: findBloodDonors.status, data: findBloodDonors.data, msg: findBloodDonors.status })
-
     }
 
     async bloodAvailabilityByStatitics(req: Request, res: Response): Promise<void> {
@@ -364,10 +377,11 @@ class UserController implements IUserController {
             const locatedAt: LocatedAt = req.body.locatedAt;
             const address: string = req.body.address;
             const phoneNumber: number = req.body.phoneNumber;
+            const email_address: string = req.body.email_address;
             const user_id = req.context?.user_id;
             const profile_id = req.context?.profile_id;
 
-            const createdBloodRequest: HelperFunctionResponse = await this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber);
+            const createdBloodRequest: HelperFunctionResponse = await this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address);
 
 
 

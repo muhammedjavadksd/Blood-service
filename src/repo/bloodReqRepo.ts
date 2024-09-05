@@ -1,11 +1,12 @@
 import BloodRequirement from "../db/model/requirements";
 import { BloodGroup, BloodStatus, Relationship } from "../Util/Types/Enum";
 import IBloodRequirement, { IEditableBloodRequirementTemplate } from "../Util/Types/Interface/ModelInterface";
+import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 import { LocatedAt, mongoObjectId } from "../Util/Types/Types";
 
 
 interface IBloodReqDepo {
-    createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean): Promise<mongoObjectId | null>
+    createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null>
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
@@ -13,6 +14,7 @@ interface IBloodReqDepo {
     addIntrest(donor_id: string, blood_id: string): Promise<boolean>
     findMyIntrest(donor_id: string): Promise<IBloodRequirement[]>
     findUserRequirement(profile_id: string): Promise<IBloodRequirement[]>
+    advanceFilter(search: Record<string, any>, limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -22,6 +24,56 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+
+    async advanceFilter(search: Record<string, any>, limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>> {
+
+        try {
+            const findDonation = await this.BloodReq.aggregate([
+                {
+                    $match: search
+                },
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip
+                            },
+                            {
+                                $limit: limit
+                            }
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
+                }
+            ])
+
+            const response: IPaginatedResponse<IBloodRequirement[]> = {
+                paginated: findDonation[0].paginated,
+                total_records: findDonation[0].total_records
+            }
+            return response;
+        } catch (e) {
+            const response: IPaginatedResponse<IBloodRequirement[]> = {
+                paginated: [],
+                total_records: 0
+            }
+            return response;
+        }
     }
 
 
@@ -79,7 +131,7 @@ class BloodReqDepo implements IBloodReqDepo {
         return find
     }
 
-    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean,): Promise<mongoObjectId | null> {
+    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null> {
         console.log('blood_id:', blood_id);
         console.log('patientName:', patientName);
         console.log('unit:', unit);
@@ -94,7 +146,7 @@ class BloodReqDepo implements IBloodReqDepo {
         console.log('phoneNumber:', phoneNumber);
         console.log('is_closed:', is_closed);
         try {
-            const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed });
+            const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_id: email_address });
             const userCreated = await bloodRequirement.save();
             return userCreated.id
         } catch (e) {
