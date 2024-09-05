@@ -15,10 +15,47 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 const Enum_1 = require("../Util/Types/Enum");
+const bloodReqRepo_1 = __importDefault(require("../repo/bloodReqRepo"));
+const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 class AuthMiddleware {
     isValidAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             next();
+        });
+    }
+    isValidRequired(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const utilHelper = new UtilHelpers_1.default();
+            const tokenHelper = new tokenHelper_1.default();
+            const headers = req.headers;
+            const requirement_id = req.params.requirement_id;
+            const authToken = headers.authorization;
+            if (authToken && typeof authToken == "string") {
+                const token = utilHelper.getBloodTokenFromHeader(authToken);
+                if (token && requirement_id) {
+                    const tokenValidation = yield tokenHelper.checkTokenValidity(token);
+                    if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.profile_id) {
+                        const reqRepo = new bloodReqRepo_1.default();
+                        const bloodDonationRepo = new bloodDonation_1.default();
+                        const findDonation = yield bloodDonationRepo.findDonationById(requirement_id);
+                        if (findDonation && findDonation.donation_id) {
+                            const donate_id = findDonation.donation_id;
+                            const requirement = yield reqRepo.findBloodRequirementByBloodId(donate_id);
+                            if (requirement && requirement.profile_id == tokenValidation.profile_id) {
+                                next();
+                                return;
+                            }
+                        }
+                    }
+                    res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
+                }
+                else {
+                    res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
+                }
+            }
+            else {
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
+            }
         });
     }
     isValidDonor(req, res, next) {

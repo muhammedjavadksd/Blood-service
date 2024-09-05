@@ -31,12 +31,133 @@ class BloodService {
         this.closeRequest = this.closeRequest.bind(this);
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
         this.findMyIntrest = this.findMyIntrest.bind(this);
+        this.updateRequestStatus = this.updateRequestStatus.bind(this);
+        this.donationHistory = this.donationHistory.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
         // this.chatService = new ChatService();
+    }
+    findDonorProfile(donor_id, profile_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+                const findDonatedHistory = (yield this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records;
+                const bloodRequirement = (yield this.bloodReqRepo.findUserRequirement(profile_id)).length;
+                const expressedIntrest = (yield this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records;
+                const matchedProfile = profile ? (yield this.bloodReqRepo.findActiveBloodReq(profile.blood_group)).length : 0;
+                if (profile) {
+                    const profileCard = {
+                        profile,
+                        blood_group: profile === null || profile === void 0 ? void 0 : profile.blood_group,
+                        donated_blood: findDonatedHistory,
+                        blood_requirements: bloodRequirement,
+                        expressed_intrest: expressedIntrest,
+                        status: profile === null || profile === void 0 ? void 0 : profile.status,
+                        matched_profile: matchedProfile
+                    };
+                    return {
+                        status: true,
+                        msg: "Profile fetch success",
+                        statusCode: Enum_1.StatusCode.OK,
+                        data: {
+                            profile: profileCard
+                        }
+                    };
+                }
+                else {
+                    return {
+                        status: false,
+                        msg: "̉No profile found",
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST,
+                    };
+                }
+            }
+            catch (e) {
+                return {
+                    msg: "Profile fetching failed",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
+            }
+        });
+    }
+    donationHistory(donor_id, limit, page) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skip = (page - 1) * limit;
+            const findHistory = yield this.bloodDonationRepo.findMyDonation(donor_id, skip, limit);
+            if (findHistory.total_records) {
+                return {
+                    status: true,
+                    msg: "History fetched",
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: findHistory
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No history found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND,
+                };
+            }
+        });
+    }
+    updateRequestStatus(request_id, status, profile_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const findRequest = yield this.bloodDonationRepo.findDonationById(request_id);
+                if (findRequest) {
+                    if (findRequest.status == Enum_1.BloodDonationStatus.Approved) {
+                        return {
+                            status: false,
+                            msg: "Its already approved",
+                            statusCode: Enum_1.StatusCode.BAD_REQUEST
+                        };
+                    }
+                    else if (findRequest.status == status) {
+                        return {
+                            status: false,
+                            msg: "Please update with new status",
+                            statusCode: Enum_1.StatusCode.BAD_REQUEST
+                        };
+                    }
+                    else {
+                        const updateRequest = yield this.bloodDonationRepo.updateStatus(request_id, status);
+                        if (updateRequest) {
+                            return {
+                                status: true,
+                                msg: "Status has been updated",
+                                statusCode: Enum_1.StatusCode.OK
+                            };
+                        }
+                        else {
+                            return {
+                                status: false,
+                                msg: "Something went wrong",
+                                statusCode: Enum_1.StatusCode.BAD_REQUEST
+                            };
+                        }
+                    }
+                }
+                else {
+                    return {
+                        status: false,
+                        msg: "Invalid request",
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
+            }
+            catch (e) {
+                return {
+                    status: false,
+                    msg: "Internal server error",
+                    statusCode: Enum_1.StatusCode.SERVER_ERROR
+                };
+            }
+        });
     }
     findMyRequest(profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -60,16 +181,15 @@ class BloodService {
             }
         });
     }
-    findMyIntrest(donor_id) {
+    findMyIntrest(donor_id, limit, page) {
         return __awaiter(this, void 0, void 0, function* () {
-            const myIntrest = yield this.bloodDonationRepo.findMyIntrest(donor_id); //this.bloodReqRepo.findMyIntrest(donor_id);
-            if (myIntrest.length) {
+            const skip = (page - 1) * limit;
+            const myIntrest = yield this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit); //this.bloodReqRepo.findMyIntrest(donor_id);
+            if (myIntrest.total_records) {
                 return {
                     status: true,
                     msg: "Fetched all intrest",
-                    data: {
-                        profile: myIntrest
-                    },
+                    data: myIntrest,
                     statusCode: Enum_1.StatusCode.OK
                 };
             }
@@ -180,8 +300,18 @@ class BloodService {
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
                     console.log(newInterest);
                     if (newInterest) {
+                        const bloodNotification = {
+                            msg,
+                            subject: `${findDonor.full_name} ready to donate blood for ${findRequirement.patientName}`,
+                            email_id: findRequirement.email_id,
+                            from_name: findDonor.full_name,
+                            reciver_name: findRequirement.patientName
+                        };
                         const profileCommunication = new ProfileChatApiCommunication_1.default();
+                        const communicationProvide = new notification_service_1.default(process.env.PROFILE_CHAT_UPDATE || "");
                         profileCommunication.createChatRoom(msg, findRequirement.profile_id, auth_token);
+                        yield communicationProvide._init_();
+                        communicationProvide.transferData(bloodNotification);
                         return {
                             status: true,
                             msg: "You have showed intrested on this request",

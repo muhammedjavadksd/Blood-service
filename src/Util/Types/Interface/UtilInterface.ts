@@ -1,6 +1,7 @@
 
 import { Request } from 'express'
-import { BloodGroup, StatusCode } from '../Enum'
+import { BloodDonorStatus, BloodGroup, StatusCode } from '../Enum'
+import { IBloodDonateTemplate, IBloodDonorTemplate } from './ModelInterface'
 
 interface CustomRequest extends Request {
     context?: Record<any, any>
@@ -62,5 +63,15 @@ interface BloodDonationInterestData {
     date: Date;
 }
 
+interface IProfileCard {
+    profile: IBloodDonorTemplate,
+    blood_group: BloodGroup,
+    donated_blood: number,
+    blood_requirements: number,
+    expressed_intrest: number,
+    status: BloodDonorStatus,
+    matched_profile: number
+}
 
-export { IPaginatedResponse, BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface, IChatNotification }
+
+export { IProfileCard, IPaginatedResponse, BloodDonationValidationResult, BloodDonationConcerns, BloodDonationInterestData, HelperFunctionResponse, CustomRequest, IDonorJwtInterface, IChatNotification }

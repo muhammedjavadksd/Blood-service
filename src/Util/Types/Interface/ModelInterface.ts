@@ -7,7 +7,7 @@ import { BloodDonationConcerns } from "./UtilInterface"
 
 interface IUserBloodDonorEditable {
     full_name?: string
-    locatedAt?: string,
+    locatedAt?: ILocatedAt,
     phoneNumber?: number,
     email_address?: string,
 }
@@ -16,17 +16,23 @@ interface ISearchBloodDonorTemplate {
     donor_id?: string
     full_name?: string
     blood_group?: BloodGroup,
-    locatedAt?: string,
+    locatedAt?: ILocatedAt,
     phoneNumber?: number,
     email_address?: string,
     status?: BloodDonorStatus
+}
+
+interface ILocatedAt {
+    accuracy: number,
+    latitude: number,
+    longitude: number,
 }
 
 interface IBloodDonorTemplate {
     donor_id: string
     full_name: string
     blood_group: BloodGroup,
-    locatedAt: string,
+    locatedAt: ILocatedAt,
     phoneNumber: number,
     email_address: string,
     status: BloodDonorStatus,
@@ -41,7 +47,7 @@ interface IEditableBloodRequirementTemplate {
     status?: BloodStatus,
     blood_group?: BloodGroup,
     relationship?: Relationship,
-    locatedAt?: LocatedAt,
+    locatedAt?: ILocatedAt,
     address?: String,
     phoneNumber?: number
     is_closed?: boolean
@@ -116,5 +122,5 @@ interface IChatCollection extends Document, IChatTemplate { }
 
 
 
-export { IChatCollection, IBloodRequirementTemplate, IChatTemplate, IMessageTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IBloodDonate, IBloodDonateTemplate }
+export { ILocatedAt, IChatCollection, IBloodRequirementTemplate, IChatTemplate, IMessageTemplate, IBloodDonorTemplate, IBloodDonor, IEditableBloodRequirementTemplate, IUserBloodDonorEditable, IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IBloodDonate, IBloodDonateTemplate }
 export default IBloodRequirement

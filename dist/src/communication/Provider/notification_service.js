@@ -41,6 +41,18 @@ class BloodNotificationProvider {
         this.channel = null;
         this.NOTIFICATION_QUEUE = queue;
     }
+    transferData(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                yield ((_a = this.channel) === null || _a === void 0 ? void 0 : _a.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data))));
+                return true;
+            }
+            catch (e) {
+                return false;
+            }
+        });
+    }
     sendBloodRequest(emails, blood_group, dead_line, location) {
         var _a;
         try {

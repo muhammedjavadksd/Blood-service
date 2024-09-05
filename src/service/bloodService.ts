@@ -1,10 +1,10 @@
 import mongoose, { ObjectId } from "mongoose";
 import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
-import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
+import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse, IProfileCard } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonate, IBloodDonateTemplate, IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IBloodDonate, IBloodDonateTemplate, IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ILocatedAt, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 import BloodDonationRepo from "../repo/bloodDonation";
@@ -19,7 +19,7 @@ import { skip } from "node:test";
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
-    bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse>
+    bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
@@ -36,6 +36,7 @@ interface IBloodService {
     findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
+    findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -65,6 +66,53 @@ class BloodService implements IBloodService {
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
         // this.chatService = new ChatService();
+    }
+
+
+    async findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse> {
+
+        try {
+
+
+            const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            const findDonatedHistory: number = (await this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records
+            const bloodRequirement: number = (await this.bloodReqRepo.findUserRequirement(profile_id)).length
+            const expressedIntrest: number = (await this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records
+            const matchedProfile: number = profile ? (await this.bloodReqRepo.findActiveBloodReq(profile.blood_group)).length : 0
+
+            if (profile) {
+                const profileCard: IProfileCard = {
+                    profile,
+                    blood_group: profile?.blood_group,
+                    donated_blood: findDonatedHistory,
+                    blood_requirements: bloodRequirement,
+                    expressed_intrest: expressedIntrest,
+                    status: profile?.status,
+                    matched_profile: matchedProfile
+                }
+                return {
+                    status: true,
+                    msg: "Profile fetch success",
+                    statusCode: StatusCode.OK,
+                    data: {
+                        profile: profileCard
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    msg: "̉No profile found",
+                    statusCode: StatusCode.BAD_REQUEST,
+                }
+            }
+
+        } catch (e) {
+            return {
+                msg: "Profile fetching failed",
+                status: false,
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
     }
 
     async donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse> {
@@ -702,7 +750,7 @@ class BloodService implements IBloodService {
         }
     }
 
-    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: string): Promise<HelperFunctionResponse> {
+    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse> {
 
         const BloodDonorId: string = await this.createDonorId(bloodGroup, fullName);
         const saveData: IBloodDonorTemplate = {

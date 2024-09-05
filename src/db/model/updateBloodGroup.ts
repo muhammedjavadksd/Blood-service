@@ -1,6 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { BloodGroup, BloodGroupUpdateStatus } from "../../Util/Types/Enum";
-import { IBloodDonorUpdate } from "../../Util/Types/Interface/ModelInterface";
+import { IBloodDonorUpdate, ILocatedAt } from "../../Util/Types/Interface/ModelInterface";
+
+
+
+
 
 
 const updateBloodGroupSchema = new mongoose.Schema({

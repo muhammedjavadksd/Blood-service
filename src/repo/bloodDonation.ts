@@ -7,6 +7,7 @@ import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 
 interface IBloodDonationRepo {
     saveDonation(data: IBloodDonateTemplate): Promise<ObjectId | null>
+    saveDonation(data: IBloodDonateTemplate): Promise<ObjectId | null>
     findDonationById(id: ObjectId): Promise<IBloodDonate | null>
     updateStatus(id: ObjectId, newStatus: BloodDonationStatus): Promise<boolean>
     findMyDonation(donor_id: string, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonate[]>>

@@ -3,7 +3,7 @@ import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, Bl
 import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
-import { IBloodDonorTemplate, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
+import { IBloodDonorTemplate, ILocatedAt, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
@@ -267,23 +267,15 @@ class UserController implements IUserController {
 
 
     async getSingleProfile(req: CustomRequest, res: Response): Promise<void> {
-        const profile_id: string = req.context?.donor_id;
-        if (profile_id) {
-            const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
-            console.log(profile_id);
-            if (profile) {
-                res.status(StatusCode.OK).json({ status: true, msg: "Profile fetched success", profile })
-            } else {
-                res.status(StatusCode.NOT_FOUND).json({ status: false, msg: "Invalid or wrong profile id" })
-            }
+        const donor_id: string = req.context?.donor_id;
+        const profile_id: string = req.context?.profile_id;
+        if (profile_id && donor_id) {
+            const profile: HelperFunctionResponse = await this.bloodService.findDonorProfile(donor_id, profile_id)  //await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            res.status(profile.statusCode).json({ status: profile.status, msg: profile.msg, data: profile.data })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Invalid or wrong profile id" })
         }
-
     }
-
-
-
 
     async createBloodDonation(req: Request, res: Response) {
 
@@ -292,11 +284,14 @@ class UserController implements IUserController {
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
         const bloodGroup: BloodGroup = req.body.bloodGroup;
-        const location: string = req.body.location;
+        const location: ILocatedAt = req.body.location;
+        const locatedAt: ILocatedAt = {
+            accuracy: location?.accuracy,
+            latitude: location?.latitude,
+            longitude: location?.longitude
+        }
 
-        // console.log(this);
-
-        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, locatedAt);
 
         console.log("Blood donor created");
 

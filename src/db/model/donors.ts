@@ -1,7 +1,22 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../../Util/Types/Enum";
-import { IBloodDonor, IBloodDonorTemplate } from "../../Util/Types/Interface/ModelInterface";
+import { IBloodDonor, IBloodDonorTemplate, ILocatedAt } from "../../Util/Types/Interface/ModelInterface";
 
+
+const LocationScheme = new Schema<ILocatedAt>({
+    accuracy: {
+        type: Number,
+        required: true
+    },
+    longitude: {
+        type: Number,
+        required: true
+    },
+    latitude: {
+        type: Number,
+        required: true
+    }
+})
 
 const bloodDonorScheme = new mongoose.Schema({
     donor_id: {
@@ -19,7 +34,8 @@ const bloodDonorScheme = new mongoose.Schema({
         required: true
     },
     locatedAt: {
-        type: String,
+        type: LocationScheme,
+        required: true
     },
     phoneNumber: {
         type: Number,
