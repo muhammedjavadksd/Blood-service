@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
 import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
@@ -122,13 +122,22 @@ class UserController implements IUserController {
     }
 
     async updateAccountStatus(req: CustomRequest, res: Response): Promise<void> {
-        const status: boolean = !!req.body.status;
+        console.log("Body");
+
+        console.log(req.body);
+
+        const status = req.body.status;
+        const updateStatus: string = status == true ? "Open" : BloodDonorStatus.Blocked;
+        const reason = status == true ? DonorAccountBlockedReason.UserHideAccount : ""
         const donor_id: string = req.context?.donor_id;
         let editableBloodDonors = {
-            status: status
+            status: updateStatus,
+            blocked_reason: reason
         };
 
         const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
+        console.log(updateDonor);
+
         res.status(updateDonor.statusCode).json({
             status: updateDonor.status,
             msg: updateDonor.msg
@@ -295,10 +304,20 @@ class UserController implements IUserController {
     async getSingleProfile(req: CustomRequest, res: Response): Promise<void> {
         const donor_id: string = req.context?.donor_id;
         const profile_id: string = req.context?.profile_id;
+
+        console.log("Profiles");
+        console.log(donor_id, profile_id);
+
+        console.log("Enterd 11111");
+
+
         if (profile_id && donor_id) {
             const profile: HelperFunctionResponse = await this.bloodService.findDonorProfile(donor_id, profile_id)  //await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            console.log(profile);
+
             res.status(profile.statusCode).json({ status: profile.status, msg: profile.msg, data: profile.data })
         } else {
+            console.log("This worked");
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Invalid or wrong profile id" })
         }
     }

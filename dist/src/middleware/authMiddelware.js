@@ -61,6 +61,7 @@ class AuthMiddleware {
     isValidDonor(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("Eb");
+            console.log("Reached my place");
             const utilHelper = new UtilHelpers_1.default();
             const tokenHelper = new tokenHelper_1.default();
             console.log(req.headers);

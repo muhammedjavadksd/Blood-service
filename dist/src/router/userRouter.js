@@ -12,7 +12,7 @@ const userRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
 const uploadCertificate = (0, multer_1.default)({ storage: multerMiddleware_1.saveBloodRequestUpdateCertificate });
-userRouter.get("/get_profile", authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
+userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
 userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability); //test
 userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency/:hospital", userController.advanceBloodRequirement); //test
 userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics); //test
@@ -22,7 +22,7 @@ userRouter.get("/blood-requests", authMiddleware.isAuthenitcated, userController
 userRouter.get("/intrest/:request_id", authMiddleware.isValidDonor, userController.findRequest); //test pending
 userRouter.get("/interested_blood_requirements/:page/:limit", authMiddleware.isValidDonor, userController.findMyIntrest); //test pending
 userRouter.get("/donation-history/:page/:limit", authMiddleware.isValidDonor, userController.findDonationHistory);
-userRouter.get("/nearest-donors", authMiddleware.isValidDonor, userController.findDonationHistory);
+userRouter.post("/nearest-donors/:page/:limit", authMiddleware.isValidDonor, userController.findDonationHistory);
 userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, authMiddleware.isAuthenitcated, userController.showIntresrest); //test pending
 userRouter.post("/create", userController.createBloodDonation); //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request); //test pending
@@ -31,5 +31,5 @@ userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidDonor
 userRouter.patch("/request_update/:requirement_id", authMiddleware.isAuthenitcated, authMiddleware.isValidRequired, userController.requestUpdate); //test pending
 userRouter.patch("/close_request", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.closeRequest); //test pending
 userRouter.patch("/update_donor", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.updateBloodDonor); //test pending
-userRouter.patch("/account_status", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.updateBloodDonor); //test pending
+userRouter.patch("/account_status", authMiddleware.isValidDonor, userController.updateAccountStatus); //test pending
 exports.default = userRouter;

@@ -62,6 +62,9 @@ class AuthMiddleware implements IAuthMiddleware {
     async isValidDonor(req: CustomRequest, res: Response, next: NextFunction) {
         console.log("Eb");
 
+        console.log("Reached my place");
+
+
         const utilHelper = new UtilHelper();
         const tokenHelper = new TokenHelper();
         console.log(req.headers);

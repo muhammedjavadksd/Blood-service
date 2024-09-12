@@ -133,7 +133,7 @@ class BloodService implements IBloodService {
         try {
 
 
-            const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+            const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             const findDonatedHistory: number = (await this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records
             const bloodRequirement: number = (await this.bloodReqRepo.findUserRequirement(profile_id)).length
             const expressedIntrest: number = (await this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records
@@ -158,6 +158,8 @@ class BloodService implements IBloodService {
                     }
                 }
             } else {
+                console.log("Profile not found");
+
                 return {
                     status: false,
                     msg: "̉No profile found",
@@ -166,6 +168,8 @@ class BloodService implements IBloodService {
             }
 
         } catch (e) {
+            console.log(e);
+
             return {
                 msg: "Profile fetching failed",
                 status: false,
@@ -591,14 +595,16 @@ class BloodService implements IBloodService {
             findBloodAvailabilityFilter.blood_group = blood_group
         }
         const findDonors = await this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
+        console.log("Donors");
+
+        console.log(findDonors);
+
 
         if (findDonors.length) {
 
             for (let index = 0; index < findDonors.length; index++) {
-
-
                 if (result[findDonors[index].blood_group] != null) {
-                    console.log(result[findDonors[index].blood_group]);
+                    result[findDonors[index].blood_group]++
                 } else {
                     result[findDonors[index].blood_group] = 0
                 }

@@ -45,8 +45,11 @@ class BloodDonorRepo implements IBloodDonorRepo {
     }
 
     async updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean> {
+
         const updateData = await this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData })
-        return true
+        console.log(editData, edit_id);
+        console.log(updateData);
+        return updateData.modifiedCount > 0
     }
 
     async findBloodDonorByDonorId(donor_id: string): Promise<IBloodDonor | null> {

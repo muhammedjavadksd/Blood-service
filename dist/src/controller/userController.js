@@ -101,12 +101,18 @@ class UserController {
     updateAccountStatus(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const status = !!req.body.status;
+            console.log("Body");
+            console.log(req.body);
+            const status = req.body.status;
+            const updateStatus = status == true ? "Open" : Enum_1.BloodDonorStatus.Blocked;
+            const reason = status == true ? Enum_1.DonorAccountBlockedReason.UserHideAccount : "";
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             let editableBloodDonors = {
-                status: status
+                status: updateStatus,
+                blocked_reason: reason
             };
             const updateDonor = yield this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
+            console.log(updateDonor);
             res.status(updateDonor.statusCode).json({
                 status: updateDonor.status,
                 msg: updateDonor.msg
@@ -256,11 +262,16 @@ class UserController {
             var _a, _b;
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const profile_id = (_b = req.context) === null || _b === void 0 ? void 0 : _b.profile_id;
+            console.log("Profiles");
+            console.log(donor_id, profile_id);
+            console.log("Enterd 11111");
             if (profile_id && donor_id) {
                 const profile = yield this.bloodService.findDonorProfile(donor_id, profile_id); //await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+                console.log(profile);
                 res.status(profile.statusCode).json({ status: profile.status, msg: profile.msg, data: profile.data });
             }
             else {
+                console.log("This worked");
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Invalid or wrong profile id" });
             }
         });

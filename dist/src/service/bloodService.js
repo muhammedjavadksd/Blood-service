@@ -98,7 +98,7 @@ class BloodService {
     findDonorProfile(donor_id, profile_id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
+                const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
                 const findDonatedHistory = (yield this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records;
                 const bloodRequirement = (yield this.bloodReqRepo.findUserRequirement(profile_id)).length;
                 const expressedIntrest = (yield this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records;
@@ -123,6 +123,7 @@ class BloodService {
                     };
                 }
                 else {
+                    console.log("Profile not found");
                     return {
                         status: false,
                         msg: "̉No profile found",
@@ -131,6 +132,7 @@ class BloodService {
                 }
             }
             catch (e) {
+                console.log(e);
                 return {
                     msg: "Profile fetching failed",
                     status: false,
@@ -517,10 +519,12 @@ class BloodService {
                 findBloodAvailabilityFilter.blood_group = blood_group;
             }
             const findDonors = yield this.bloodDonorRepo.findDonors(findBloodAvailabilityFilter);
+            console.log("Donors");
+            console.log(findDonors);
             if (findDonors.length) {
                 for (let index = 0; index < findDonors.length; index++) {
                     if (result[findDonors[index].blood_group] != null) {
-                        console.log(result[findDonors[index].blood_group]);
+                        result[findDonors[index].blood_group]++;
                     }
                     else {
                         result[findDonors[index].blood_group] = 0;
