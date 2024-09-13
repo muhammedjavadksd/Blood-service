@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChatFrom = exports.DonorAccountBlockedReason = exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = void 0;
+exports.ChatFrom = exports.DonorAccountBlockedReason = exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = exports.BloodCloseCategory = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -34,11 +34,20 @@ var BloodDonorStatus;
     BloodDonorStatus["Blocked"] = "Blocked";
     BloodDonorStatus["Deleted"] = "Deleted";
 })(BloodDonorStatus || (exports.BloodDonorStatus = BloodDonorStatus = {}));
+var BloodCloseCategory;
+(function (BloodCloseCategory) {
+    BloodCloseCategory["FULFILLED"] = "Fulfilled the request";
+    BloodCloseCategory["MEDICAL_CONDITION_CHANGE"] = "Medical Condition Change";
+    BloodCloseCategory["ERROR_IN_REQUEST"] = "Error in Request";
+    BloodCloseCategory["POSTPONED"] = "Postponed";
+    BloodCloseCategory["UNABLE_TO_ARRANGE_DONORS"] = "Unable to Arrange Donors";
+    BloodCloseCategory["CHANGE_IN_TREATMENT_PLAN"] = "Change in Treatment Plan";
+})(BloodCloseCategory || (exports.BloodCloseCategory = BloodCloseCategory = {}));
 var BloodStatus;
 (function (BloodStatus) {
     BloodStatus["Pending"] = "pending";
-    BloodStatus["Cancelled"] = "cancelled";
-    BloodStatus["Completed"] = "completed";
+    BloodStatus["Closed"] = "closed";
+    BloodStatus["Approved"] = "approved";
 })(BloodStatus || (exports.BloodStatus = BloodStatus = {}));
 var Relationship;
 (function (Relationship) {

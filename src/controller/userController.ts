@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
 import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
@@ -157,9 +157,17 @@ class UserController implements IUserController {
 
 
     async myBloodRequest(req: CustomRequest, res: Response): Promise<void> {
+
+        console.log("Blood request found");
+
+
         const profile_id = req.context?.profile_id;
+        const limit = +req.params.limit;
+        const page = +req.params.page;
+        const status: BloodStatus = req.params.status as BloodStatus;
+
         if (profile_id) {
-            const findProfile = await this.bloodService.findMyRequest(profile_id);
+            const findProfile = await this.bloodService.findMyRequest(profile_id, page, limit, status);
             res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized Access", })
@@ -434,12 +442,14 @@ class UserController implements IUserController {
     }
 
     async closeRequest(req: CustomRequest, res: Response): Promise<void> {
-        const bloodReqId: string = req.body.blood_req_id;
+        const bloodReqId: string = req.params.blood_id;
+        const category: BloodCloseCategory = req.body.category;
+        const explanation: string = req.body.explanation;
         const user_id = req.context?.user_id;
 
         if (user_id) {
-            const closeRequest = await this.bloodService.closeRequest(bloodReqId);
-            res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.status })
+            const closeRequest = await this.bloodService.closeRequest(bloodReqId, category, explanation);
+            res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.msg })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "User not found" })
         }

@@ -1,5 +1,5 @@
 import mongoose, { Document, ObjectId } from "mongoose"
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, Relationship } from "../Enum"
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, Relationship } from "../Enum"
 import { LocatedAt } from "../Types"
 import { BloodDonationConcerns } from "./UtilInterface"
 // import { ÷ } from "./UtilInterface"
@@ -51,7 +51,11 @@ interface IEditableBloodRequirementTemplate {
     address?: String,
     phoneNumber?: number
     is_closed?: boolean
-    shows_intrest_donors?: string[]
+    shows_intrest_donors?: string[],
+    close_details?: {
+        category: BloodCloseCategory,
+        explanation: string
+    }
 }
 
 interface IBloodRequirementTemplate {
@@ -67,9 +71,14 @@ interface IBloodRequirementTemplate {
     locatedAt: LocatedAt,
     address: String,
     phoneNumber: number
-    is_closed: boolean
+    is_closed: boolean,
+    close_details?: {
+        category: BloodCloseCategory,
+        explanation: string
+    }
     email_id: string
-    shows_intrest_donors: string[]
+    shows_intrest_donors: string[],
+
 }
 
 interface IEditableGroupGroupRequest {

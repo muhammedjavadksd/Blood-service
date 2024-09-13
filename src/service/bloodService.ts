@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
 import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse, IProfileCard } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -21,7 +21,7 @@ interface IBloodService {
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
-    closeRequest(blood_group: BloodGroup): Promise<HelperFunctionResponse>
+    closeRequest(blood_id: string, category: BloodCloseCategory, explanation: string): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
@@ -31,10 +31,12 @@ interface IBloodService {
     // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
+    findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
-    findMyRequest(profile_id: string): Promise<HelperFunctionResponse>
+    findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
+    updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
     advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
@@ -72,6 +74,43 @@ class BloodService implements IBloodService {
     }
 
 
+    async updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse> {
+        const bloodStatus = await this.bloodReqRepo.updateBloodRequirement(blood_id, status);
+        if (bloodStatus) {
+            return {
+                status: true,
+                msg: "Blood requirment update success",
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                status: false,
+                msg: "Blood requirment update failed",
+                statusCode: StatusCode.BAD_REQUEST
+            }
+        }
+    }
+
+    async findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse> {
+        const skip = (page - 1) * limit;
+        const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip);
+        if (find.total_records) {
+            return {
+                status: true,
+                msg: "Requirement's found",
+                statusCode: StatusCode.OK,
+                data: find
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No data found",
+                statusCode: StatusCode.NOT_FOUND,
+            }
+        }
+    }
+
+
     async findNearestBloodDonors(page: number, limit: number, location: [number, number]): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
@@ -80,7 +119,8 @@ class BloodService implements IBloodService {
             return {
                 status: true,
                 msg: "Donors found",
-                statusCode: StatusCode.OK
+                statusCode: StatusCode.OK,
+                data: find
             }
         } else {
             return {
@@ -135,7 +175,7 @@ class BloodService implements IBloodService {
 
             const profile: IBloodDonorTemplate | null = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             const findDonatedHistory: number = (await this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records
-            const bloodRequirement: number = (await this.bloodReqRepo.findUserRequirement(profile_id)).length
+            const bloodRequirement: number = (await this.bloodReqRepo.findUserRequirement(profile_id, 0, 1)).total_records
             const expressedIntrest: number = (await this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records
             const matchedProfile: number = profile ? (await this.bloodReqRepo.findActiveBloodReq(profile.blood_group)).length : 0
 
@@ -249,21 +289,19 @@ class BloodService implements IBloodService {
     }
 
 
-
-
-
-    async findMyRequest(profile_id: string): Promise<HelperFunctionResponse> {
-        const findRequest = await this.bloodReqRepo.findUserRequirement(profile_id);
-        if (findRequest.length) {
+    async findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse> {
+        const skip: number = (page - 1) * limit;
+        const findRequest = await this.bloodReqRepo.findUserRequirement(profile_id, skip, limit, status);
+        if (findRequest.total_records) {
             return {
                 status: true,
                 msg: "Fetch all profile",
-                data: {
-                    profile: findRequest
-                },
+                data: findRequest,
                 statusCode: StatusCode.OK
             }
         } else {
+            console.log("Not found result");
+
             return {
                 status: false,
                 msg: "No profile found",
@@ -871,11 +909,16 @@ class BloodService implements IBloodService {
     }
 
 
-    async closeRequest(blood_id: string): Promise<HelperFunctionResponse> {
+    async closeRequest(blood_id: string, category: BloodCloseCategory, explanation: string): Promise<HelperFunctionResponse> {
         const bloodRequestion = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
         if (bloodRequestion) {
             const updateData: boolean = await this.bloodReqRepo.updateBloodDonor(blood_id, {
-                is_closed: true
+                is_closed: true,
+                status: BloodStatus.Closed,
+                close_details: {
+                    category,
+                    explanation
+                }
             });
             if (updateData) {
                 return {

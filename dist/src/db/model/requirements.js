@@ -39,6 +39,17 @@ const LocatedAtSchema = new mongoose_1.Schema({
         required: true
     }
 });
+const closeDetailsSchma = new mongoose_1.Schema({
+    category: {
+        type: String,
+        required: true,
+        enum: Object.values(Enum_1.BloodCloseCategory)
+    },
+    explanation: {
+        type: String,
+        required: true
+    }
+});
 const bloodRequirementScheme = new mongoose_1.default.Schema({
     blood_id: {
         type: String,
@@ -67,7 +78,7 @@ const bloodRequirementScheme = new mongoose_1.default.Schema({
         required: true
     },
     user_id: {
-        type: mongoose_1.default.Types.ObjectId,
+        type: mongoose_1.Schema.Types.ObjectId,
         required: true
     },
     profile_id: {
@@ -103,6 +114,9 @@ const bloodRequirementScheme = new mongoose_1.default.Schema({
     shows_intrest_donors: {
         type: [String],
         required: true
+    },
+    close_details: {
+        type: closeDetailsSchma
     }
 });
 const BloodRequirement = mongoose_1.default.model("blood_requirement", bloodRequirementScheme);

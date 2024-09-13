@@ -41,6 +41,46 @@ class BloodService {
         this.utilHelper = new UtilHelpers_1.default();
         // this.chatService = new ChatService();
     }
+    updateProfileStatus(blood_id, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bloodStatus = yield this.bloodReqRepo.updateBloodRequirement(blood_id, status);
+            if (bloodStatus) {
+                return {
+                    status: true,
+                    msg: "Blood requirment update success",
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "Blood requirment update failed",
+                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                };
+            }
+        });
+    }
+    findPaginatedBloodRequirements(page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skip = (page - 1) * limit;
+            const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip);
+            if (find.total_records) {
+                return {
+                    status: true,
+                    msg: "Requirement's found",
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: find
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No data found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND,
+                };
+            }
+        });
+    }
     findNearestBloodDonors(page, limit, location) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
@@ -49,7 +89,8 @@ class BloodService {
                 return {
                     status: true,
                     msg: "Donors found",
-                    statusCode: Enum_1.StatusCode.OK
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: find
                 };
             }
             else {
@@ -100,7 +141,7 @@ class BloodService {
             try {
                 const profile = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
                 const findDonatedHistory = (yield this.bloodDonationRepo.findMyDonation(donor_id, 0, 1)).total_records;
-                const bloodRequirement = (yield this.bloodReqRepo.findUserRequirement(profile_id)).length;
+                const bloodRequirement = (yield this.bloodReqRepo.findUserRequirement(profile_id, 0, 1)).total_records;
                 const expressedIntrest = (yield this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records;
                 const matchedProfile = profile ? (yield this.bloodReqRepo.findActiveBloodReq(profile.blood_group)).length : 0;
                 if (profile) {
@@ -216,20 +257,20 @@ class BloodService {
             }
         });
     }
-    findMyRequest(profile_id) {
+    findMyRequest(profile_id, page, limit, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findRequest = yield this.bloodReqRepo.findUserRequirement(profile_id);
-            if (findRequest.length) {
+            const skip = (page - 1) * limit;
+            const findRequest = yield this.bloodReqRepo.findUserRequirement(profile_id, skip, limit, status);
+            if (findRequest.total_records) {
                 return {
                     status: true,
                     msg: "Fetch all profile",
-                    data: {
-                        profile: findRequest
-                    },
+                    data: findRequest,
                     statusCode: Enum_1.StatusCode.OK
                 };
             }
             else {
+                console.log("Not found result");
                 return {
                     status: false,
                     msg: "No profile found",
@@ -784,12 +825,17 @@ class BloodService {
             }
         });
     }
-    closeRequest(blood_id) {
+    closeRequest(blood_id, category, explanation) {
         return __awaiter(this, void 0, void 0, function* () {
             const bloodRequestion = yield this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
             if (bloodRequestion) {
                 const updateData = yield this.bloodReqRepo.updateBloodDonor(blood_id, {
-                    is_closed: true
+                    is_closed: true,
+                    status: Enum_1.BloodStatus.Closed,
+                    close_details: {
+                        category,
+                        explanation
+                    }
                 });
                 if (updateData) {
                     return {

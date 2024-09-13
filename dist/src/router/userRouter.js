@@ -18,7 +18,7 @@ userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency/:hospital
 userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics); //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending // for getting request matched on my blood group
-userRouter.get("/blood-requests", authMiddleware.isAuthenitcated, userController.myBloodRequest); //test pending
+userRouter.get("/blood-requests/:limit/:page/:status?", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.myBloodRequest); //test pending
 userRouter.get("/intrest/:request_id", authMiddleware.isValidDonor, userController.findRequest); //test pending
 userRouter.get("/interested_blood_requirements/:page/:limit", authMiddleware.isValidDonor, userController.findMyIntrest); //test pending
 userRouter.get("/donation-history/:page/:limit", authMiddleware.isValidDonor, userController.findDonationHistory);
@@ -29,7 +29,7 @@ userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController
 userRouter.post("/group_change_request", authMiddleware.isValidDonor, userController.updateBloodGroup); //test pending
 userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidDonor, userController.generatePresignedUrlForBloodGroupChange); //test pending
 userRouter.patch("/request_update/:requirement_id", authMiddleware.isAuthenitcated, authMiddleware.isValidRequired, userController.requestUpdate); //test pending
-userRouter.patch("/close_request", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.closeRequest); //test pending
+userRouter.patch("/close_request/:blood_id", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.closeRequest); //test pending
 userRouter.patch("/update_donor", authMiddleware.isValidDonor, authMiddleware.isValidReq, userController.updateBloodDonor); //test pending
 userRouter.patch("/account_status", authMiddleware.isValidDonor, userController.updateAccountStatus); //test pending
 exports.default = userRouter;

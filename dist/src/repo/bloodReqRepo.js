@@ -18,6 +18,12 @@ class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
     }
+    updateBloodRequirement(blood_id, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const update = yield this.BloodReq.updateOne({ blood_id }, { $set: { status } });
+            return update.modifiedCount > 0;
+        });
+    }
     advanceFilter(search, limit, skip) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -67,23 +73,70 @@ class BloodReqDepo {
             }
         });
     }
-    findUserRequirement(profile_id) {
+    findUserRequirement(profile_id, skip, limit, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findReq = yield this.BloodReq.aggregate([
-                {
-                    $match: {
-                        profile_id
-                    }
-                }, {
-                    $lookup: {
-                        from: "donate_bloods",
-                        foreignField: "donation_id",
-                        localField: "blood_id",
-                        as: "intrest_submission"
-                    }
+            try {
+                const matchFilter = {
+                    profile_id,
+                };
+                if (status) {
+                    matchFilter['status'] = status;
                 }
-            ]);
-            return findReq;
+                console.log(matchFilter);
+                const findReq = yield this.BloodReq.aggregate([
+                    {
+                        $match: matchFilter
+                    },
+                    {
+                        $facet: {
+                            paginated: [
+                                {
+                                    $skip: skip
+                                },
+                                {
+                                    $limit: limit
+                                }
+                            ],
+                            total_records: [
+                                {
+                                    $count: "total_records"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "donate_bloods",
+                            foreignField: "donation_id",
+                            localField: "blood_id",
+                            as: "intrest_submission"
+                        }
+                    }
+                ]);
+                console.log('Requirement found');
+                console.log(findReq);
+                const response = {
+                    paginated: findReq[0].paginated,
+                    total_records: findReq[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                console.log(e);
+                return {
+                    paginated: [],
+                    total_records: 0
+                };
+            }
         });
     }
     findMyIntrest(donor_id) {
@@ -96,6 +149,52 @@ class BloodReqDepo {
         return __awaiter(this, void 0, void 0, function* () {
             const addIntrest = yield this.BloodReq.updateOne({ blood_id }, { $addToSet: { shows_intrest_donors: donor_id } });
             return !!addIntrest.modifiedCount;
+        });
+    }
+    findBloodReqPaginted(limit, skip) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log(limit, skip);
+            try {
+                const bloodGroup = yield this.BloodReq.aggregate([
+                    {
+                        $facet: {
+                            paginated: [
+                                {
+                                    $skip: skip
+                                },
+                                {
+                                    $limit: limit
+                                }
+                            ],
+                            total_records: [
+                                {
+                                    $count: "total_records"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
+                    }
+                ]);
+                const response = {
+                    paginated: bloodGroup[0].paginated,
+                    total_records: bloodGroup[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                return {
+                    paginated: [],
+                    total_records: 0
+                };
+            }
         });
     }
     findActiveBloodReqPaginted(limit, skip) {

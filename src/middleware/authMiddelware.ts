@@ -78,12 +78,19 @@ class AuthMiddleware implements IAuthMiddleware {
 
             if (token) {
 
+                console.log("The token");
+                console.log(token);
+
+
+
                 // "blood_group": "A+",
                 // "donor_id": "MUANBVMA+",
                 // "email_address": "muhammedjavad119144@gmail.com",
                 // "full_name": "Muhammed Javad",
                 // "phone_number": "9744727684",
                 const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
+                console.log(tokenValidation);
+
                 if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {
                     const donor_id = tokenValidation.donor_id;
                     if (!req.context) {
@@ -119,8 +126,12 @@ class AuthMiddleware implements IAuthMiddleware {
         const token = utilHelper.getTokenFromHeader(authToken);
         if (token) {
 
+            console.log("token");
+
+
 
             const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
+            console.log(tokenValidation);
             if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.profile_id && tokenValidation.user_id) {
                 const profile_id = tokenValidation.profile_id;
                 const user_id = tokenValidation.user_id;

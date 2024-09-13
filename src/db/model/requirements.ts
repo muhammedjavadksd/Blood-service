@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
-import { BloodGroup, BloodStatus, Relationship } from '../../Util/Types/Enum'
+import { BloodCloseCategory, BloodGroup, BloodStatus, Relationship } from '../../Util/Types/Enum'
 import IBloodRequirement from '../../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../../Util/Types/Types';
 
@@ -18,7 +18,19 @@ const LocatedAtSchema = new Schema<LocatedAt>({
     }
 });
 
-const bloodRequirementScheme = new mongoose.Schema({
+const closeDetailsSchma = new Schema({
+    category: {
+        type: String,
+        required: true,
+        enum: Object.values(BloodCloseCategory)
+    },
+    explanation: {
+        type: String,
+        required: true
+    }
+})
+
+const bloodRequirementScheme = new mongoose.Schema<IBloodRequirement>({
     blood_id: {
         type: String,
         required: true,
@@ -46,7 +58,7 @@ const bloodRequirementScheme = new mongoose.Schema({
         required: true
     },
     user_id: {
-        type: mongoose.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true
     },
     profile_id: {
@@ -82,6 +94,9 @@ const bloodRequirementScheme = new mongoose.Schema({
     shows_intrest_donors: {
         type: [String],
         required: true
+    },
+    close_details: {
+        type: closeDetailsSchma
     }
 })
 

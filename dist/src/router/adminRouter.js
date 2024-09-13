@@ -10,6 +10,7 @@ const adminRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const adminController = new adminController_1.default();
 adminRouter.get("/blood_group_change_requests/:limit/:skip/:per_page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests);
+adminRouter.get("/blood-requirements", authMiddleware.isValidAdmin, adminController.getAllRequirements);
 adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodGroup);
 // adminRouter.get("/find_nearby", authMiddleware.isValidUser, userController.findNearBy)
 // adminRouter.get("/blood_availability", authMiddleware.isValidUser, userController.bloodAvailability)

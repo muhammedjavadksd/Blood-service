@@ -131,9 +131,13 @@ class UserController {
     myBloodRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
+            console.log("Blood request found");
             const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
+            const limit = +req.params.limit;
+            const page = +req.params.page;
+            const status = req.params.status;
             if (profile_id) {
-                const findProfile = yield this.bloodService.findMyRequest(profile_id);
+                const findProfile = yield this.bloodService.findMyRequest(profile_id, page, limit, status);
                 res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
             }
             else {
@@ -376,11 +380,13 @@ class UserController {
     closeRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const bloodReqId = req.body.blood_req_id;
+            const bloodReqId = req.params.blood_id;
+            const category = req.body.category;
+            const explanation = req.body.explanation;
             const user_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user_id;
             if (user_id) {
-                const closeRequest = yield this.bloodService.closeRequest(bloodReqId);
-                res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.status });
+                const closeRequest = yield this.bloodService.closeRequest(bloodReqId, category, explanation);
+                res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.msg });
             }
             else {
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "User not found" });

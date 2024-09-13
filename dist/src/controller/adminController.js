@@ -17,6 +17,22 @@ class AdminController {
     constructor() {
         this.bloodService = new bloodService_1.default();
     }
+    updateBloodRequirements(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blood_id = req.params.blood_id;
+            const status = req.params.status;
+            const update = yield this.bloodService.updateProfileStatus(blood_id, status);
+            res.status(update.statusCode).json({ status: update.status, msg: update.msg, data: update.data });
+        });
+    }
+    getAllRequirements(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const page = +req.params.page;
+            const limit = +req.params.limit;
+            const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit);
+            res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
+        });
+    }
     // limit/:skip/:per_page
     bloodGroupChangeRequests(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {

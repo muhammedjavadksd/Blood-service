@@ -9,6 +9,7 @@ const authMiddleware = new AuthMiddleware();
 const adminController = new AdminController();
 
 adminRouter.get("/blood_group_change_requests/:limit/:skip/:per_page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests)
+adminRouter.get("/blood-requirements", authMiddleware.isValidAdmin, adminController.getAllRequirements)
 
 adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodGroup)
 

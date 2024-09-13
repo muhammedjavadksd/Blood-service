@@ -11,10 +11,12 @@ interface IBloodReqDepo {
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
     findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]>
+    findBloodReqPaginted(limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>>
     addIntrest(donor_id: string, blood_id: string): Promise<boolean>
     findMyIntrest(donor_id: string): Promise<IBloodRequirement[]>
-    findUserRequirement(profile_id: string): Promise<IBloodRequirement[]>
+    findUserRequirement(profile_id: string, skip: number, limit: number, status: BloodStatus): Promise<IPaginatedResponse<IBloodRequirement[]>>
     advanceFilter(search: Record<string, any>, limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>>
+    updateBloodRequirement(blood_id: string, status: BloodStatus): Promise<boolean>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -24,6 +26,12 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+
+    async updateBloodRequirement(blood_id: string, status: BloodStatus): Promise<boolean> {
+        const update = await this.BloodReq.updateOne({ blood_id }, { $set: { status } })
+        return update.modifiedCount > 0
     }
 
 
@@ -77,22 +85,79 @@ class BloodReqDepo implements IBloodReqDepo {
     }
 
 
-    async findUserRequirement(profile_id: string): Promise<IBloodRequirement[]> {
-        const findReq = await this.BloodReq.aggregate([
-            {
-                $match: {
-                    profile_id
-                }
-            }, {
-                $lookup: {
-                    from: "donate_bloods",
-                    foreignField: "donation_id",
-                    localField: "blood_id",
-                    as: "intrest_submission"
-                }
+    async findUserRequirement(profile_id: string, skip: number, limit: number, status?: BloodStatus): Promise<IPaginatedResponse<IBloodRequirement[]>> {
+
+
+
+        try {
+
+            const matchFilter: Record<string, any> = {
+                profile_id,
             }
-        ]);
-        return findReq;
+            if (status) {
+                matchFilter['status'] = status
+            }
+
+            console.log(matchFilter);
+
+
+            const findReq = await this.BloodReq.aggregate([
+                {
+                    $match: matchFilter
+                },
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip
+                            },
+                            {
+                                $limit: limit
+                            }
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "donate_bloods",
+                        foreignField: "donation_id",
+                        localField: "blood_id",
+                        as: "intrest_submission"
+                    }
+                }
+            ]);
+
+
+            console.log('Requirement found');
+            console.log(findReq);
+
+
+            const response: IPaginatedResponse<IBloodRequirement[]> = {
+                paginated: findReq[0].paginated,
+                total_records: findReq[0].total_records
+            }
+            return response
+        } catch (e) {
+            console.log(e);
+            return {
+                paginated: [],
+                total_records: 0
+            }
+        }
     }
 
 
@@ -112,6 +177,52 @@ class BloodReqDepo implements IBloodReqDepo {
 
 
 
+    async findBloodReqPaginted(limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>> {
+        console.log(limit, skip);
+
+        try {
+            const bloodGroup = await this.BloodReq.aggregate([
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip
+                            },
+                            {
+                                $limit: limit
+                            }
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
+                }
+            ])
+
+            const response: IPaginatedResponse<IBloodRequirement[]> = {
+                paginated: bloodGroup[0].paginated,
+                total_records: bloodGroup[0].total_records
+            }
+            return response;
+        } catch (e) {
+            return {
+                paginated: [],
+                total_records: 0
+            }
+        }
+    }
+
     async findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]> {
         console.log(limit, skip);
 
@@ -123,7 +234,6 @@ class BloodReqDepo implements IBloodReqDepo {
         const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ blood_group, status: BloodStatus.Pending })
         return bloodGroup
     }
-
 
 
     async findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null> {

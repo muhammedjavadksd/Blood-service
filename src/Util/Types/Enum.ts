@@ -34,10 +34,19 @@ enum BloodDonorStatus {
     Deleted = "Deleted"
 }
 
+enum BloodCloseCategory {
+    FULFILLED = "Fulfilled the request",
+    MEDICAL_CONDITION_CHANGE = "Medical Condition Change",
+    ERROR_IN_REQUEST = "Error in Request",
+    POSTPONED = "Postponed",
+    UNABLE_TO_ARRANGE_DONORS = "Unable to Arrange Donors",
+    CHANGE_IN_TREATMENT_PLAN = "Change in Treatment Plan"
+}
+
 enum BloodStatus {
     Pending = 'pending',
-    Cancelled = "cancelled",
-    Completed = "completed"
+    Closed = "closed",
+    Approved = "approved",
 }
 
 enum Relationship {
@@ -104,4 +113,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom }
+export { BloodCloseCategory, BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom }
