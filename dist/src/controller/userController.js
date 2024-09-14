@@ -131,7 +131,6 @@ class UserController {
     myBloodRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            console.log("Blood request found");
             const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
             const limit = +req.params.limit;
             const page = +req.params.page;
@@ -151,8 +150,9 @@ class UserController {
             const donorId = (_a = req === null || req === void 0 ? void 0 : req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const page = +req.params.page;
             const limit = +req.params.limit;
+            const status = req.params.status;
             if (donorId) {
-                const findMyIntrest = yield this.bloodService.findMyIntrest(donorId, page, limit);
+                const findMyIntrest = yield this.bloodService.findMyIntrest(donorId, limit, page, status);
                 console.log(findMyIntrest);
                 res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data });
             }

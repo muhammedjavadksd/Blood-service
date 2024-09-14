@@ -82,15 +82,46 @@ class BloodDonationRepo {
             return find;
         });
     }
-    findMyIntrest(donor_id, skip, limit) {
+    findMyIntrest(donor_id, skip, limit, status) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(donor_id);
+            const filter = {
+                donor_id
+            };
+            if (status) {
+                if (status == Enum_1.BloodDonationStatus.Rejected) {
+                    filter['$or'] = [
+                        {
+                            "status": Enum_1.BloodDonationStatus.Rejected
+                        },
+                        {
+                            "status": { "$ne": Enum_1.BloodDonationStatus.Approved },
+                            "meet_expect": {
+                                "$lte": new Date()
+                            }
+                        }
+                    ];
+                }
+                else if (status == Enum_1.BloodDonationStatus.Pending) {
+                    filter['$or'] = [
+                        {
+                            "status": Enum_1.BloodDonationStatus.Pending,
+                            "meet_expect": {
+                                "$gte": new Date()
+                            }
+                        },
+                    ];
+                }
+                else {
+                    filter['status'] = status;
+                }
+            }
+            console.log("Filter is");
+            console.log(filter);
             try {
                 const find = yield this.BloodDonation.aggregate([
                     {
-                        $match: {
-                            donor_id
-                        }
+                        $match: filter
                     },
                     {
                         $facet: {
@@ -100,6 +131,17 @@ class BloodDonationRepo {
                                 },
                                 {
                                     $limit: limit
+                                },
+                                {
+                                    $lookup: {
+                                        as: "requirement",
+                                        foreignField: "blood_id",
+                                        localField: "donation_id",
+                                        from: "blood_requirements"
+                                    }
+                                },
+                                {
+                                    $unwind: "$requirement"
                                 }
                             ],
                             total_records: [

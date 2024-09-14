@@ -158,8 +158,6 @@ class UserController implements IUserController {
 
     async myBloodRequest(req: CustomRequest, res: Response): Promise<void> {
 
-        console.log("Blood request found");
-
 
         const profile_id = req.context?.profile_id;
         const limit = +req.params.limit;
@@ -179,9 +177,10 @@ class UserController implements IUserController {
         const donorId = req?.context?.donor_id;
         const page: number = +req.params.page;
         const limit: number = +req.params.limit;
+        const status: BloodDonationStatus = req.params.status as BloodDonationStatus;
 
         if (donorId) {
-            const findMyIntrest = await this.bloodService.findMyIntrest(donorId, page, limit);
+            const findMyIntrest = await this.bloodService.findMyIntrest(donorId, limit, page, status);
             console.log(findMyIntrest);
 
             res.status(findMyIntrest.statusCode).json({ status: findMyIntrest.status, msg: findMyIntrest.msg, data: findMyIntrest.data })

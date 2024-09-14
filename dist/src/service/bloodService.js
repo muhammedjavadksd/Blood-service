@@ -279,10 +279,13 @@ class BloodService {
             }
         });
     }
-    findMyIntrest(donor_id, limit, page) {
+    findMyIntrest(donor_id, limit, page, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const myIntrest = yield this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit); //this.bloodReqRepo.findMyIntrest(donor_id);
+            console.log(donor_id, skip, limit);
+            const myIntrest = yield this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit, status); //this.bloodReqRepo.findMyIntrest(donor_id);
+            console.log("My intrest");
+            console.log(myIntrest);
             if (myIntrest.total_records) {
                 return {
                     status: true,

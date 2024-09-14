@@ -33,7 +33,7 @@ interface IBloodService {
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
-    findMyIntrest(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
+    findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
     updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
@@ -311,9 +311,15 @@ class BloodService implements IBloodService {
     }
 
 
-    async findMyIntrest(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse> {
+    async findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
         const skip: number = (page - 1) * limit;
-        const myIntrest = await this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit) //this.bloodReqRepo.findMyIntrest(donor_id);
+        console.log(donor_id, skip, limit);
+
+        const myIntrest = await this.bloodDonationRepo.findMyIntrest(donor_id, skip, limit, status) //this.bloodReqRepo.findMyIntrest(donor_id);
+        console.log("My intrest");
+        console.log(myIntrest);
+
+
         if (myIntrest.total_records) {
             return {
                 status: true,

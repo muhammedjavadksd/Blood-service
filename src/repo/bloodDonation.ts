@@ -83,15 +83,47 @@ class BloodDonationRepo implements IBloodDonationRepo {
         return find
     }
 
-    async findMyIntrest(donor_id: string, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonate[]>> {
+    async findMyIntrest(donor_id: string, skip: number, limit: number, status?: BloodDonationStatus): Promise<IPaginatedResponse<IBloodDonate[]>> {
         console.log(donor_id);
+
+        const filter: Record<string, any> = {
+            donor_id
+        }
+        if (status) {
+            if (status == BloodDonationStatus.Rejected) {
+                filter['$or'] = [
+                    {
+                        "status": BloodDonationStatus.Rejected
+                    },
+                    {
+                        "status": { "$ne": BloodDonationStatus.Approved },
+                        "meet_expect": {
+                            "$lte": new Date()
+                        }
+                    }
+                ]
+            } else if (status == BloodDonationStatus.Pending) {
+                filter['$or'] = [
+                    {
+                        "status": BloodDonationStatus.Pending,
+                        "meet_expect": {
+                            "$gte": new Date()
+                        }
+                    },
+                ]
+            } else {
+                filter['status'] = status
+            }
+        }
+
+        console.log("Filter is");
+        console.log(filter);
+
 
         try {
             const find = await this.BloodDonation.aggregate([
                 {
-                    $match: {
-                        donor_id
-                    }
+                    $match: filter
                 },
                 {
                     $facet: {
@@ -101,6 +133,17 @@ class BloodDonationRepo implements IBloodDonationRepo {
                             },
                             {
                                 $limit: limit
+                            },
+                            {
+                                $lookup: {
+                                    as: "requirement",
+                                    foreignField: "blood_id",
+                                    localField: "donation_id",
+                                    from: "blood_requirements"
+                                }
+                            },
+                            {
+                                $unwind: "$requirement"
                             }
                         ],
                         total_records: [
