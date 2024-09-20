@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, S3FolderName, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, ExtendsRelationship, JwtTimer, Relationship, S3FolderName, StatusCode } from "../Util/Types/Enum";
 import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse, IProfileCard } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -99,10 +99,10 @@ class BloodService implements IBloodService {
         }
     }
 
-    async findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse> {
-        const skip = (page - 1) * limit;
-        const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip);
-        if (find.total_records) {
+    async findPaginatedBloodRequirements(page: number, limit: number, status?: BloodStatus): Promise<HelperFunctionResponse> {
+        const skip: number = (page - 1) * limit;
+        const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip, status);
+        if (find.paginated.length) {
             return {
                 status: true,
                 msg: "Requirement's found",
@@ -1143,17 +1143,10 @@ class BloodService implements IBloodService {
     }
 
 
-    async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse> {
+    async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse> {
         const blood_id: string = await this.createBloodId(blood_group, unit)
-        console.log("The location is ");
-        console.log(locatedAt);
-
 
         const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address)
-        // const notification =
-        //     console.log(createdBloodRequest);
-
-        console.log("Passed one");
 
 
         const matchedProfile = await this.bloodDonorRepo.findDonors({ status: BloodDonorStatus.Open, blood_group: blood_group });

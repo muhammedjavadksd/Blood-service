@@ -49,6 +49,10 @@ enum BloodStatus {
     Approved = "approved",
 }
 
+
+
+type ExtendsRelationship = Relationship | "Admin"
+
 enum Relationship {
     MYSELF = "Myself",
     FATHER = "Father",
@@ -117,4 +121,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodCloseCategory, BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom, S3FolderName }
+export { BloodCloseCategory, BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom, S3FolderName, ExtendsRelationship }

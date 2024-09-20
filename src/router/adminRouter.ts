@@ -8,8 +8,10 @@ const adminRouter: Router = express.Router()
 const authMiddleware = new AuthMiddleware();
 const adminController = new AdminController();
 
-adminRouter.get("/blood_group_change_requests/:limit/:skip/:per_page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests)
-adminRouter.get("/blood-requirements", authMiddleware.isValidAdmin, adminController.getAllRequirements)
+adminRouter.get("/blood_group_change_requests/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests)
+adminRouter.get("/blood-requirements/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.getAllRequirements)
+
+adminRouter.post("/add-requirement", authMiddleware.isValidAdmin, adminController.addBloodRequirement)
 
 adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodGroup)
 
@@ -20,6 +22,6 @@ adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.
 // adminRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request)
 // adminRouter.post("/blood_donate/:donation_id", authMiddleware.isValidUser, userController.blood_donate)
 
-// adminRouter.patch("/close_request", authMiddleware.isValidUser, userController.closeRequest)
+adminRouter.patch("/close_request", authMiddleware.isValidAdmin, userController.closeRequest)
 
 export default adminRouter

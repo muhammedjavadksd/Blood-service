@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import BloodService from "../service/bloodService";
-import { BloodGroupUpdateStatus, BloodStatus } from "../Util/Types/Enum";
-import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
+import { BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship } from "../Util/Types/Enum";
+import { CustomRequest, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { ObjectId } from "mongoose";
+import { LocatedAt } from "../Util/Types/Types";
 
 
 interface IAdminController {
@@ -10,6 +11,7 @@ interface IAdminController {
     updateBloodGroup(req: Request, res: Response): Promise<void>
     getAllRequirements(req: Request, res: Response): Promise<void>
     updateBloodRequirements(req: Request, res: Response): Promise<void>
+    addBloodRequirement(req: Request, res: Response): Promise<void>
 }
 
 class AdminController implements IAdminController {
@@ -18,6 +20,27 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.bloodService = new BloodService()
+    }
+
+
+    async addBloodRequirement(req: CustomRequest, res: Response): Promise<void> {
+
+        const requestData = req.body.requestData;
+
+        const patientName: string = requestData.patientName;
+        const unit: number = requestData.unit;
+        const neededAt: Date = requestData.neededAt;
+        const status = requestData.status;
+        const blood_group: BloodGroup = requestData.blood_group;
+        const relationship: ExtendsRelationship = "Admin";
+        const locatedAt: LocatedAt = req.body.locatedAt;
+        const address: string = req.body.address;
+        const phoneNumber: number = req.body.phoneNumber;
+        const email_address: string = req.body.email_address;
+        const user_id = req.context?.user_id;
+
+        const addRequirement = await this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, user_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address,)
+        res.status(addRequirement.statusCode).json({ status: addRequirement.status, msg: addRequirement.msg, data: addRequirement.data })
     }
 
     async updateBloodRequirements(req: Request, res: Response): Promise<void> {
@@ -31,20 +54,20 @@ class AdminController implements IAdminController {
 
         const page: number = +req.params.page
         const limit: number = +req.params.limit
+        const status: BloodStatus = req.params.status as BloodStatus
 
-        const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit);
+        const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit, status);
         res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })
     }
 
-    // limit/:skip/:per_page
+
 
     async bloodGroupChangeRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
         const limit: number = parseInt(req.params.limit);
-        const skip: number = parseInt(req.params.skip)
-        const per_page: number = parseInt(req.params.per_page)
+        const page: number = parseInt(req.params.page)
         const status: BloodGroupUpdateStatus = req.params.status as BloodGroupUpdateStatus;
 
-        const findRequets: HelperFunctionResponse = await this.bloodService.findBloodGroupChangeRequets(status, skip, limit, per_page)
+        const findRequets: HelperFunctionResponse = await this.bloodService.findBloodGroupChangeRequets(status, page, limit)
         res.status(findRequets.statusCode).json({ status: findRequets.status, msg: findRequets.msg, data: findRequets.data })
     }
 

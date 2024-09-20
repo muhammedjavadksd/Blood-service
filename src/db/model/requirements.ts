@@ -72,7 +72,7 @@ const bloodRequirementScheme = new mongoose.Schema<IBloodRequirement>({
     },
     relationship: {
         type: String,
-        enum: Object.values(Relationship),
+        enum: [...Object.values(Relationship), "Admin"],
         required: true,
     },
     locatedAt: {

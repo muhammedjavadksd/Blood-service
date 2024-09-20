@@ -1,5 +1,5 @@
 import BloodRequirement from "../db/model/requirements";
-import { BloodGroup, BloodStatus, Relationship } from "../Util/Types/Enum";
+import { BloodGroup, BloodStatus, ExtendsRelationship, Relationship } from "../Util/Types/Enum";
 import IBloodRequirement, { IEditableBloodRequirementTemplate } from "../Util/Types/Interface/ModelInterface";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 import { LocatedAt, mongoObjectId } from "../Util/Types/Types";
@@ -176,11 +176,17 @@ class BloodReqDepo implements IBloodReqDepo {
 
 
 
-    async findBloodReqPaginted(limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>> {
-        console.log(limit, skip);
+    async findBloodReqPaginted(limit: number, skip: number, status?: BloodStatus): Promise<IPaginatedResponse<IBloodRequirement[]>> {
 
+        const match: Record<string, any> = {}
+        if (status) {
+            match['status'] = status
+        }
         try {
             const bloodGroup = await this.BloodReq.aggregate([
+                {
+                    $match: match
+                },
                 {
                     $facet: {
                         paginated: [
@@ -240,7 +246,7 @@ class BloodReqDepo implements IBloodReqDepo {
         return find
     }
 
-    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null> {
+    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null> {
         console.log('blood_id:', blood_id);
         console.log('patientName:', patientName);
         console.log('unit:', unit);
