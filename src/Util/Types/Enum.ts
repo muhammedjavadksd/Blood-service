@@ -35,6 +35,7 @@ enum BloodDonorStatus {
 }
 
 enum BloodCloseCategory {
+    AdminClose = "Admin close request",
     FULFILLED = "Fulfilled the request",
     MEDICAL_CONDITION_CHANGE = "Medical Condition Change",
     ERROR_IN_REQUEST = "Error in Request",

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import BloodService from "../service/bloodService";
-import { BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
 import { CustomRequest, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { ObjectId } from "mongoose";
 import { LocatedAt } from "../Util/Types/Types";
@@ -12,6 +12,7 @@ interface IAdminController {
     getAllRequirements(req: Request, res: Response): Promise<void>
     updateBloodRequirements(req: Request, res: Response): Promise<void>
     addBloodRequirement(req: Request, res: Response): Promise<void>
+    closeRequest(req: Request, res: Response): Promise<void>
 }
 
 class AdminController implements IAdminController {
@@ -20,6 +21,17 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.bloodService = new BloodService()
+    }
+
+
+    async closeRequest(req: Request, res: Response): Promise<void> {
+        const blood_id: string = req.params.blood_id;
+        if (blood_id) {
+            const closeRequest = await this.bloodService.closeRequest(blood_id, BloodCloseCategory.AdminClose, "Admin closed the requirement");
+            res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.msg, data: closeRequest.data });
+        } else {
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please provide valid data" });
+        }
     }
 
 

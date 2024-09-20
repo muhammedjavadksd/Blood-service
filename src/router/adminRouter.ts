@@ -22,6 +22,6 @@ adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.
 // adminRouter.post("/blood_request", authMiddleware.isValidUser, userController.blood_request)
 // adminRouter.post("/blood_donate/:donation_id", authMiddleware.isValidUser, userController.blood_donate)
 
-adminRouter.patch("/close_request", authMiddleware.isValidAdmin, userController.closeRequest)
+adminRouter.patch("/close_request/:blood_id", authMiddleware.isValidAdmin, adminController.closeRequest)
 
 export default adminRouter
