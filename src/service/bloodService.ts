@@ -43,7 +43,7 @@ interface IBloodService {
     findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, unit: number): Promise<HelperFunctionResponse>
-    updateBloodReqStatus(request_id: ObjectId, status: BloodStatus): Promise<HelperFunctionResponse>
+    // updateBloodReqStatus(request_id: ObjectId, status: BloodStatus): Promise<HelperFunctionResponse>
     updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
@@ -83,6 +83,7 @@ class BloodService implements IBloodService {
         config()
         // this.chatService = new ChatService();
     }
+
 
 
 
@@ -185,7 +186,7 @@ class BloodService implements IBloodService {
     }
 
 
-    async advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse> {
+    async advanceBloodBankSearch(page: number, limit: number, blood_group?: BloodGroup, urgency?: boolean, hospital?: string): Promise<HelperFunctionResponse> {
 
         const filter: Record<string, any> = {}
         if (blood_group) {

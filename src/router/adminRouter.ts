@@ -12,6 +12,7 @@ adminRouter.get("/blood_group_change_requests/:limit/:page/:status", authMiddlew
 adminRouter.get("/blood-requirements/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.getAllRequirements)
 adminRouter.get("/blood-requirements/:blood_id", authMiddleware.isValidAdmin, adminController.getAllRequirements)
 adminRouter.get("/find-donors/:limit/:page/:blood_group", authMiddleware.isValidAdmin, adminController.getAllRequirements)
+adminRouter.get("/blood-bank/:limit/:page/:blood_group", authMiddleware.isValidAdmin, adminController.getAllRequirements)
 
 adminRouter.post("/add-requirement", authMiddleware.isValidAdmin, adminController.addBloodRequirement)
 
