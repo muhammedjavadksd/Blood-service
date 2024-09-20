@@ -16,6 +16,7 @@ interface IAdminController {
     viewSingleRequirement(req: Request, res: Response): Promise<void>
     findDonorByBloodGroup(req: Request, res: Response): Promise<void>
     bloodBank(req: Request, res: Response): Promise<void>
+    findNearest(req: Request, res: Response): Promise<void>
     // updateRequirementStatus(req: Request, res: Response): Promise<void>
 }
 
@@ -25,6 +26,22 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.bloodService = new BloodService()
+    }
+
+
+    async findNearest(req: Request, res: Response): Promise<void> {
+        const lati = +(req.query.lati || 0)
+        const long = +(req.query.long || 0);
+        const page: number = +(req.params.page);
+        const limit: number = +req.params.limit;
+        const blood_group: BloodGroup = req.params.blood_group as BloodGroup;
+
+        if (lati == null || lati == undefined || long == null || long == undefined) {
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" })
+        } else {
+            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group);
+            res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data })
+        }
     }
 
 
