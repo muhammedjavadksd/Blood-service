@@ -316,6 +316,8 @@ class BloodDonationRepo implements IBloodDonationRepo {
         return saveData.id
     }
 
+
+
 }
 
 export default BloodDonationRepo

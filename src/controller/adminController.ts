@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import BloodService from "../service/bloodService";
-import { BloodCloseCategory, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
 import { CustomRequest, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { ObjectId } from "mongoose";
 import { LocatedAt } from "../Util/Types/Types";
@@ -14,6 +14,7 @@ interface IAdminController {
     addBloodRequirement(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
     viewSingleRequirement(req: Request, res: Response): Promise<void>
+    findDonorByBloodGroup(req: Request, res: Response): Promise<void>
 }
 
 class AdminController implements IAdminController {
@@ -22,6 +23,16 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.bloodService = new BloodService()
+    }
+
+    async findDonorByBloodGroup(req: Request, res: Response): Promise<void> {
+
+        const limit: number = +req.params.limit
+        const page: number = +req.params.page
+        const bloodGroup: BloodGroup = req.params.blood_group as BloodGroup;
+
+        const findData = await this.bloodService.searchBloodDonors(page, limit, bloodGroup, BloodDonorStatus.Open);
+        res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
     }
 
 

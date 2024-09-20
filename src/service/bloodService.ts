@@ -49,6 +49,7 @@ interface IBloodService {
     advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
     findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse>
     findSingleBloodRequirement(requirement_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
+    searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: BloodDonorStatus): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -80,6 +81,28 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
         config()
         // this.chatService = new ChatService();
+    }
+
+
+    async searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: BloodDonorStatus): Promise<HelperFunctionResponse> {
+
+        const skip: number = (page - 1) * limit;
+        const findProfile = await this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+        if (findProfile.paginated.length) {
+            return {
+                status: true,
+                msg: "Donors found",
+                statusCode: StatusCode.OK,
+                data: findProfile
+            }
+        } else {
+            return {
+                status: false,
+                msg: "No profile found",
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
+
     }
 
     async findSingleBloodRequirement(requirement_id: string, status?: BloodStatus): Promise<HelperFunctionResponse> {

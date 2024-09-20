@@ -12,6 +12,7 @@ interface IBloodDonorRepo {
     blockDonor(donor_id: string, reason: DonorAccountBlockedReason): Promise<boolean>
     unBlockDonor(donor_id: string): Promise<boolean>
     nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>>
+    findDonorsPaginated(limit: number, skip: number, filter: ISearchBloodDonorTemplate): Promise<IPaginatedResponse<IBloodDonor[]>>
 }
 
 class BloodDonorRepo implements IBloodDonorRepo {
@@ -28,6 +29,8 @@ class BloodDonorRepo implements IBloodDonorRepo {
         this.BloodDonor = BloodDonorCollection;
     }
 
+
+
     async blockDonor(donor_id: string, reason: DonorAccountBlockedReason): Promise<boolean> {
         const blockedDate = new Date()
         const updateData = await this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: BloodDonorStatus.Blocked, blocked_date: blockedDate } })
@@ -42,6 +45,54 @@ class BloodDonorRepo implements IBloodDonorRepo {
     async findDonors(filter: ISearchBloodDonorTemplate): Promise<IBloodDonor[]> {
         const findDonors = await this.BloodDonor.find(filter);
         return findDonors;
+    }
+
+    async findDonorsPaginated(limit: number, skip: number, filter: ISearchBloodDonorTemplate): Promise<IPaginatedResponse<IBloodDonor[]>> {
+
+        try {
+            const findDonors = await this.BloodDonor.aggregate([
+                {
+                    $match: filter
+                },
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip
+                            },
+                            {
+                                $limit: limit
+                            }
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
+                }
+            ]);
+
+            const response: IPaginatedResponse<IBloodDonor[]> = {
+                paginated: findDonors[0].paginated,
+                total_records: findDonors[0].total_records
+            }
+            return response;
+        } catch (e) {
+            return {
+                paginated: [],
+                total_records: 0
+            }
+        }
     }
 
     async updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean> {
