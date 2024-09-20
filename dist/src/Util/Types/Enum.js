@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChatFrom = exports.DonorAccountBlockedReason = exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = exports.BloodCloseCategory = void 0;
+exports.S3FolderName = exports.ChatFrom = exports.DonorAccountBlockedReason = exports.BloodDonationStatus = exports.BloodDonorStatus = exports.BloodGroupFilter = exports.BloodGroupUpdateStatus = exports.StatusCode = exports.Relationship = exports.BloodStatus = exports.JwtTimer = exports.S3BucketsNames = exports.BloodGroup = exports.BloodCloseCategory = void 0;
 var BloodGroup;
 (function (BloodGroup) {
     BloodGroup["A_POSITIVE"] = "A+";
@@ -78,17 +78,22 @@ var DonorAccountBlockedReason;
     DonorAccountBlockedReason["UserHideAccount"] = "Your profile has been temporarily hidden from donation listings.";
     DonorAccountBlockedReason["AccountDeleted"] = "It seems like your account has been deleted";
 })(DonorAccountBlockedReason || (exports.DonorAccountBlockedReason = DonorAccountBlockedReason = {}));
+var S3FolderName;
+(function (S3FolderName) {
+    S3FolderName["bloodCertification"] = "blood-certification";
+})(S3FolderName || (exports.S3FolderName = S3FolderName = {}));
 var BloodDonationStatus;
 (function (BloodDonationStatus) {
     BloodDonationStatus["Approved"] = "Approved";
     BloodDonationStatus["Rejected"] = "Rejected";
     BloodDonationStatus["Pending"] = "Pending";
+    BloodDonationStatus["NotResponded"] = "not-responded";
 })(BloodDonationStatus || (exports.BloodDonationStatus = BloodDonationStatus = {}));
 var BloodGroupUpdateStatus;
 (function (BloodGroupUpdateStatus) {
     BloodGroupUpdateStatus["Pending"] = "pending";
     BloodGroupUpdateStatus["Completed"] = "completed";
-    BloodGroupUpdateStatus["Rejected"] = "Rejected";
+    BloodGroupUpdateStatus["Rejected"] = "rejected";
 })(BloodGroupUpdateStatus || (exports.BloodGroupUpdateStatus = BloodGroupUpdateStatus = {}));
 var S3BucketsNames;
 (function (S3BucketsNames) {

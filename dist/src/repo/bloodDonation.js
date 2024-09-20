@@ -18,8 +18,15 @@ class BloodDonationRepo {
     constructor() {
         this.BloodDonation = donateBlood_1.default;
     }
+    findByCertificateId(certificate_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const find = this.BloodDonation.findOne({ certificate: certificate_id });
+            return find;
+        });
+    }
     findMyDonation(donor_id, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(donor_id);
             try {
                 const findDonation = yield this.BloodDonation.aggregate([
                     {
@@ -36,6 +43,28 @@ class BloodDonationRepo {
                                 },
                                 {
                                     $limit: limit
+                                },
+                                {
+                                    $lookup: {
+                                        as: "requirement",
+                                        foreignField: "blood_id",
+                                        localField: "donation_id",
+                                        from: "blood_requirements"
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        as: "donor_profile",
+                                        foreignField: "donor_id",
+                                        localField: "donor_id",
+                                        from: "donors"
+                                    }
+                                },
+                                {
+                                    $unwind: "$requirement"
+                                },
+                                {
+                                    $unwind: "$donor_profile"
                                 }
                             ],
                             total_records: [
@@ -72,14 +101,99 @@ class BloodDonationRepo {
     }
     updateStatus(id, newStatus) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findUpdate = yield this.BloodDonation.findOneAndUpdate({ _id: id }, { status: newStatus });
-            return !!(findUpdate === null || findUpdate === void 0 ? void 0 : findUpdate.isModified());
+            const findUpdate = yield this.BloodDonation.updateOne({ _id: id }, { $set: { status: newStatus } });
+            console.log(findUpdate);
+            return (findUpdate === null || findUpdate === void 0 ? void 0 : findUpdate.modifiedCount) > 0;
+        });
+    }
+    updateUnit(id, unit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findUpdate = yield this.BloodDonation.updateOne({ _id: id }, { $set: { unit } });
+            console.log(findUpdate);
+            return (findUpdate === null || findUpdate === void 0 ? void 0 : findUpdate.modifiedCount) > 0;
         });
     }
     findDonationById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const find = yield this.BloodDonation.findById(id);
             return find;
+        });
+    }
+    findBloodResponse(blood_id, skip, limit, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const match = {
+                    donation_id: blood_id
+                };
+                if (status) {
+                    match['status'] = status;
+                }
+                const find = yield this.BloodDonation.aggregate([
+                    {
+                        $match: match
+                    },
+                    {
+                        $facet: {
+                            paginated: [
+                                {
+                                    $skip: skip,
+                                },
+                                {
+                                    $limit: limit
+                                },
+                                {
+                                    $lookup: {
+                                        as: "requirement",
+                                        foreignField: "blood_id",
+                                        localField: "donation_id",
+                                        from: "blood_requirements"
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        as: "donor_profile",
+                                        foreignField: "donor_id",
+                                        localField: "donor_id",
+                                        from: "donors"
+                                    }
+                                },
+                                {
+                                    $unwind: "$requirement"
+                                },
+                                {
+                                    $unwind: "$donor_profile"
+                                }
+                            ],
+                            total_records: [
+                                {
+                                    $count: "total_records"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
+                    }
+                ]);
+                const response = {
+                    paginated: find[0].paginated,
+                    total_records: find[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                const response = {
+                    paginated: [],
+                    total_records: 0
+                };
+                return response;
+            }
         });
     }
     findMyIntrest(donor_id, skip, limit, status) {
@@ -180,6 +294,17 @@ class BloodDonationRepo {
         return __awaiter(this, void 0, void 0, function* () {
             const find = yield this.BloodDonation.findOne({ donor_id, donation_id: case_id });
             return find;
+        });
+    }
+    updateCertificate(donation_id, certificate, certificate_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const find = yield this.BloodDonation.updateOne({ _id: donation_id }, {
+                $set: {
+                    certificate,
+                    certificate_id,
+                }
+            });
+            return find.modifiedCount > 0;
         });
     }
     saveDonation(data) {

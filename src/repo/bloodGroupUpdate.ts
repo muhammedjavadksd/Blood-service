@@ -3,13 +3,14 @@ import { IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupReques
 import BloodDonorUpdate from "../db/model/updateBloodGroup";
 import BloodGroupUpdate from "../db/model/updateBloodGroup";
 import { BloodGroupUpdateStatus } from "../Util/Types/Enum";
+import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 
 
 interface IBloodGroupUpdateRepo {
     saveRequest(data: IBloodGroupUpdateTemplate): Promise<ObjectId | null>
     findRequestById(id: ObjectId): Promise<IBloodDonorUpdate | null>
     updateRequest(update_id: ObjectId, data: IEditableGroupGroupRequest): Promise<boolean>
-    findAllRequest(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<IBloodDonorUpdate[]>
+    findAllRequest(status: BloodGroupUpdateStatus, skip: number, limit: number, perPage: number): Promise<IPaginatedResponse<IBloodDonorUpdate>>
 }
 
 class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
@@ -35,9 +36,53 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
         return saveData?.id
     }
 
-    async findAllRequest(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<IBloodDonorUpdate[]> {
-        const findRequest = await this.bloodGroupUpdate.find({ status }).skip(perPage * (page - 1)).limit(limit)
-        return findRequest
+    async findAllRequest(status: BloodGroupUpdateStatus, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonorUpdate>> {
+        try {
+            const findDonation = await this.bloodGroupUpdate.aggregate([
+                {
+                    $match: {
+                        status: status
+                    }
+                },
+                {
+                    $facet: {
+                        paginated: [
+                            {
+                                $skip: skip
+                            },
+                            {
+                                $limit: limit
+                            },
+                        ],
+                        total_records: [
+                            {
+                                $count: "total_records"
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
+                }
+            ])
+            const response: IPaginatedResponse<IBloodDonorUpdate> = {
+                paginated: findDonation[0].paginated,
+                total_records: findDonation[0].total_records
+            }
+            return response;
+        } catch (e) {
+            const response: IPaginatedResponse<IBloodDonorUpdate[]> = {
+                paginated: [],
+                total_records: 0
+            }
+            return response;
+        }
     }
 
 }

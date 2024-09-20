@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import BloodDonorCollection from "./model/donors";
 
 
 
@@ -10,7 +11,9 @@ function mongoDbConnection() {
         return;
     }
 
-    mongoose.connect(mongoURL).then(() => {
+
+    mongoose.connect(mongoURL).then(async () => {
+        await BloodDonorCollection.init()
         console.log("Database connected with blood service");
     }).catch((err) => {
         console.log("Database connection failed with blood service");

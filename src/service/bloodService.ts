@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, JwtTimer, Relationship, S3FolderName, StatusCode } from "../Util/Types/Enum";
 import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse, IProfileCard } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -15,6 +15,13 @@ import axios from "axios";
 import ProfileChat from "../communication/ApiCommunication/ProfileChatApiCommunication";
 import { skip } from "node:test";
 // import ChatService from "./chatService";
+import PDFDocument from 'pdfkit'
+import qrcode from 'qrcode'
+import path from 'path'
+import fs from 'fs'
+import S3BucketHelper from "../Util/Helpers/S3Helper";
+import { config } from 'dotenv'
+
 
 interface IBloodService {
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse>
@@ -26,21 +33,21 @@ interface IBloodService {
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
-    findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse>
+    findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number): Promise<HelperFunctionResponse>
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
     // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
-    findRequest(donor_id: string): Promise<HelperFunctionResponse>
+    findRequest(donor_id: string, blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
-    updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse>
+    updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, unit: number): Promise<HelperFunctionResponse>
     updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
     advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
-    findNearestBloodDonors(page: number, limit: number, location: [number, number]): Promise<HelperFunctionResponse>
+    findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -70,6 +77,7 @@ class BloodService implements IBloodService {
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
+        config()
         // this.chatService = new ChatService();
     }
 
@@ -111,10 +119,10 @@ class BloodService implements IBloodService {
     }
 
 
-    async findNearestBloodDonors(page: number, limit: number, location: [number, number]): Promise<HelperFunctionResponse> {
+    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
-        const find = await this.bloodDonorRepo.nearBySearch(location, limit, skip);
+        const find = await this.bloodDonorRepo.nearBySearch(location, limit, skip, group);
         if (find.total_records) {
             return {
                 status: true,
@@ -238,10 +246,294 @@ class BloodService implements IBloodService {
     }
 
 
-    async updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, profile_id: string): Promise<HelperFunctionResponse> {
+    async createCertificateId() {
+        const utilHelper = new UtilHelper();
+        let randomNumber: number = utilHelper.generateAnOTP(4);
+        let randomText: string = utilHelper.createRandomText(4);
+        let certificate = `BD${randomText}-${randomNumber}`;
+        let findCertificate = await this.bloodDonationRepo.findByCertificateId(certificate);
+        while (findCertificate) {
+            randomNumber++
+            certificate = `BD${randomText}-${randomNumber}`;
+            findCertificate = await this.bloodDonationRepo.findByCertificateId(certificate);
+        }
+        return certificate
+    }
+
+    async bloodDonationCertificate(donor_name: string, blood_group: string, unit: number, date: string, certificateId: string) {
+        return new Promise(async (resolve, reject) => {
+
+
+            try {
+
+                const s3Helper = new S3BucketHelper(process.env.BLOOD_BUCKET || "", S3FolderName.bloodCertification);
+                const fileName = `${certificateId}.pdf`
+                const presignedUrl = await s3Helper.generatePresignedUrl(fileName);
+                const qr = await qrcode.toDataURL(certificateId);
+
+                const doc = new PDFDocument({
+                    layout: 'landscape',
+                    size: 'A4',
+                });
+
+                function jumpLine(doc: PDFKit.PDFDocument, lines: number) {
+                    for (let index = 0; index < lines; index++) {
+                        doc.moveDown();
+                    }
+                }
+
+                const distanceMargin = 18;
+                const maxWidth = 140;
+                const maxHeight = 70;
+                doc.pipe(fs.createWriteStream('output.pdf'));
+                doc.rect(0, 0, doc.page.width, doc.page.height).fill('#fff');
+                doc.fontSize(10);
+                doc.fillAndStroke('#9e0000').lineWidth(20).lineJoin('round').rect(
+                    distanceMargin,
+                    distanceMargin,
+                    doc.page.width - distanceMargin * 2,
+                    doc.page.height - distanceMargin * 2,
+                ).stroke();
+
+                const avatarImage = await axios.get('https://lifelink-blood-bank.s3.amazonaws.com/other-images/blood.png', { responseType: "arraybuffer" })
+                const signBuffer = await axios.get('https://fund-raiser.s3.amazonaws.com/other-images/sign.png', { responseType: "arraybuffer" })
+                doc.image(avatarImage.data, doc.page.width / 2 - maxWidth / 2, 60, {
+                    fit: [140, 50],
+                    align: 'center',
+                });
+
+                jumpLine(doc, 5)
+
+                doc
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Life link blood  donation certificate', {
+                        align: 'center',
+                    });
+
+                jumpLine(doc, 2)
+
+                // Content
+                doc
+                    .fontSize(16)
+                    .fill('#021c27')
+                    .text(`This is certify of the blood donation`, {
+                        align: 'center',
+                    });
+
+                jumpLine(doc, 1)
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Present to', {
+                        align: 'center',
+                    });
+
+                jumpLine(doc, 2)
+
+                doc
+
+                    .fontSize(24)
+                    .fill('#021c27')
+                    .text(donor_name, {
+                        align: 'center',
+                    });
+
+                jumpLine(doc, 1)
+
+                doc
+                    .fontSize(15)
+                    .fill('#021c27')
+                    .text(`Successfully donated ${blood_group} (${unit} unit) on May ${date}`, {
+                        align: 'center',
+                    });
+
+                jumpLine(doc, 1)
+                doc
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text(`"We're thrilled to have you with us on this journey. Thank you!"`, {
+                        align: 'center',
+                    });
+                jumpLine(doc, 7)
+
+                doc.lineWidth(1);
+
+                // Signatures
+                const lineSize = 174;
+                const signatureHeight = 390;
+
+                doc.fillAndStroke('#021c27');
+                doc.strokeOpacity(0.2);
+
+                const startLine1 = 128;
+                const endLine1 = 128 + lineSize;
+                doc
+                    .moveTo(startLine1, signatureHeight)
+                    .lineTo(endLine1, signatureHeight)
+                    .stroke();
+
+                const startLine2 = endLine1 + 32;
+                const endLine2 = startLine2 + lineSize;
+
+
+                const startLine3 = endLine2 + 32;
+                const endLine3 = startLine3 + lineSize;
+
+                doc.image(signBuffer.data, (doc.page.width / 2 - maxWidth / 2) + 40, 350, {
+                    fit: [maxWidth - 70, maxHeight],
+                    align: 'center',
+                });
+
+
+                doc.image(signBuffer.data, 600, 350, {
+                    fit: [maxWidth - 70, maxHeight],
+                    align: 'center',
+                });
+
+
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('John Doe', startLine1, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Associate Professor', startLine1, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text(donor_name, startLine2, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Name', startLine2, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Jane Doe', startLine3, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc.image(signBuffer.data, 180, 350, {
+                    fit: [maxWidth - 70, maxHeight],
+                    align: 'center',
+                });
+
+                doc
+
+                    .fontSize(10)
+                    .fill('#021c27')
+                    .text('Director', startLine3, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc
+                    .moveTo(startLine3, signatureHeight)
+                    .lineTo(endLine3, signatureHeight)
+                    .stroke();
+                jumpLine(doc, 4);
+
+                doc
+                    .moveTo(startLine2, signatureHeight)
+                    .lineTo(endLine2, signatureHeight)
+                    .stroke();
+
+                doc.fontSize(10)
+                    .fill('#021c27')
+                    .text('Scan below QRCODE for verification', 330, 450, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+
+                doc.image(qr, 380, 470, {
+                    fit: [maxWidth - 70, maxHeight],
+                    align: 'center',
+                });
+
+
+                const pathResolve = path.resolve(process.cwd(), "output.pdf")
+                doc.on("end", async function () {
+                    fs.readFile(pathResolve, async function (err, data) {
+                        if (err) {
+                            console.log(err);
+                            reject(null)
+                        }
+
+                        console.log(presignedUrl);
+                        const savedName = await s3Helper.uploadFile(data, presignedUrl, "application/pdf", fileName) //S3BucketHelper.uploadFile(data, presignedUrl, "application/pdf", fileName)
+
+                        console.log(savedName);
+                        if (savedName) {
+                            resolve(savedName)
+                        } else {
+                            reject(null)
+                        }
+                    });
+                })
+                doc.end()
+            } catch (e) {
+                console.log(e);
+                reject(null)
+            }
+        })
+    }
+
+    async updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, unit: number): Promise<HelperFunctionResponse> {
 
         try {
             const findRequest = await this.bloodDonationRepo.findDonationById(request_id);
+            console.log(findRequest);
+            console.log(request_id);
+
+
             if (findRequest) {
                 if (findRequest.status == BloodDonationStatus.Approved) {
                     return {
@@ -256,9 +548,31 @@ class BloodService implements IBloodService {
                         statusCode: StatusCode.BAD_REQUEST
                     }
                 } else {
-
                     const updateRequest = await this.bloodDonationRepo.updateStatus(request_id, status);
+                    await this.bloodDonationRepo.updateUnit(request_id, unit);
+
+
                     if (updateRequest) {
+                        if (status == BloodDonationStatus.Approved) {
+                            try {
+                                this.bloodDonorRepo.findBloodDonorByDonorId(findRequest.donor_id).then((donor) => {
+                                    this.bloodReqRepo.findBloodRequirementByBloodId(findRequest.donation_id).then(async (req) => {
+                                        if (donor && req) {
+                                            const certificateId = await this.createCertificateId()
+
+                                            this.bloodDonationCertificate(donor?.full_name, req?.blood_group, unit, this.utilHelper.formatDateToMonthNameAndDate(findRequest.date), certificateId).then(async (certificateUpdate) => {
+                                                if (certificateUpdate && typeof certificateUpdate == "string") {
+                                                    await this.bloodDonationRepo.updateCertificate(request_id, certificateUpdate, certificateId)
+                                                }
+                                            })
+                                        }
+
+                                    })
+                                })
+                            } catch (e) {
+                                console.log("Certificate update failed");
+                            }
+                        }
                         return {
                             status: true,
                             msg: "Status has been updated",
@@ -549,15 +863,25 @@ class BloodService implements IBloodService {
         }
     }
 
-    async findRequest(donor_id: string): Promise<HelperFunctionResponse> {
-        const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-        if (findDonor) {
-            const bloodGroup: BloodGroup = findDonor.blood_group;
-            const request = await this.bloodReqRepo.findActiveBloodReq(bloodGroup);
-            return {
-                status: true,
-                msg: "Request fetched",
-                statusCode: StatusCode.OK
+    async findRequest(profile_id: string, blood_id: string, page: number, limit: number, status?: BloodDonationStatus): Promise<HelperFunctionResponse> {
+        const bloodReq = await this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
+
+        if (bloodReq && bloodReq.profile_id == profile_id) {
+            const skip: number = (page - 1) * limit;
+            const request = await this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit, status);
+            if (request.total_records) {
+                return {
+                    status: true,
+                    msg: "Request fetched",
+                    statusCode: StatusCode.OK,
+                    data: request
+                }
+            } else {
+                return {
+                    status: false,
+                    msg: "No data found",
+                    statusCode: StatusCode.NOT_FOUND,
+                }
             }
         } else {
             return {
@@ -710,15 +1034,14 @@ class BloodService implements IBloodService {
         }
     }
 
-    async findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number, perPage: number): Promise<HelperFunctionResponse> {
-        const findRequests = await this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage)
-        if (findRequests.length) {
+    async findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number): Promise<HelperFunctionResponse> {
+        const skip: number = (page - 1) * limit
+        const findRequests = await this.bloodGroupUpdateRepo.findAllRequest(status, skip, limit)
+        if (findRequests.paginated.length) {
             return {
                 status: true,
                 msg: "Data fetched",
-                data: {
-                    requests: findRequests
-                },
+                data: findRequests,
                 statusCode: StatusCode.OK
             }
         } else {

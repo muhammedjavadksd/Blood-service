@@ -26,16 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const Enum_1 = require("../../Util/Types/Enum");
 const LocationScheme = new mongoose_1.Schema({
-    accuracy: {
-        type: Number,
+    type: {
+        type: String,
         required: true
     },
-    longitude: {
-        type: Number,
-        required: true
-    },
-    latitude: {
-        type: Number,
+    coordinates: {
+        type: [Number, Number],
         required: true
     }
 });

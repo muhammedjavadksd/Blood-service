@@ -7,6 +7,8 @@ import adminRouter from './src/router/adminRouter';
 import organizationRouter from './src/router/organizationRouter';
 import mongoDbConnection from './src/db/connection';
 import logger from 'morgan';
+import BloodService from './src/service/bloodService';
+import mongoose, { Schema } from 'mongoose';
 
 env.config({ path: "./.env" })
 mongoDbConnection()
@@ -19,6 +21,9 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static("public"))
 
 app.use(logger("combined"))
+
+const bloodService = new BloodService();
+// bloodService.bloodDonationCertificate("1", "2", "123");
 
 app.use("/", userRouter)
 app.use("/admin", adminRouter)

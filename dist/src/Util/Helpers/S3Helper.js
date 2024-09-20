@@ -8,24 +8,65 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_s3_1 = require("@aws-sdk/client-s3");
-const credential_provider_env_1 = require("@aws-sdk/credential-provider-env");
-const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
+const aws_sdk_1 = __importDefault(require("aws-sdk"));
+const axios_1 = __importDefault(require("axios"));
+const UtilHelpers_1 = __importDefault(require("./UtilHelpers"));
 class S3BucketHelper {
-    constructor(bucketName) {
+    constructor(bucketName, folderName) {
         this.bucketName = bucketName;
-        this.s3Config = new client_s3_1.S3Client({
-            endpoint: "http://localhost:4566",
-            credentials: (0, credential_provider_env_1.fromEnv)(),
-            region: 'us-east-1',
-            forcePathStyle: true,
+        this.folderName = folderName;
+        this.s3 = new aws_sdk_1.default.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            signatureVersion: 'v4',
         });
     }
     generatePresignedUrl(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = yield (0, s3_request_presigner_1.getSignedUrl)(this.s3Config, new client_s3_1.PutObjectCommand({ Bucket: this.bucketName, Key: key }), { expiresIn: 3600 });
+            const signedUrlExpireSeconds = 60 * 5;
+            const filePath = this.folderName ? `${this.folderName}/${key}` : key;
+            console.log("Bucket name");
+            console.log(this.bucketName);
+            const url = this.s3.getSignedUrl("putObject", {
+                Bucket: this.bucketName,
+                Key: filePath,
+                Expires: signedUrlExpireSeconds
+            });
             return url;
+        });
+    }
+    uploadObject(key, docs, ftype) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const save = yield this.s3.upload({
+                Bucket: this.bucketName,
+                Key: key,
+                Body: docs,
+                ACL: 'public-read',
+                ContentType: ftype
+            }).promise();
+            console.log(save);
+            console.log("Save");
+            console.log(save.Location);
+        });
+    }
+    uploadFile(file, presigned_url, fileType, imageName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const utlHelper = new UtilHelpers_1.default();
+                const folderPath = utlHelper.extractImageNameFromPresignedUrl(presigned_url);
+                console.log(folderPath);
+                yield axios_1.default.put(presigned_url, file, { headers: { "Content-Type": fileType, } });
+                const imageUrl = `http://${this.bucketName}.s3.amazonaws.com/${folderPath}`;
+                return imageUrl;
+            }
+            catch (e) {
+                console.log(e);
+                return false;
+            }
         });
     }
 }

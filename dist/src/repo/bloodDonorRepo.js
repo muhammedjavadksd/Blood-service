@@ -64,9 +64,11 @@ class BloodDonorRepo {
             return save === null || save === void 0 ? void 0 : save.id;
         });
     }
-    nearBySearch(location, limit, skip) {
+    nearBySearch(location, limit, skip, group) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log("The location");
+                console.log(location);
                 const find = yield this.BloodDonor.aggregate([
                     {
                         $geoNear: {
@@ -76,21 +78,40 @@ class BloodDonorRepo {
                             },
                             distanceField: "distance", // Adds the distance from the point
                             spherical: true, // Use spherical distance calculation
-                            maxDistance: 5000, // Optional: Maximum distance in meters (e.g., 5 km)
+                            maxDistance: 5000000000000, // Optional: Maximum distance in meters (e.g., 5 km)
+                        },
+                    },
+                    {
+                        $match: {
+                            status: Enum_1.BloodDonorStatus.Open,
+                            blood_group: group
                         }
                     },
                     {
                         $facet: {
                             paginated: [
                                 { $skip: skip }, // Skip based on pagination offset
-                                { $limit: limit } // Limit number of documents
+                                { $limit: limit }, // Limit number of documents
+                                {
+                                    $sort: { distance: 1 } // Sort by distance, ascending order
+                                }
                             ],
                             total_records: [
                                 { $count: "total_records" } // Count total number of records
                             ]
                         }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
                     }
                 ]);
+                console.log(find);
                 const response = {
                     paginated: find[0].paginated,
                     total_records: find[0].total_records
@@ -98,6 +119,7 @@ class BloodDonorRepo {
                 return response;
             }
             catch (e) {
+                console.log(e);
                 const response = {
                     paginated: [],
                     total_records: 0

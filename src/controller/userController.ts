@@ -74,11 +74,18 @@ class UserController implements IUserController {
 
 
     async findNearestDonors(req: CustomRequest, res: Response): Promise<void> {
+
+
+        const bloodGroup: BloodGroup = req.params.group as BloodGroup;
         const limit: number = +req.params.limit;
         const page: number = +req.params.page;
-        const location = req.body.location
+        const long: number = +(req.query.long || 0)
+        const lati: number = +(req.query.lati || 0)
+        const location: [number, number] = [long, lati]
 
-        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location);
+
+
+        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup);
         res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data })
     }
 
@@ -109,12 +116,13 @@ class UserController implements IUserController {
 
     async requestUpdate(req: CustomRequest, res: Response): Promise<void> {
 
-        const request_id: ObjectId = req.body.donate_id;
+        const request_id: ObjectId = req.params.requirement_id as unknown as ObjectId;
         const status: BloodDonationStatus = req.body.status;
         const profile_id: string = req.context?.profile_id;
+        const unit: number = req.body?.unit;
 
         if (profile_id) {
-            const updateStatus: HelperFunctionResponse = await this.bloodService.updateRequestStatus(request_id, status, profile_id)
+            const updateStatus: HelperFunctionResponse = await this.bloodService.updateRequestStatus(request_id, status, unit)
             res.status(updateStatus.statusCode).json({ status: updateStatus.status, msg: updateStatus.msg })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Un authraized access" })
@@ -248,9 +256,16 @@ class UserController implements IUserController {
 
 
     async findRequest(req: CustomRequest, res: Response): Promise<void> {
+        console.log("Reached here");
+
         if (req.context) {
-            const donor_id = req.context?.donor_id;
-            const findCases: HelperFunctionResponse = await this.bloodService.findRequest(donor_id);
+            const profile_id = req.context?.profile_id;
+            const blood_id = req.params?.request_id;
+            const status: BloodDonationStatus = req.params?.status as BloodDonationStatus;
+            const page: number = +req.params?.page;
+            const limit: number = +req.params?.limit;
+
+            const findCases: HelperFunctionResponse = await this.bloodService.findRequest(profile_id, blood_id, page, limit, status);
             res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg, data: findCases.data })
         } else {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
@@ -331,24 +346,20 @@ class UserController implements IUserController {
 
     async createBloodDonation(req: Request, res: Response) {
 
+        console.log("Body data");
+
         console.log(req.body);
         const fullName: string = req.body.full_name;
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
         const bloodGroup: BloodGroup = req.body.bloodGroup;
-        const location: ILocatedAt = req.body.location;
-        const locatedAt: ILocatedAt = {
-            accuracy: location?.accuracy,
-            latitude: location?.latitude,
-            longitude: location?.longitude
+        const locationBody = req.body.location;
+        const location: ILocatedAt = {
+            coordinates: [+locationBody.longitude || 0, locationBody?.latitude || 0],
+            type: "Point"
         }
 
-        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, locatedAt);
-
-        console.log("Blood donor created");
-
-        console.log(createBloodDonor);
-
+        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
         res.status(createBloodDonor.statusCode).json({
             status: createBloodDonor.status,
             msg: createBloodDonor.msg,

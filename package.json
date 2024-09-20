@@ -31,13 +31,17 @@
     "mongoose": "^8.5.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "pdfkit": "^0.15.0",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.11",
+    "@types/pdfkit": "^0.13.4",
+    "@types/qrcode": "^1.5.5",
     "typescript": "^5.5.4"
   }
 }

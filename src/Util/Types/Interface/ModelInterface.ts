@@ -23,9 +23,8 @@ interface ISearchBloodDonorTemplate {
 }
 
 interface ILocatedAt {
-    accuracy: number,
-    latitude: number,
-    longitude: number,
+    type: string,
+    coordinates: [number, number]
 }
 
 interface IBloodDonorTemplate {
@@ -102,6 +101,7 @@ interface IBloodDonateTemplate {
     status: BloodDonationStatus,
     meet_expect: Date,
     concerns: BloodDonationConcerns
+    certificate?: string
 }
 
 interface IMessageTemplate {

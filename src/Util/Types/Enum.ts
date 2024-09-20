@@ -79,17 +79,21 @@ enum DonorAccountBlockedReason {
     AccountDeleted = "It seems like your account has been deleted"
 }
 
+enum S3FolderName {
+    bloodCertification = "blood-certification"
+}
 
 enum BloodDonationStatus {
     Approved = "Approved",
     Rejected = "Rejected",
-    Pending = "Pending"
+    Pending = "Pending",
+    NotResponded = "not-responded",
 }
 
 enum BloodGroupUpdateStatus {
     Pending = "pending",
     Completed = "completed",
-    Rejected = "Rejected"
+    Rejected = "rejected"
 }
 
 enum S3BucketsNames {
@@ -113,4 +117,4 @@ enum StatusCode {
     CONFLICT = 409,
 }
 
-export { BloodCloseCategory, BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom }
+export { BloodCloseCategory, BloodGroup, S3BucketsNames, JwtTimer, BloodStatus, Relationship, StatusCode, BloodGroupUpdateStatus, BloodGroupFilter, BloodDonorStatus, BloodDonationStatus, DonorAccountBlockedReason, ChatFrom, S3FolderName }

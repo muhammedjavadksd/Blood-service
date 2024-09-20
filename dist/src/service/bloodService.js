@@ -20,7 +20,15 @@ const bloodGroupUpdate_1 = __importDefault(require("../repo/bloodGroupUpdate"));
 const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 const notification_service_1 = __importDefault(require("../communication/Provider/notification_service"));
+const axios_1 = __importDefault(require("axios"));
 const ProfileChatApiCommunication_1 = __importDefault(require("../communication/ApiCommunication/ProfileChatApiCommunication"));
+// import ChatService from "./chatService";
+const pdfkit_1 = __importDefault(require("pdfkit"));
+const qrcode_1 = __importDefault(require("qrcode"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
+const dotenv_1 = require("dotenv");
 class BloodService {
     // private readonly chatService: ChatService
     constructor() {
@@ -39,6 +47,7 @@ class BloodService {
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
+        (0, dotenv_1.config)();
         // this.chatService = new ChatService();
     }
     updateProfileStatus(blood_id, status) {
@@ -81,10 +90,10 @@ class BloodService {
             }
         });
     }
-    findNearestBloodDonors(page, limit, location) {
+    findNearestBloodDonors(page, limit, location, group) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const find = yield this.bloodDonorRepo.nearBySearch(location, limit, skip);
+            const find = yield this.bloodDonorRepo.nearBySearch(location, limit, skip, group);
             if (find.total_records) {
                 return {
                     status: true,
@@ -203,10 +212,242 @@ class BloodService {
             }
         });
     }
-    updateRequestStatus(request_id, status, profile_id) {
+    createCertificateId() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const utilHelper = new UtilHelpers_1.default();
+            let randomNumber = utilHelper.generateAnOTP(4);
+            let randomText = utilHelper.createRandomText(4);
+            let certificate = `BD${randomText}-${randomNumber}`;
+            let findCertificate = yield this.bloodDonationRepo.findByCertificateId(certificate);
+            while (findCertificate) {
+                randomNumber++;
+                certificate = `BD${randomText}-${randomNumber}`;
+                findCertificate = yield this.bloodDonationRepo.findByCertificateId(certificate);
+            }
+            return certificate;
+        });
+    }
+    bloodDonationCertificate(donor_name, blood_group, unit, date, certificateId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const s3Helper = new S3Helper_1.default(process.env.BLOOD_BUCKET || "", Enum_1.S3FolderName.bloodCertification);
+                    const fileName = `${certificateId}.pdf`;
+                    const presignedUrl = yield s3Helper.generatePresignedUrl(fileName);
+                    const qr = yield qrcode_1.default.toDataURL(certificateId);
+                    const doc = new pdfkit_1.default({
+                        layout: 'landscape',
+                        size: 'A4',
+                    });
+                    function jumpLine(doc, lines) {
+                        for (let index = 0; index < lines; index++) {
+                            doc.moveDown();
+                        }
+                    }
+                    const distanceMargin = 18;
+                    const maxWidth = 140;
+                    const maxHeight = 70;
+                    doc.pipe(fs_1.default.createWriteStream('output.pdf'));
+                    doc.rect(0, 0, doc.page.width, doc.page.height).fill('#fff');
+                    doc.fontSize(10);
+                    doc.fillAndStroke('#9e0000').lineWidth(20).lineJoin('round').rect(distanceMargin, distanceMargin, doc.page.width - distanceMargin * 2, doc.page.height - distanceMargin * 2).stroke();
+                    const avatarImage = yield axios_1.default.get('https://lifelink-blood-bank.s3.amazonaws.com/other-images/blood.png', { responseType: "arraybuffer" });
+                    const signBuffer = yield axios_1.default.get('https://fund-raiser.s3.amazonaws.com/other-images/sign.png', { responseType: "arraybuffer" });
+                    doc.image(avatarImage.data, doc.page.width / 2 - maxWidth / 2, 60, {
+                        fit: [140, 50],
+                        align: 'center',
+                    });
+                    jumpLine(doc, 5);
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Life link blood  donation certificate', {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 2);
+                    // Content
+                    doc
+                        .fontSize(16)
+                        .fill('#021c27')
+                        .text(`This is certify of the blood donation`, {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 1);
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Present to', {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 2);
+                    doc
+                        .fontSize(24)
+                        .fill('#021c27')
+                        .text(donor_name, {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 1);
+                    doc
+                        .fontSize(15)
+                        .fill('#021c27')
+                        .text(`Successfully donated ${blood_group} (${unit} unit) on May ${date}`, {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 1);
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text(`"We're thrilled to have you with us on this journey. Thank you!"`, {
+                        align: 'center',
+                    });
+                    jumpLine(doc, 7);
+                    doc.lineWidth(1);
+                    // Signatures
+                    const lineSize = 174;
+                    const signatureHeight = 390;
+                    doc.fillAndStroke('#021c27');
+                    doc.strokeOpacity(0.2);
+                    const startLine1 = 128;
+                    const endLine1 = 128 + lineSize;
+                    doc
+                        .moveTo(startLine1, signatureHeight)
+                        .lineTo(endLine1, signatureHeight)
+                        .stroke();
+                    const startLine2 = endLine1 + 32;
+                    const endLine2 = startLine2 + lineSize;
+                    const startLine3 = endLine2 + 32;
+                    const endLine3 = startLine3 + lineSize;
+                    doc.image(signBuffer.data, (doc.page.width / 2 - maxWidth / 2) + 40, 350, {
+                        fit: [maxWidth - 70, maxHeight],
+                        align: 'center',
+                    });
+                    doc.image(signBuffer.data, 600, 350, {
+                        fit: [maxWidth - 70, maxHeight],
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('John Doe', startLine1, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Associate Professor', startLine1, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text(donor_name, startLine2, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Name', startLine2, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Jane Doe', startLine3, signatureHeight + 10, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc.image(signBuffer.data, 180, 350, {
+                        fit: [maxWidth - 70, maxHeight],
+                        align: 'center',
+                    });
+                    doc
+                        .fontSize(10)
+                        .fill('#021c27')
+                        .text('Director', startLine3, signatureHeight + 25, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc
+                        .moveTo(startLine3, signatureHeight)
+                        .lineTo(endLine3, signatureHeight)
+                        .stroke();
+                    jumpLine(doc, 4);
+                    doc
+                        .moveTo(startLine2, signatureHeight)
+                        .lineTo(endLine2, signatureHeight)
+                        .stroke();
+                    doc.fontSize(10)
+                        .fill('#021c27')
+                        .text('Scan below QRCODE for verification', 330, 450, {
+                        columns: 1,
+                        columnGap: 0,
+                        height: 40,
+                        width: lineSize,
+                        align: 'center',
+                    });
+                    doc.image(qr, 380, 470, {
+                        fit: [maxWidth - 70, maxHeight],
+                        align: 'center',
+                    });
+                    const pathResolve = path_1.default.resolve(process.cwd(), "output.pdf");
+                    doc.on("end", function () {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            fs_1.default.readFile(pathResolve, function (err, data) {
+                                return __awaiter(this, void 0, void 0, function* () {
+                                    if (err) {
+                                        console.log(err);
+                                        reject(null);
+                                    }
+                                    console.log(presignedUrl);
+                                    const savedName = yield s3Helper.uploadFile(data, presignedUrl, "application/pdf", fileName); //S3BucketHelper.uploadFile(data, presignedUrl, "application/pdf", fileName)
+                                    console.log(savedName);
+                                    if (savedName) {
+                                        resolve(savedName);
+                                    }
+                                    else {
+                                        reject(null);
+                                    }
+                                });
+                            });
+                        });
+                    });
+                    doc.end();
+                }
+                catch (e) {
+                    console.log(e);
+                    reject(null);
+                }
+            }));
+        });
+    }
+    updateRequestStatus(request_id, status, unit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const findRequest = yield this.bloodDonationRepo.findDonationById(request_id);
+                console.log(findRequest);
+                console.log(request_id);
                 if (findRequest) {
                     if (findRequest.status == Enum_1.BloodDonationStatus.Approved) {
                         return {
@@ -224,7 +465,27 @@ class BloodService {
                     }
                     else {
                         const updateRequest = yield this.bloodDonationRepo.updateStatus(request_id, status);
+                        yield this.bloodDonationRepo.updateUnit(request_id, unit);
                         if (updateRequest) {
+                            if (status == Enum_1.BloodDonationStatus.Approved) {
+                                try {
+                                    this.bloodDonorRepo.findBloodDonorByDonorId(findRequest.donor_id).then((donor) => {
+                                        this.bloodReqRepo.findBloodRequirementByBloodId(findRequest.donation_id).then((req) => __awaiter(this, void 0, void 0, function* () {
+                                            if (donor && req) {
+                                                const certificateId = yield this.createCertificateId();
+                                                this.bloodDonationCertificate(donor === null || donor === void 0 ? void 0 : donor.full_name, req === null || req === void 0 ? void 0 : req.blood_group, unit, this.utilHelper.formatDateToMonthNameAndDate(findRequest.date), certificateId).then((certificateUpdate) => __awaiter(this, void 0, void 0, function* () {
+                                                    if (certificateUpdate && typeof certificateUpdate == "string") {
+                                                        yield this.bloodDonationRepo.updateCertificate(request_id, certificateUpdate, certificateId);
+                                                    }
+                                                }));
+                                            }
+                                        }));
+                                    });
+                                }
+                                catch (e) {
+                                    console.log("Certificate update failed");
+                                }
+                            }
                             return {
                                 status: true,
                                 msg: "Status has been updated",
@@ -474,17 +735,27 @@ class BloodService {
             }
         });
     }
-    findRequest(donor_id) {
+    findRequest(profile_id, blood_id, page, limit, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-            if (findDonor) {
-                const bloodGroup = findDonor.blood_group;
-                const request = yield this.bloodReqRepo.findActiveBloodReq(bloodGroup);
-                return {
-                    status: true,
-                    msg: "Request fetched",
-                    statusCode: Enum_1.StatusCode.OK
-                };
+            const bloodReq = yield this.bloodReqRepo.findBloodRequirementByBloodId(blood_id);
+            if (bloodReq && bloodReq.profile_id == profile_id) {
+                const skip = (page - 1) * limit;
+                const request = yield this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit, status);
+                if (request.total_records) {
+                    return {
+                        status: true,
+                        msg: "Request fetched",
+                        statusCode: Enum_1.StatusCode.OK,
+                        data: request
+                    };
+                }
+                else {
+                    return {
+                        status: false,
+                        msg: "No data found",
+                        statusCode: Enum_1.StatusCode.NOT_FOUND,
+                    };
+                }
             }
             else {
                 return {

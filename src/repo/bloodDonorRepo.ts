@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 import { IBloodDonor, IBloodDonorTemplate, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorCollection from "../db/model/donors";
-import { BloodDonorStatus, DonorAccountBlockedReason } from "../Util/Types/Enum";
+import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../Util/Types/Enum";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 
 interface IBloodDonorRepo {
@@ -11,7 +11,7 @@ interface IBloodDonorRepo {
     findDonors(filter: ISearchBloodDonorTemplate): Promise<IBloodDonor[]>
     blockDonor(donor_id: string, reason: DonorAccountBlockedReason): Promise<boolean>
     unBlockDonor(donor_id: string): Promise<boolean>
-    nearBySearch(location: [number, number], limit: number, skip: number): Promise<IPaginatedResponse<IBloodDonor[]>>
+    nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>>
 }
 
 class BloodDonorRepo implements IBloodDonorRepo {
@@ -64,9 +64,14 @@ class BloodDonorRepo implements IBloodDonorRepo {
     }
 
 
-    async nearBySearch(location: [number, number], limit: number, skip: number): Promise<IPaginatedResponse<IBloodDonor[]>> {
+    async nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>> {
         try {
+
+            console.log("The location");
+            console.log(location);
+
             const find = await this.BloodDonor.aggregate([
+
                 {
                     $geoNear: {
                         near: {
@@ -75,27 +80,49 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         },
                         distanceField: "distance",  // Adds the distance from the point
                         spherical: true,            // Use spherical distance calculation
-                        maxDistance: 5000,          // Optional: Maximum distance in meters (e.g., 5 km)
+                        maxDistance: 5000000000000,          // Optional: Maximum distance in meters (e.g., 5 km)
+                    },
+                },
+                {
+                    $match: {
+                        status: BloodDonorStatus.Open,
+                        blood_group: group
                     }
                 },
                 {
                     $facet: {
                         paginated: [
                             { $skip: skip },   // Skip based on pagination offset
-                            { $limit: limit }  // Limit number of documents
+                            { $limit: limit }, // Limit number of documents
+                            {
+                                $sort: { distance: 1 }  // Sort by distance, ascending order
+                            }
                         ],
                         total_records: [
                             { $count: "total_records" }  // Count total number of records
                         ]
                     }
+                },
+                {
+                    $unwind: "$total_records"
+                },
+                {
+                    $project: {
+                        paginated: 1,
+                        total_records: "$total_records.total_records"
+                    }
                 }
             ]);
+            console.log(find);
+
             const response: IPaginatedResponse<IBloodDonor[]> = {
                 paginated: find[0].paginated,
                 total_records: find[0].total_records
             }
             return response;
         } catch (e) {
+            console.log(e);
+
             const response: IPaginatedResponse<IBloodDonor[]> = {
                 paginated: [],
                 total_records: 0

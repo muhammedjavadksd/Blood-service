@@ -4,16 +4,12 @@ import { IBloodDonor, IBloodDonorTemplate, ILocatedAt } from "../../Util/Types/I
 
 
 const LocationScheme = new Schema<ILocatedAt>({
-    accuracy: {
-        type: Number,
+    type: {
+        type: String,
         required: true
     },
-    longitude: {
-        type: Number,
-        required: true
-    },
-    latitude: {
-        type: Number,
+    coordinates: {
+        type: [Number, Number],
         required: true
     }
 })

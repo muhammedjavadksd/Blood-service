@@ -49,10 +49,13 @@ class UserController {
     }
     findNearestDonors(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const bloodGroup = req.params.group;
             const limit = +req.params.limit;
             const page = +req.params.page;
-            const location = req.body.location;
-            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location);
+            const long = +(req.query.long || 0);
+            const lati = +(req.query.lati || 0);
+            const location = [long, lati];
+            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup);
             res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
         });
     }
@@ -85,12 +88,13 @@ class UserController {
     }
     requestUpdate(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            const request_id = req.body.donate_id;
+            var _a, _b;
+            const request_id = req.params.requirement_id;
             const status = req.body.status;
             const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
+            const unit = (_b = req.body) === null || _b === void 0 ? void 0 : _b.unit;
             if (profile_id) {
-                const updateStatus = yield this.bloodService.updateRequestStatus(request_id, status, profile_id);
+                const updateStatus = yield this.bloodService.updateRequestStatus(request_id, status, unit);
                 res.status(updateStatus.statusCode).json({ status: updateStatus.status, msg: updateStatus.msg });
             }
             else {
@@ -204,10 +208,15 @@ class UserController {
     }
     findRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b, _c, _d, _e;
+            console.log("Reached here");
             if (req.context) {
-                const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
-                const findCases = yield this.bloodService.findRequest(donor_id);
+                const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
+                const blood_id = (_b = req.params) === null || _b === void 0 ? void 0 : _b.request_id;
+                const status = (_c = req.params) === null || _c === void 0 ? void 0 : _c.status;
+                const page = +((_d = req.params) === null || _d === void 0 ? void 0 : _d.page);
+                const limit = +((_e = req.params) === null || _e === void 0 ? void 0 : _e.limit);
+                const findCases = yield this.bloodService.findRequest(profile_id, blood_id, page, limit, status);
                 res.status(findCases.statusCode).json({ status: findCases.status, msg: findCases.msg, data: findCases.data });
             }
             else {
@@ -282,20 +291,18 @@ class UserController {
     }
     createBloodDonation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("Body data");
             console.log(req.body);
             const fullName = req.body.full_name;
             const emailID = req.body.email_address;
             const phoneNumber = req.body.phone_number;
             const bloodGroup = req.body.bloodGroup;
-            const location = req.body.location;
-            const locatedAt = {
-                accuracy: location === null || location === void 0 ? void 0 : location.accuracy,
-                latitude: location === null || location === void 0 ? void 0 : location.latitude,
-                longitude: location === null || location === void 0 ? void 0 : location.longitude
+            const locationBody = req.body.location;
+            const location = {
+                coordinates: [+locationBody.longitude || 0, (locationBody === null || locationBody === void 0 ? void 0 : locationBody.latitude) || 0],
+                type: "Point"
             };
-            const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, locatedAt);
-            console.log("Blood donor created");
-            console.log(createBloodDonor);
+            const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,
                 msg: createBloodDonor.msg,

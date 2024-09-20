@@ -3,6 +3,7 @@ import mongoose, { Schema } from "mongoose";
 import { BloodDonationStatus } from "../../Util/Types/Enum";
 import { IBloodDonate } from "../../Util/Types/Interface/ModelInterface";
 
+
 const bloodDonationConcers = new Schema({
     seriousConditions: {
         type: [String],
@@ -15,6 +16,7 @@ const bloodDonationConcers = new Schema({
 })
 
 const bloodDonateScheme = new mongoose.Schema({
+    certificate_id: String,
     donor_id: {
         type: String,
         required: true
@@ -36,6 +38,11 @@ const bloodDonateScheme = new mongoose.Schema({
         enum: Object.values(BloodDonationStatus),
         required: true
     },
+    unit: {
+        type: Number,
+        required: false
+    },
+    certificate: String,
     concerns: {
         type: bloodDonationConcers,
         required: true

@@ -36,6 +36,7 @@ const bloodDonationConcers = new mongoose_1.Schema({
     tobaco_use: Boolean
 });
 const bloodDonateScheme = new mongoose_1.default.Schema({
+    certificate_id: String,
     donor_id: {
         type: String,
         required: true
@@ -57,6 +58,11 @@ const bloodDonateScheme = new mongoose_1.default.Schema({
         enum: Object.values(Enum_1.BloodDonationStatus),
         required: true
     },
+    unit: {
+        type: Number,
+        required: false
+    },
+    certificate: String,
     concerns: {
         type: bloodDonationConcers,
         required: true
