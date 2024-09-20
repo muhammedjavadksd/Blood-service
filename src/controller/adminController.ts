@@ -15,6 +15,7 @@ interface IAdminController {
     closeRequest(req: Request, res: Response): Promise<void>
     viewSingleRequirement(req: Request, res: Response): Promise<void>
     findDonorByBloodGroup(req: Request, res: Response): Promise<void>
+    // updateRequirementStatus(req: Request, res: Response): Promise<void>
 }
 
 class AdminController implements IAdminController {
@@ -24,6 +25,8 @@ class AdminController implements IAdminController {
     constructor() {
         this.bloodService = new BloodService()
     }
+
+
 
     async findDonorByBloodGroup(req: Request, res: Response): Promise<void> {
 
@@ -80,8 +83,8 @@ class AdminController implements IAdminController {
     }
 
     async updateBloodRequirements(req: Request, res: Response): Promise<void> {
-        const blood_id: string = req.params.blood_id;
-        const status: BloodStatus = req.params.status as BloodStatus;
+        const blood_id: string = req.params.requirement_id;
+        const status: BloodStatus = req.params.new_status as BloodStatus;
         const update = await this.bloodService.updateProfileStatus(blood_id, status);
         res.status(update.statusCode).json({ status: update.status, msg: update.msg, data: update.data });
     }

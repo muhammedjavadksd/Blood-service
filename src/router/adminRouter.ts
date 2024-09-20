@@ -16,6 +16,7 @@ adminRouter.get("/find-donors/:limit/:page/:blood_group", authMiddleware.isValid
 adminRouter.post("/add-requirement", authMiddleware.isValidAdmin, adminController.addBloodRequirement)
 
 adminRouter.patch("/update_blood_group/:request_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodGroup)
+adminRouter.patch("/update-requirement-status/:requirement_id/:new_status", authMiddleware.isValidAdmin, adminController.updateBloodRequirements)
 
 // adminRouter.get("/find_nearby", authMiddleware.isValidUser, userController.findNearBy)
 // adminRouter.get("/blood_availability", authMiddleware.isValidUser, userController.bloodAvailability)
