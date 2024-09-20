@@ -48,6 +48,7 @@ interface IBloodService {
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
     advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
     findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse>
+    findSingleBloodRequirement(requirement_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
 }
 
 class BloodService implements IBloodService {
@@ -79,6 +80,24 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
         config()
         // this.chatService = new ChatService();
+    }
+
+    async findSingleBloodRequirement(requirement_id: string, status?: BloodStatus): Promise<HelperFunctionResponse> {
+
+        const findreq = await this.bloodReqRepo.findSingleBloodRequirement(requirement_id, status);
+        if (findreq) {
+            return {
+                msg: "Requirement found",
+                status: true,
+                statusCode: StatusCode.OK
+            }
+        } else {
+            return {
+                msg: "No data found",
+                status: false,
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
 

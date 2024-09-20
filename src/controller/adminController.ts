@@ -13,6 +13,7 @@ interface IAdminController {
     updateBloodRequirements(req: Request, res: Response): Promise<void>
     addBloodRequirement(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
+    viewSingleRequirement(req: Request, res: Response): Promise<void>
 }
 
 class AdminController implements IAdminController {
@@ -21,6 +22,18 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.bloodService = new BloodService()
+    }
+
+
+    async viewSingleRequirement(req: Request, res: Response): Promise<void> {
+
+        const req_id: string = req.params.blood_id;
+        if (req_id) {
+            const findRequirement = await this.bloodService.findSingleBloodRequirement(req_id)
+            res.status(findRequirement.statusCode).json({ status: findRequirement.status, msg: findRequirement.msg, data: findRequirement.data })
+        } else {
+            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please provide valid data" });
+        }
     }
 
 

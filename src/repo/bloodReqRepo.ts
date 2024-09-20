@@ -17,6 +17,7 @@ interface IBloodReqDepo {
     findUserRequirement(profile_id: string, skip: number, limit: number, status: BloodStatus): Promise<IPaginatedResponse<IBloodRequirement[]>>
     advanceFilter(search: Record<string, any>, limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>>
     updateBloodRequirement(blood_id: string, status: BloodStatus): Promise<boolean>
+    findSingleBloodRequirement(blood_id: string, status: BloodStatus): Promise<IBloodRequirement | null>
 }
 
 class BloodReqDepo implements IBloodReqDepo {
@@ -26,6 +27,11 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+    async findSingleBloodRequirement(blood_id: string, status?: BloodStatus): Promise<IBloodRequirement | null> {
+        const find = await this.BloodReq.findOne({ blood_id, status })
+        return find
     }
 
 

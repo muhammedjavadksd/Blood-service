@@ -10,6 +10,7 @@ const adminController = new AdminController();
 
 adminRouter.get("/blood_group_change_requests/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests)
 adminRouter.get("/blood-requirements/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.getAllRequirements)
+adminRouter.get("/blood-requirements/:blood_id", authMiddleware.isValidAdmin, adminController.getAllRequirements)
 
 adminRouter.post("/add-requirement", authMiddleware.isValidAdmin, adminController.addBloodRequirement)
 
