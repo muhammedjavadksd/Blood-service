@@ -18,6 +18,12 @@ class BloodReqDepo {
     constructor() {
         this.BloodReq = requirements_1.default;
     }
+    findSingleBloodRequirement(blood_id, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const find = yield this.BloodReq.findOne({ blood_id, status });
+            return find;
+        });
+    }
     updateBloodRequirement(blood_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const update = yield this.BloodReq.updateOne({ blood_id }, { $set: { status } });
@@ -151,11 +157,17 @@ class BloodReqDepo {
             return !!addIntrest.modifiedCount;
         });
     }
-    findBloodReqPaginted(limit, skip) {
+    findBloodReqPaginted(limit, skip, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(limit, skip);
+            const match = {};
+            if (status) {
+                match['status'] = status;
+            }
             try {
                 const bloodGroup = yield this.BloodReq.aggregate([
+                    {
+                        $match: match
+                    },
                     {
                         $facet: {
                             paginated: [

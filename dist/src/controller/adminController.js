@@ -13,14 +13,95 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bloodService_1 = __importDefault(require("../service/bloodService"));
+const Enum_1 = require("../Util/Types/Enum");
 class AdminController {
     constructor() {
         this.bloodService = new bloodService_1.default();
     }
-    updateBloodRequirements(req, res) {
+    findNearest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const lati = +(req.query.lati || 0);
+            const long = +(req.query.long || 0);
+            const page = +(req.params.page);
+            const limit = +req.params.limit;
+            const blood_group = req.params.blood_group;
+            if (lati == null || lati == undefined || long == null || long == undefined) {
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" });
+            }
+            else {
+                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group);
+                res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data });
+            }
+        });
+    }
+    bloodBank(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const page = +req.params.page;
+            const limit = +req.params.limit;
+            const bloodGroup = req.params.bloodGroup;
+            const isUrgent = req.query.is_urgent == "true";
+            const hospital_id = (_a = req.query.hospital_id) === null || _a === void 0 ? void 0 : _a.toString();
+            const bloodBank = yield this.bloodService.advanceBloodBankSearch(page, limit, bloodGroup, isUrgent, hospital_id);
+            res.status(bloodBank.statusCode).json({ status: bloodBank.status, msg: bloodBank.msg, data: bloodBank.data });
+        });
+    }
+    findDonorByBloodGroup(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const limit = +req.params.limit;
+            const page = +req.params.page;
+            const bloodGroup = req.params.blood_group;
+            const findData = yield this.bloodService.searchBloodDonors(page, limit, bloodGroup, Enum_1.BloodDonorStatus.Open);
+            res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
+        });
+    }
+    viewSingleRequirement(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const req_id = req.params.blood_id;
+            if (req_id) {
+                const findRequirement = yield this.bloodService.findSingleBloodRequirement(req_id);
+                res.status(findRequirement.statusCode).json({ status: findRequirement.status, msg: findRequirement.msg, data: findRequirement.data });
+            }
+            else {
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please provide valid data" });
+            }
+        });
+    }
+    closeRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = req.params.blood_id;
-            const status = req.params.status;
+            if (blood_id) {
+                const closeRequest = yield this.bloodService.closeRequest(blood_id, Enum_1.BloodCloseCategory.AdminClose, "Admin closed the requirement");
+                res.status(closeRequest.statusCode).json({ status: closeRequest.status, msg: closeRequest.msg, data: closeRequest.data });
+            }
+            else {
+                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please provide valid data" });
+            }
+        });
+    }
+    addBloodRequirement(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const requestData = req.body.requestData;
+            const patientName = requestData.patientName;
+            const unit = requestData.unit;
+            const neededAt = requestData.neededAt;
+            const status = requestData.status;
+            const blood_group = requestData.blood_group;
+            const relationship = "Admin";
+            const locatedAt = req.body.locatedAt;
+            const address = req.body.address;
+            const phoneNumber = req.body.phoneNumber;
+            const email_address = req.body.email_address;
+            const user_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user_id;
+            const addRequirement = yield this.bloodService.createBloodRequirement(patientName, unit, neededAt, status, user_id, user_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address);
+            res.status(addRequirement.statusCode).json({ status: addRequirement.status, msg: addRequirement.msg, data: addRequirement.data });
+        });
+    }
+    updateBloodRequirements(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blood_id = req.params.requirement_id;
+            const status = req.params.new_status;
             const update = yield this.bloodService.updateProfileStatus(blood_id, status);
             res.status(update.statusCode).json({ status: update.status, msg: update.msg, data: update.data });
         });
@@ -29,18 +110,17 @@ class AdminController {
         return __awaiter(this, void 0, void 0, function* () {
             const page = +req.params.page;
             const limit = +req.params.limit;
-            const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit);
+            const status = req.params.status;
+            const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit, status);
             res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
         });
     }
-    // limit/:skip/:per_page
     bloodGroupChangeRequests(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const limit = parseInt(req.params.limit);
-            const skip = parseInt(req.params.skip);
-            const per_page = parseInt(req.params.per_page);
+            const page = parseInt(req.params.page);
             const status = req.params.status;
-            const findRequets = yield this.bloodService.findBloodGroupChangeRequets(status, skip, limit, per_page);
+            const findRequets = yield this.bloodService.findBloodGroupChangeRequets(status, page, limit);
             res.status(findRequets.statusCode).json({ status: findRequets.status, msg: findRequets.msg, data: findRequets.data });
         });
     }

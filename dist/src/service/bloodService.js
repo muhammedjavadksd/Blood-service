@@ -50,6 +50,46 @@ class BloodService {
         (0, dotenv_1.config)();
         // this.chatService = new ChatService();
     }
+    searchBloodDonors(page, limit, bloodGroup, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skip = (page - 1) * limit;
+            const findProfile = yield this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+            if (findProfile.paginated.length) {
+                return {
+                    status: true,
+                    msg: "Donors found",
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: findProfile
+                };
+            }
+            else {
+                return {
+                    status: false,
+                    msg: "No profile found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
+    }
+    findSingleBloodRequirement(requirement_id, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findreq = yield this.bloodReqRepo.findSingleBloodRequirement(requirement_id, status);
+            if (findreq) {
+                return {
+                    msg: "Requirement found",
+                    status: true,
+                    statusCode: Enum_1.StatusCode.OK
+                };
+            }
+            else {
+                return {
+                    msg: "No data found",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
+    }
     updateProfileStatus(blood_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const bloodStatus = yield this.bloodReqRepo.updateBloodRequirement(blood_id, status);
@@ -69,11 +109,11 @@ class BloodService {
             }
         });
     }
-    findPaginatedBloodRequirements(page, limit) {
+    findPaginatedBloodRequirements(page, limit, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip);
-            if (find.total_records) {
+            const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip, status);
+            if (find.paginated.length) {
                 return {
                     status: true,
                     msg: "Requirement's found",
@@ -905,16 +945,15 @@ class BloodService {
             }
         });
     }
-    findBloodGroupChangeRequets(status, page, limit, perPage) {
+    findBloodGroupChangeRequets(status, page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findRequests = yield this.bloodGroupUpdateRepo.findAllRequest(status, page, limit, perPage);
-            if (findRequests.length) {
+            const skip = (page - 1) * limit;
+            const findRequests = yield this.bloodGroupUpdateRepo.findAllRequest(status, skip, limit);
+            if (findRequests.paginated.length) {
                 return {
                     status: true,
                     msg: "Data fetched",
-                    data: {
-                        requests: findRequests
-                    },
+                    data: findRequests,
                     statusCode: Enum_1.StatusCode.OK
                 };
             }
@@ -1021,12 +1060,7 @@ class BloodService {
     createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address) {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = yield this.createBloodId(blood_group, unit);
-            console.log("The location is ");
-            console.log(locatedAt);
             const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address);
-            // const notification =
-            //     console.log(createdBloodRequest);
-            console.log("Passed one");
             const matchedProfile = yield this.bloodDonorRepo.findDonors({ status: Enum_1.BloodDonorStatus.Open, blood_group: blood_group });
             const profileEmails = matchedProfile.map((pro) => { return { name: pro.full_name, email: pro.email_address }; });
             console.log("Passed two");

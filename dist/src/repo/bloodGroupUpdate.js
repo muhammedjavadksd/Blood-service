@@ -35,10 +35,55 @@ class BloodGroupUpdateRepo {
             return saveData === null || saveData === void 0 ? void 0 : saveData.id;
         });
     }
-    findAllRequest(status, page, limit, perPage) {
+    findAllRequest(status, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            const findRequest = yield this.bloodGroupUpdate.find({ status }).skip(perPage * (page - 1)).limit(limit);
-            return findRequest;
+            try {
+                const findDonation = yield this.bloodGroupUpdate.aggregate([
+                    {
+                        $match: {
+                            status: status
+                        }
+                    },
+                    {
+                        $facet: {
+                            paginated: [
+                                {
+                                    $skip: skip
+                                },
+                                {
+                                    $limit: limit
+                                },
+                            ],
+                            total_records: [
+                                {
+                                    $count: "total_records"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
+                    }
+                ]);
+                const response = {
+                    paginated: findDonation[0].paginated,
+                    total_records: findDonation[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                const response = {
+                    paginated: [],
+                    total_records: 0
+                };
+                return response;
+            }
         });
     }
 }

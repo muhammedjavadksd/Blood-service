@@ -43,6 +43,54 @@ class BloodDonorRepo {
             return findDonors;
         });
     }
+    findDonorsPaginated(limit, skip, filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const findDonors = yield this.BloodDonor.aggregate([
+                    {
+                        $match: filter
+                    },
+                    {
+                        $facet: {
+                            paginated: [
+                                {
+                                    $skip: skip
+                                },
+                                {
+                                    $limit: limit
+                                }
+                            ],
+                            total_records: [
+                                {
+                                    $count: "total_records"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: "$total_records"
+                    },
+                    {
+                        $project: {
+                            paginated: 1,
+                            total_records: "$total_records.total_records"
+                        }
+                    }
+                ]);
+                const response = {
+                    paginated: findDonors[0].paginated,
+                    total_records: findDonors[0].total_records
+                };
+                return response;
+            }
+            catch (e) {
+                return {
+                    paginated: [],
+                    total_records: 0
+                };
+            }
+        });
+    }
     updateBloodDonor(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const updateData = yield this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData });

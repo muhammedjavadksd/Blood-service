@@ -36,6 +36,7 @@ var BloodDonorStatus;
 })(BloodDonorStatus || (exports.BloodDonorStatus = BloodDonorStatus = {}));
 var BloodCloseCategory;
 (function (BloodCloseCategory) {
+    BloodCloseCategory["AdminClose"] = "Admin close request";
     BloodCloseCategory["FULFILLED"] = "Fulfilled the request";
     BloodCloseCategory["MEDICAL_CONDITION_CHANGE"] = "Medical Condition Change";
     BloodCloseCategory["ERROR_IN_REQUEST"] = "Error in Request";
