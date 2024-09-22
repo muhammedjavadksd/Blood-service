@@ -5,6 +5,7 @@ import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../Util
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 
 interface IBloodDonorRepo {
+    getStatitics(): Promise<Record<string, any>>
     createDonor(donorData: IBloodDonorTemplate): Promise<null | ObjectId>
     findBloodDonorByDonorId(donor_id: string): Promise<IBloodDonor | null>
     updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean>
@@ -27,6 +28,40 @@ class BloodDonorRepo implements IBloodDonorRepo {
         this.blockDonor = this.blockDonor.bind(this)
         this.unBlockDonor = this.unBlockDonor.bind(this)
         this.BloodDonor = BloodDonorCollection;
+    }
+
+
+    async getStatitics(): Promise<Record<string, any>> {
+        const result = await this.BloodDonor.aggregate([
+            {
+                $facet: {
+                    totalDonors: [{ $count: "count" }],
+                    openDonors: [
+                        { $match: { status: "Open" } },
+                        { $count: "count" }
+                    ],
+                    closedDonors: [
+                        { $match: { status: "Closed" } },
+                        { $count: "count" }
+                    ],
+                    donorsByBloodGroup: [
+                        {
+                            $group: {
+                                _id: "$blood_group",
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        return {
+            totalDonors: result[0].totalDonors[0]?.count || 0,
+            openDonors: result[0].openDonors[0]?.count || 0,
+            closedDonors: result[0].closedDonors[0]?.count || 0,
+            donorsByBloodGroup: result[0].donorsByBloodGroup
+        };
     }
 
 

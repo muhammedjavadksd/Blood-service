@@ -9,6 +9,7 @@ const adminController_1 = __importDefault(require("../controller/adminController
 const adminRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const adminController = new adminController_1.default();
+adminRouter.get("/statitics", authMiddleware.isValidAdmin, adminController.getStatitics);
 adminRouter.get("/blood_group_change_requests/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.bloodGroupChangeRequests);
 adminRouter.get("/blood-requirements/:limit/:page/:status", authMiddleware.isValidAdmin, adminController.getAllRequirements);
 adminRouter.get("/blood-requirements/:blood_id", authMiddleware.isValidAdmin, adminController.getAllRequirements);

@@ -24,6 +24,7 @@ import { config } from 'dotenv'
 
 
 interface IBloodService {
+    getStatitics(): Promise<HelperFunctionResponse>
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse>
@@ -82,6 +83,21 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
         config()
         // this.chatService = new ChatService();
+    }
+
+
+    async getStatitics(): Promise<HelperFunctionResponse> {
+        const bloodReqStatitics = await this.bloodReqRepo.getStatitics();
+        const bloodDonorStatitics = await this.bloodDonorRepo.getStatitics();
+        return {
+            status: true,
+            msg: "Blood statitics found",
+            statusCode: StatusCode.OK,
+            data: {
+                blood_requirement: bloodReqStatitics,
+                blood_donor: bloodDonorStatitics
+            }
+        }
     }
 
 

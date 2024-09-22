@@ -16,7 +16,14 @@ const bloodService_1 = __importDefault(require("../service/bloodService"));
 const Enum_1 = require("../Util/Types/Enum");
 class AdminController {
     constructor() {
+        this.getStatitics = this.getStatitics.bind(this);
         this.bloodService = new bloodService_1.default();
+    }
+    getStatitics(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const find = yield this.bloodService.getStatitics();
+            res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
+        });
     }
     findNearest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

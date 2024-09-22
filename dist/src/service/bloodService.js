@@ -50,6 +50,21 @@ class BloodService {
         (0, dotenv_1.config)();
         // this.chatService = new ChatService();
     }
+    getStatitics() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bloodReqStatitics = yield this.bloodReqRepo.getStatitics();
+            const bloodDonorStatitics = yield this.bloodDonorRepo.getStatitics();
+            return {
+                status: true,
+                msg: "Blood statitics found",
+                statusCode: Enum_1.StatusCode.OK,
+                data: {
+                    blood_requirement: bloodReqStatitics,
+                    blood_donor: bloodDonorStatitics
+                }
+            };
+        });
+    }
     searchBloodDonors(page, limit, bloodGroup, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;

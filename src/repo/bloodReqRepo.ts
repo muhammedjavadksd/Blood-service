@@ -6,6 +6,7 @@ import { LocatedAt, mongoObjectId } from "../Util/Types/Types";
 
 
 interface IBloodReqDepo {
+    getStatitics(): Promise<Record<string, any>>
     createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null>
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
@@ -27,6 +28,57 @@ class BloodReqDepo implements IBloodReqDepo {
 
     constructor() {
         this.BloodReq = BloodRequirement
+    }
+
+    async getStatitics(): Promise<Record<string, any>> {
+        const result = await this.BloodReq.aggregate([
+            {
+                $facet: {
+                    totalRequests: [{ $count: "count" }],
+                    openRequests: [
+                        { $match: { is_closed: false } },
+                        { $count: "count" }
+                    ],
+                    closedRequests: [
+                        { $match: { is_closed: true } },
+                        { $count: "count" }
+                    ],
+                    totalUnitsNeeded: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalUnits: { $sum: "$unit" }
+                            }
+                        }
+                    ],
+                    requestsByBloodGroup: [
+                        {
+                            $group: {
+                                _id: "$blood_group",
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ],
+                    requestsByStatus: [
+                        {
+                            $group: {
+                                _id: "$status",
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+        return {
+            totalRequests: result[0].totalRequests[0]?.count || 0,
+            openRequests: result[0].openRequests[0]?.count || 0,
+            closedRequests: result[0].closedRequests[0]?.count || 0,
+            totalUnitsNeeded: result[0].totalUnitsNeeded[0]?.totalUnits || 0,
+            requestsByBloodGroup: result[0].requestsByBloodGroup,
+            requestsByStatus: result[0].requestsByStatus
+        };
+
     }
 
     async findSingleBloodRequirement(blood_id: string, status?: BloodStatus): Promise<IBloodRequirement | null> {

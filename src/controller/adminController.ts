@@ -7,6 +7,7 @@ import { LocatedAt } from "../Util/Types/Types";
 
 
 interface IAdminController {
+    getStatitics(req: Request, res: Response, next: NextFunction): Promise<void>
     bloodGroupChangeRequests(req: Request, res: Response, next: NextFunction): Promise<void>
     updateBloodGroup(req: Request, res: Response): Promise<void>
     getAllRequirements(req: Request, res: Response): Promise<void>
@@ -25,7 +26,15 @@ class AdminController implements IAdminController {
     private readonly bloodService
 
     constructor() {
+        this.getStatitics = this.getStatitics.bind(this)
         this.bloodService = new BloodService()
+    }
+
+
+    async getStatitics(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+        const find = await this.bloodService.getStatitics();
+        res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
     }
 
 

@@ -24,6 +24,40 @@ class BloodDonorRepo {
         this.unBlockDonor = this.unBlockDonor.bind(this);
         this.BloodDonor = donors_1.default;
     }
+    getStatitics() {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            const result = yield this.BloodDonor.aggregate([
+                {
+                    $facet: {
+                        totalDonors: [{ $count: "count" }],
+                        openDonors: [
+                            { $match: { status: "Open" } },
+                            { $count: "count" }
+                        ],
+                        closedDonors: [
+                            { $match: { status: "Closed" } },
+                            { $count: "count" }
+                        ],
+                        donorsByBloodGroup: [
+                            {
+                                $group: {
+                                    _id: "$blood_group",
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]);
+            return {
+                totalDonors: ((_a = result[0].totalDonors[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+                openDonors: ((_b = result[0].openDonors[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
+                closedDonors: ((_c = result[0].closedDonors[0]) === null || _c === void 0 ? void 0 : _c.count) || 0,
+                donorsByBloodGroup: result[0].donorsByBloodGroup
+            };
+        });
+    }
     blockDonor(donor_id, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             const blockedDate = new Date();
