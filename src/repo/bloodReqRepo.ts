@@ -11,7 +11,7 @@ interface IBloodReqDepo {
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
-    findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]>
+    findActiveBloodReqPaginted(limit: number, skip: number, status: BloodStatus, match: Record<string, any>): Promise<IBloodRequirement[]>
     findBloodReqPaginted(limit: number, skip: number): Promise<IPaginatedResponse<IBloodRequirement[]>>
     addIntrest(donor_id: string, blood_id: string): Promise<boolean>
     findMyIntrest(donor_id: string): Promise<IBloodRequirement[]>
@@ -82,7 +82,13 @@ class BloodReqDepo implements IBloodReqDepo {
     }
 
     async findSingleBloodRequirement(blood_id: string, status?: BloodStatus): Promise<IBloodRequirement | null> {
-        const find = await this.BloodReq.findOne({ blood_id, status })
+        const query: Record<string, any> = { blood_id };
+
+        if (status) {
+            query.status = status;
+        }
+
+        const find = await this.BloodReq.findOne(query);
         return find
     }
 
@@ -234,16 +240,20 @@ class BloodReqDepo implements IBloodReqDepo {
 
 
 
-    async findBloodReqPaginted(limit: number, skip: number, status?: BloodStatus): Promise<IPaginatedResponse<IBloodRequirement[]>> {
+    async findBloodReqPaginted(limit: number, skip: number, status?: BloodStatus, matchs?: Record<string, any>): Promise<IPaginatedResponse<IBloodRequirement[]>> {
 
         const match: Record<string, any> = {}
         if (status) {
             match['status'] = status
         }
+
+        console.log(match);
+        console.log(matchs);
+
         try {
             const bloodGroup = await this.BloodReq.aggregate([
                 {
-                    $match: match
+                    $match: { ...match, ...matchs }
                 },
                 {
                     $facet: {
@@ -289,7 +299,7 @@ class BloodReqDepo implements IBloodReqDepo {
     async findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]> {
         console.log(limit, skip);
 
-        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Pending }).skip(skip).limit(limit)
+        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Approved }).skip(skip).limit(limit)
         return bloodGroup
     }
 

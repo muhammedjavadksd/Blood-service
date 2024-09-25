@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, JwtTimer, Relationship, S3BucketsNames, StatusCode } from "../Util/Types/Enum";
+import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, JwtTimer, Relationship, S3BucketsNames, S3FolderName, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
 import BloodRepo from "../repo/bloodReqRepo";
@@ -23,7 +23,7 @@ class ImageServices implements IImageServices {
 
     constructor() {
         this.utilHelper = new UtilHelper();
-        this.s3Bucket = new S3BucketHelper(S3BucketsNames.bloodCertificate)
+        this.s3Bucket = new S3BucketHelper(S3BucketsNames.bloodCertificate, S3FolderName.bloodCertification)
     }
 
 

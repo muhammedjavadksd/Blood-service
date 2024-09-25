@@ -23,7 +23,6 @@ app.use(express.static("public"))
 app.use(logger("combined"))
 
 const bloodService = new BloodService();
-// bloodService.bloodDonationCertificate("1", "2", "123");
 
 app.use("/", userRouter)
 app.use("/admin", adminRouter)

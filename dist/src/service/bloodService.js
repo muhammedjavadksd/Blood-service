@@ -42,6 +42,10 @@ class BloodService {
         this.updateRequestStatus = this.updateRequestStatus.bind(this);
         this.donationHistory = this.donationHistory.bind(this);
         this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this);
+        this.findSingleBloodRequirement = this.findSingleBloodRequirement.bind(this);
+        this.findResponse = this.findResponse.bind(this);
+        this.findPaginatedBloodRequirements = this.findPaginatedBloodRequirements.bind(this);
+        this.findActivePaginatedBloodRequirements = this.findActivePaginatedBloodRequirements.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
@@ -49,6 +53,29 @@ class BloodService {
         this.utilHelper = new UtilHelpers_1.default();
         (0, dotenv_1.config)();
         // this.chatService = new ChatService();
+    }
+    findResponse(blood_id, page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skip = (page - 1) * limit;
+            const findResponse = yield this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit);
+            if (findResponse.paginated.length) {
+                return {
+                    msg: "Response found",
+                    status: true,
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: {
+                        intrest: findResponse
+                    }
+                };
+            }
+            else {
+                return {
+                    msg: "No profile found",
+                    status: false,
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
+                };
+            }
+        });
     }
     getStatitics() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -69,6 +96,7 @@ class BloodService {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
             const findProfile = yield this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+            console.log(findProfile);
             if (findProfile.paginated.length) {
                 return {
                     status: true,
@@ -93,7 +121,10 @@ class BloodService {
                 return {
                     msg: "Requirement found",
                     status: true,
-                    statusCode: Enum_1.StatusCode.OK
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: {
+                        req: findreq
+                    }
                 };
             }
             else {
@@ -124,10 +155,27 @@ class BloodService {
             }
         });
     }
-    findPaginatedBloodRequirements(page, limit, status) {
+    findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, isClosedOnly) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip, status);
+            const match = {};
+            if (bloodGroup) {
+                match.blood_group = bloodGroup;
+            }
+            // if (location) {
+            //     match.location = {
+            //         $geoWithin: {
+            //             $centerSphere: [
+            //                 location,
+            //                 1 / 6378.1
+            //             ]
+            //         }
+            //     };
+            // }
+            if (isClosedOnly !== undefined) {
+                match.isClosed = isClosedOnly;
+            }
+            const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip, status, match);
             if (find.paginated.length) {
                 return {
                     status: true,
@@ -746,8 +794,8 @@ class BloodService {
                 else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
                     const blockedReason = (_a = findDonor.blocked_reason) !== null && _a !== void 0 ? _a : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
                     return {
-                        status: true,
-                        msg: blockedReason,
+                        status: false,
+                        msg: blockedReason || "You't cant donate blood at this moment!",
                         statusCode: Enum_1.StatusCode.BAD_REQUEST
                     };
                 }

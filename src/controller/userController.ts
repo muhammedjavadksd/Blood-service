@@ -244,6 +244,8 @@ class UserController implements IUserController {
             if (context) {
                 const donor_id = context?.donor_id;
                 const data = await this.bloodService.showIntrest(token, profile_id, donor_id, req_id, concerns, date)
+                console.log(data);
+
                 res.status(data.statusCode).json({ status: data.status, msg: data.msg })
             } else {
                 res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })

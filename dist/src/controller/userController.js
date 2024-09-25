@@ -195,6 +195,7 @@ class UserController {
                 if (context) {
                     const donor_id = context === null || context === void 0 ? void 0 : context.donor_id;
                     const data = yield this.bloodService.showIntrest(token, profile_id, donor_id, req_id, concerns, date);
+                    console.log(data);
                     res.status(data.statusCode).json({ status: data.status, msg: data.msg });
                 }
                 else {

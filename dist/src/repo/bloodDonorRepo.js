@@ -43,7 +43,12 @@ class BloodDonorRepo {
                             {
                                 $group: {
                                     _id: "$blood_group",
-                                    count: { $sum: 1 }
+                                    activeCount: {
+                                        $sum: { $cond: [{ $eq: ["$status", Enum_1.BloodDonorStatus.Open] }, 1, 0] }
+                                    },
+                                    inactiveCount: {
+                                        $sum: { $cond: [{ $ne: ["$status", Enum_1.BloodDonorStatus.Open] }, 1, 0] }
+                                    }
                                 }
                             }
                         ]
@@ -79,6 +84,7 @@ class BloodDonorRepo {
     }
     findDonorsPaginated(limit, skip, filter) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(filter);
             try {
                 const findDonors = yield this.BloodDonor.aggregate([
                     {

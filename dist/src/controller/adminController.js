@@ -17,7 +17,20 @@ const Enum_1 = require("../Util/Types/Enum");
 class AdminController {
     constructor() {
         this.getStatitics = this.getStatitics.bind(this);
+        this.viewSingleRequirement = this.viewSingleRequirement.bind(this);
+        this.findIntrest = this.findIntrest.bind(this);
+        this.getAllRequirements = this.getAllRequirements.bind(this);
+        this.findDonorByBloodGroup = this.findDonorByBloodGroup.bind(this);
         this.bloodService = new bloodService_1.default();
+    }
+    findIntrest(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const page = +req.params.page;
+            const limit = +req.params.limit;
+            const blood_id = req.params.blood_id;
+            const findBloodResponse = yield this.bloodService.findResponse(blood_id, page, limit);
+            res.status(findBloodResponse.statusCode).json({ status: findBloodResponse.status, msg: findBloodResponse.msg, data: findBloodResponse.data });
+        });
     }
     getStatitics(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -55,6 +68,7 @@ class AdminController {
     }
     findDonorByBloodGroup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("Reached here");
             const limit = +req.params.limit;
             const page = +req.params.page;
             const bloodGroup = req.params.blood_group;
@@ -115,10 +129,16 @@ class AdminController {
     }
     getAllRequirements(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             const page = +req.params.page;
             const limit = +req.params.limit;
             const status = req.params.status;
-            const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit, status);
+            const bloodGroup = req.query.blood_group;
+            const lang = (_a = req.query.lang) === null || _a === void 0 ? void 0 : _a.toString();
+            const long = (_b = req.query.long) === null || _b === void 0 ? void 0 : _b.toString();
+            const closedOnly = req.query.closed == "true";
+            const location = (lang && long) ? [lang, long] : null;
+            const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
             res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
         });
     }

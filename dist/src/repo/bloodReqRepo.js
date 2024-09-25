@@ -72,7 +72,11 @@ class BloodReqDepo {
     }
     findSingleBloodRequirement(blood_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const find = yield this.BloodReq.findOne({ blood_id, status });
+            const query = { blood_id };
+            if (status) {
+                query.status = status;
+            }
+            const find = yield this.BloodReq.findOne(query);
             return find;
         });
     }
@@ -209,16 +213,18 @@ class BloodReqDepo {
             return !!addIntrest.modifiedCount;
         });
     }
-    findBloodReqPaginted(limit, skip, status) {
+    findBloodReqPaginted(limit, skip, status, matchs) {
         return __awaiter(this, void 0, void 0, function* () {
             const match = {};
             if (status) {
                 match['status'] = status;
             }
+            console.log(match);
+            console.log(matchs);
             try {
                 const bloodGroup = yield this.BloodReq.aggregate([
                     {
-                        $match: match
+                        $match: Object.assign(Object.assign({}, match), matchs)
                     },
                     {
                         $facet: {
@@ -264,7 +270,7 @@ class BloodReqDepo {
     findActiveBloodReqPaginted(limit, skip) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(limit, skip);
-            const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Pending }).skip(skip).limit(limit);
+            const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Approved }).skip(skip).limit(limit);
             return bloodGroup;
         });
     }

@@ -21,7 +21,6 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static("public"));
 app.use((0, morgan_1.default)("combined"));
 const bloodService = new bloodService_1.default();
-// bloodService.bloodDonationCertificate("1", "2", "123");
 app.use("/", userRouter_1.default);
 app.use("/admin", adminRouter_1.default);
 app.use("/organization", organizationRouter_1.default);

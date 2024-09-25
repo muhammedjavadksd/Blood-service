@@ -18,7 +18,7 @@ const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
 class ImageServices {
     constructor() {
         this.utilHelper = new UtilHelpers_1.default();
-        this.s3Bucket = new S3Helper_1.default(Enum_1.S3BucketsNames.bloodCertificate);
+        this.s3Bucket = new S3Helper_1.default(Enum_1.S3BucketsNames.bloodCertificate, Enum_1.S3FolderName.bloodCertification);
     }
     generatePresignedUrlForChangeBloodGroupCertificat() {
         return __awaiter(this, void 0, void 0, function* () {

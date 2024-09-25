@@ -18,6 +18,7 @@ interface IAdminController {
     findDonorByBloodGroup(req: Request, res: Response): Promise<void>
     bloodBank(req: Request, res: Response): Promise<void>
     findNearest(req: Request, res: Response): Promise<void>
+    findIntrest(req: Request, res: Response): Promise<void>
     // updateRequirementStatus(req: Request, res: Response): Promise<void>
 }
 
@@ -27,7 +28,21 @@ class AdminController implements IAdminController {
 
     constructor() {
         this.getStatitics = this.getStatitics.bind(this)
+        this.viewSingleRequirement = this.viewSingleRequirement.bind(this)
+        this.findIntrest = this.findIntrest.bind(this)
+        this.getAllRequirements = this.getAllRequirements.bind(this)
+        this.findDonorByBloodGroup = this.findDonorByBloodGroup.bind(this)
         this.bloodService = new BloodService()
+    }
+
+
+    async findIntrest(req: Request, res: Response): Promise<void> {
+        const page: number = +req.params.page
+        const limit: number = +req.params.limit
+        const blood_id: string = req.params.blood_id
+
+        const findBloodResponse = await this.bloodService.findResponse(blood_id, page, limit);
+        res.status(findBloodResponse.statusCode).json({ status: findBloodResponse.status, msg: findBloodResponse.msg, data: findBloodResponse.data })
     }
 
 
@@ -69,6 +84,9 @@ class AdminController implements IAdminController {
 
 
     async findDonorByBloodGroup(req: Request, res: Response): Promise<void> {
+
+        console.log("Reached here");
+
 
         const limit: number = +req.params.limit
         const page: number = +req.params.page
@@ -134,8 +152,13 @@ class AdminController implements IAdminController {
         const page: number = +req.params.page
         const limit: number = +req.params.limit
         const status: BloodStatus = req.params.status as BloodStatus
+        const bloodGroup: BloodGroup | undefined = req.query.blood_group as BloodGroup
+        const lang: string | undefined = req.query.lang?.toString()
+        const long: string | undefined = req.query.long?.toString();
+        const closedOnly: boolean = req.query.closed == "true"
+        const location: [string, string] | null = (lang && long) ? [lang, long] : null
 
-        const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit, status);
+        const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
         res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })
     }
 

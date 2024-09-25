@@ -21,6 +21,7 @@ import path from 'path'
 import fs from 'fs'
 import S3BucketHelper from "../Util/Helpers/S3Helper";
 import { config } from 'dotenv'
+import { bool } from "aws-sdk/clients/signer";
 
 
 interface IBloodService {
@@ -38,8 +39,9 @@ interface IBloodService {
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
     // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string, blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse>
+    findResponse(blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
-    findPaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
+    findPaginatedBloodRequirements(page: number, limit: number, status: BloodStatus, bloodGroup?: BloodGroup, location?: [string, string], isClosedOnly?: boolean): Promise<HelperFunctionResponse>
     showIntrest(auth_token: string, profile_id: string, donor_id: string, request_id: string, concers: BloodDonationConcerns, date: Date): Promise<HelperFunctionResponse>
     findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
@@ -76,6 +78,10 @@ class BloodService implements IBloodService {
         this.updateRequestStatus = this.updateRequestStatus.bind(this)
         this.donationHistory = this.donationHistory.bind(this)
         this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
+        this.findSingleBloodRequirement = this.findSingleBloodRequirement.bind(this)
+        this.findResponse = this.findResponse.bind(this)
+        this.findPaginatedBloodRequirements = this.findPaginatedBloodRequirements.bind(this)
+        this.findActivePaginatedBloodRequirements = this.findActivePaginatedBloodRequirements.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
@@ -83,6 +89,29 @@ class BloodService implements IBloodService {
         this.utilHelper = new UtilHelper();
         config()
         // this.chatService = new ChatService();
+    }
+
+
+    async findResponse(blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse> {
+
+        const skip: number = (page - 1) * limit;
+        const findResponse = await this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit)
+        if (findResponse.paginated.length) {
+            return {
+                msg: "Response found",
+                status: true,
+                statusCode: StatusCode.OK,
+                data: {
+                    intrest: findResponse
+                }
+            }
+        } else {
+            return {
+                msg: "No profile found",
+                status: false,
+                statusCode: StatusCode.NOT_FOUND
+            }
+        }
     }
 
 
@@ -108,6 +137,8 @@ class BloodService implements IBloodService {
 
         const skip: number = (page - 1) * limit;
         const findProfile = await this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+        console.log(findProfile);
+
         if (findProfile.paginated.length) {
             return {
                 status: true,
@@ -132,7 +163,10 @@ class BloodService implements IBloodService {
             return {
                 msg: "Requirement found",
                 status: true,
-                statusCode: StatusCode.OK
+                statusCode: StatusCode.OK,
+                data: {
+                    req: findreq
+                }
             }
         } else {
             return {
@@ -161,9 +195,29 @@ class BloodService implements IBloodService {
         }
     }
 
-    async findPaginatedBloodRequirements(page: number, limit: number, status?: BloodStatus): Promise<HelperFunctionResponse> {
+    async findPaginatedBloodRequirements(page: number, limit: number, status?: BloodStatus, bloodGroup?: BloodGroup, location?: [string, string] | null, isClosedOnly?: boolean): Promise<HelperFunctionResponse> {
         const skip: number = (page - 1) * limit;
-        const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip, status);
+        const match: Record<string, any> = {}
+
+        if (bloodGroup) {
+            match.blood_group = bloodGroup;
+        }
+
+        // if (location) {
+        //     match.location = {
+        //         $geoWithin: {
+        //             $centerSphere: [
+        //                 location,
+        //                 1 / 6378.1
+        //             ]
+        //         }
+        //     };
+        // }
+
+        if (isClosedOnly !== undefined) {
+            match.isClosed = isClosedOnly;
+        }
+        const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip, status, match);
         if (find.paginated.length) {
             return {
                 status: true,
@@ -884,8 +938,8 @@ class BloodService implements IBloodService {
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
                 const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
                 return {
-                    status: true,
-                    msg: blockedReason,
+                    status: false,
+                    msg: blockedReason || "You't cant donate blood at this moment!",
                     statusCode: StatusCode.BAD_REQUEST
                 }
             } else {

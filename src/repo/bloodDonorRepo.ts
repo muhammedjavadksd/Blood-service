@@ -48,7 +48,12 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         {
                             $group: {
                                 _id: "$blood_group",
-                                count: { $sum: 1 }
+                                activeCount: {
+                                    $sum: { $cond: [{ $eq: ["$status", BloodDonorStatus.Open] }, 1, 0] }
+                                },
+                                inactiveCount: {
+                                    $sum: { $cond: [{ $ne: ["$status", BloodDonorStatus.Open] }, 1, 0] }
+                                }
                             }
                         }
                     ]
@@ -84,7 +89,10 @@ class BloodDonorRepo implements IBloodDonorRepo {
 
     async findDonorsPaginated(limit: number, skip: number, filter: ISearchBloodDonorTemplate): Promise<IPaginatedResponse<IBloodDonor[]>> {
 
+        console.log(filter);
+
         try {
+
             const findDonors = await this.BloodDonor.aggregate([
                 {
                     $match: filter
