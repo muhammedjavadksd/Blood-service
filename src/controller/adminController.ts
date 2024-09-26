@@ -32,6 +32,7 @@ class AdminController implements IAdminController {
         this.findIntrest = this.findIntrest.bind(this)
         this.getAllRequirements = this.getAllRequirements.bind(this)
         this.findDonorByBloodGroup = this.findDonorByBloodGroup.bind(this)
+        this.closeRequest = this.closeRequest.bind(this)
         this.bloodService = new BloodService()
     }
 

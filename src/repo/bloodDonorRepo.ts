@@ -164,8 +164,9 @@ class BloodDonorRepo implements IBloodDonorRepo {
             console.log("The location");
             console.log(location);
 
-            const find = await this.BloodDonor.aggregate([
+            location = [75.3062326, 12.4333217]
 
+            const find = await this.BloodDonor.aggregate([
                 {
                     $geoNear: {
                         near: {
@@ -174,7 +175,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         },
                         distanceField: "distance",  // Adds the distance from the point
                         spherical: true,            // Use spherical distance calculation
-                        maxDistance: 5000000000000,          // Optional: Maximum distance in meters (e.g., 5 km)
+                        maxDistance: 5000,          // Optional: Maximum distance in meters (e.g., 5 km)
                     },
                 },
                 {
