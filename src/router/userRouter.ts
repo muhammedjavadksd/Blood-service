@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import express, { Request, Response, Router } from 'express';
 import AuthMiddleware from '../middleware/authMiddelware';
 import UserController from '../controller/userController';
 import { saveBloodRequestUpdateCertificate } from '../middleware/multerMiddleware';
@@ -9,6 +9,10 @@ const userRouter: Router = express.Router()
 const authMiddleware = new AuthMiddleware();
 const userController = new UserController();
 const uploadCertificate = multer({ storage: saveBloodRequestUpdateCertificate })
+
+userRouter.get("/", (req: Request, res: Response) => {
+    res.status(200).send("Welcome to Blood service");
+})
 
 userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
 userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability) //test
