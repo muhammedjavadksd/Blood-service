@@ -11,7 +11,7 @@ const userController = new UserController();
 const uploadCertificate = multer({ storage: saveBloodRequestUpdateCertificate })
 
 userRouter.get("/", (req: Request, res: Response) => {
-    res.status(200).send("Welcome to Blood service");
+    res.status(200).send("Welcome to Blood service in Life Link");
 })
 
 userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
