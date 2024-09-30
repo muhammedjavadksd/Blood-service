@@ -11,6 +11,7 @@ import mongoose, { Schema } from 'mongoose';
 import { IChatNotification } from './src/Util/Types/Interface/UtilInterface';
 import ProfileChat from './src/communication/ApiCommunication/ProfileChatApiCommunication';
 import BloodNotificationProvider from './src/communication/Provider/notification_service';
+import cors from 'cors'
 
 env.config({ path: "./.env" })
 mongoDbConnection()
@@ -22,6 +23,9 @@ const PORT: number = parseInt(process.env.PORT || '', 10) || 7007;
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static("public"))
+app.use(cors({
+    origin: ['http://localhost:3000', "https://life-link.online"]
+}))
 
 app.use(logger("combined"))
 
