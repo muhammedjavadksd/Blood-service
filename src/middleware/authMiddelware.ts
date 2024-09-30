@@ -88,6 +88,8 @@ class AuthMiddleware implements IAuthMiddleware {
                 // "email_address": "muhammedjavad119144@gmail.com",
                 // "full_name": "Muhammed Javad",
                 // "phone_number": "9744727684",
+                console.log("Token of blood is");
+                console.log(token);
                 const tokenValidation: JwtPayload | boolean | string = await tokenHelper.checkTokenValidity(token)
                 console.log(tokenValidation);
 

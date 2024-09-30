@@ -35,7 +35,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import * as  amqplib from 'amqplib'
 const amqplib = __importStar(require("amqplib"));
 class BloodNotificationProvider {
-    // process.env.USER_SIGN_IN_NOTIFICATION as string;
     constructor(queue) {
         this.connection = null;
         this.channel = null;

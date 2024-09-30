@@ -303,6 +303,8 @@ class BloodService implements IBloodService {
             const expressedIntrest: number = (await this.bloodDonationRepo.findMyIntrest(donor_id, 0, 10)).total_records
             const matchedProfile: number = profile ? (await this.bloodReqRepo.findActiveBloodReq(profile.blood_group)).length : 0
 
+
+
             if (profile) {
                 const profileCard: IProfileCard = {
                     profile,
@@ -902,7 +904,6 @@ class BloodService implements IBloodService {
                 console.log(`To profile id ${findRequirement.profile_id}`)
                 const newInterest = await this.bloodDonationRepo.saveDonation(bloodDonationData);
 
-                console.log(newInterest);
 
 
                 if (newInterest) {
@@ -1307,6 +1308,11 @@ class BloodService implements IBloodService {
             phoneNumber: phoneNumber,
             status: BloodDonorStatus.Open
         };
+
+        console.log("The final data");
+        console.log(saveData);
+
+
 
 
         console.log("Saved data");

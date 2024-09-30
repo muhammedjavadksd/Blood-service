@@ -12,6 +12,9 @@ const userRouter = express_1.default.Router();
 const authMiddleware = new authMiddelware_1.default();
 const userController = new userController_1.default();
 const uploadCertificate = (0, multer_1.default)({ storage: multerMiddleware_1.saveBloodRequestUpdateCertificate });
+userRouter.get("/", (req, res) => {
+    res.status(200).send("Welcome to Blood service in Life Link");
+});
 userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
 userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability); //test
 userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency/:hospital", userController.advanceBloodRequirement); //test

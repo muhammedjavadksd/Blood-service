@@ -161,8 +161,9 @@ class BloodDonorRepo implements IBloodDonorRepo {
     async nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>> {
         try {
 
-            console.log("The location");
+            console.log("The location is");
             console.log(location);
+            console.log(group);
 
             location = [75.3062326, 12.4333217]
 
@@ -173,9 +174,9 @@ class BloodDonorRepo implements IBloodDonorRepo {
                             type: "Point",
                             coordinates: location
                         },
-                        distanceField: "distance",  // Adds the distance from the point
-                        spherical: true,            // Use spherical distance calculation
-                        maxDistance: 5000,          // Optional: Maximum distance in meters (e.g., 5 km)
+                        distanceField: "distance",
+                        spherical: true,
+                        maxDistance: 50000000,
                     },
                 },
                 {

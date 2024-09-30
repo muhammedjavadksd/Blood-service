@@ -28,11 +28,13 @@ const Enum_1 = require("../../Util/Types/Enum");
 const LocationScheme = new mongoose_1.Schema({
     type: {
         type: String,
+        enum: ['Point'], // Ensure only 'Point' is allowed
         required: true
     },
     coordinates: {
-        type: [Number, Number],
-        required: true
+        type: [Number], // Updated to allow an array of numbers
+        required: true,
+        index: '2dsphere' // Add geospatial index
     }
 });
 const bloodDonorScheme = new mongoose_1.default.Schema({

@@ -23,7 +23,7 @@ interface ISearchBloodDonorTemplate {
 }
 
 interface ILocatedAt {
-    type: string,
+    type: "Point",
     coordinates: [number, number]
 }
 

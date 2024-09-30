@@ -95,6 +95,8 @@ class BloodDonationRepo implements IBloodDonationRepo {
             }
             return response;
         } catch (e) {
+            console.log(e);
+
             const response: IPaginatedResponse<IBloodDonate[]> = {
                 paginated: [],
                 total_records: 0

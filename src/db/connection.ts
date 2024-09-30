@@ -16,6 +16,7 @@ function mongoDbConnection() {
         await BloodDonorCollection.init()
         console.log("Database connected with blood service");
     }).catch((err) => {
+        console.log(err);
         console.log("Database connection failed with blood service");
     })
 }

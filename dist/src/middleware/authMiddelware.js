@@ -78,6 +78,8 @@ class AuthMiddleware {
                     // "email_address": "muhammedjavad119144@gmail.com",
                     // "full_name": "Muhammed Javad",
                     // "phone_number": "9744727684",
+                    console.log("Token of blood is");
+                    console.log(token);
                     const tokenValidation = yield tokenHelper.checkTokenValidity(token);
                     console.log(tokenValidation);
                     if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {

@@ -91,6 +91,7 @@ class BloodDonationRepo {
                 return response;
             }
             catch (e) {
+                console.log(e);
                 const response = {
                     paginated: [],
                     total_records: 0

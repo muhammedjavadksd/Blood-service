@@ -13,7 +13,6 @@ class BloodNotificationProvider implements IBloodNotificationProvider {
     private connection: amqplib.Connection | null = null;
     private channel: amqplib.Channel | null = null
     private readonly NOTIFICATION_QUEUE: string;
-    // process.env.USER_SIGN_IN_NOTIFICATION as string;
 
 
     constructor(queue: string) {

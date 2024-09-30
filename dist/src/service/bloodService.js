@@ -763,7 +763,6 @@ class BloodService {
                     const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
                     console.log(`To profile id ${findRequirement.profile_id}`);
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
-                    console.log(newInterest);
                     if (newInterest) {
                         const bloodNotification = {
                             msg,
@@ -1165,6 +1164,8 @@ class BloodService {
                 phoneNumber: phoneNumber,
                 status: Enum_1.BloodDonorStatus.Open
             };
+            console.log("The final data");
+            console.log(saveData);
             console.log("Saved data");
             console.log(saveData);
             const saveDonorIntoDb = yield this.bloodDonorRepo.createDonor(saveData);

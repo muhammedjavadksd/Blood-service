@@ -300,9 +300,11 @@ class UserController {
             const bloodGroup = req.body.bloodGroup;
             const locationBody = req.body.location;
             const location = {
-                coordinates: [+locationBody.longitude || 0, (locationBody === null || locationBody === void 0 ? void 0 : locationBody.latitude) || 0],
+                coordinates: [+locationBody.longitude || 76.514138, (locationBody === null || locationBody === void 0 ? void 0 : locationBody.latitude) || 10.5199396],
                 type: "Point"
             };
+            console.log("Location proper");
+            console.log(location);
             const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,
