@@ -158,7 +158,6 @@ class BloodDonorRepo {
                 console.log("The location is");
                 console.log(location);
                 console.log(group);
-                location = [75.3062326, 12.4333217];
                 const find = yield this.BloodDonor.aggregate([
                     {
                         $geoNear: {
@@ -170,6 +169,25 @@ class BloodDonorRepo {
                             spherical: true,
                             maxDistance: 50000000,
                         },
+                    },
+                    {
+                        $sort: {
+                            distance: -1
+                        }
+                    },
+                    {
+                        $addFields: {
+                            "distance": {
+                                $concat: [
+                                    {
+                                        $toString: {
+                                            $ceil: { $divide: ['$distance', 1000] }
+                                        }
+                                    },
+                                    " Km"
+                                ]
+                            }
+                        }
                     },
                     {
                         $match: {

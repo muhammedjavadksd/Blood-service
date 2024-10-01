@@ -98,7 +98,7 @@ var BloodGroupUpdateStatus;
 })(BloodGroupUpdateStatus || (exports.BloodGroupUpdateStatus = BloodGroupUpdateStatus = {}));
 var S3BucketsNames;
 (function (S3BucketsNames) {
-    S3BucketsNames["bloodCertificate"] = "blood-certificate";
+    S3BucketsNames["bloodCertificate"] = "lifelink-blood-bank";
 })(S3BucketsNames || (exports.S3BucketsNames = S3BucketsNames = {}));
 var ChatFrom;
 (function (ChatFrom) {

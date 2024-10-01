@@ -17,7 +17,7 @@ userRouter.get("/", (req, res) => {
 });
 userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile); // test pending
 userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability); //test
-userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency/:hospital", userController.advanceBloodRequirement); //test
+userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency?/:hospital?", userController.advanceBloodRequirement); //test
 userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics); //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending // for getting request matched on my blood group
