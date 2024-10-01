@@ -3,14 +3,8 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import env from 'dotenv';
 import userRouter from './src/router/userRouter';
 import adminRouter from './src/router/adminRouter';
-import organizationRouter from './src/router/organizationRouter';
 import mongoDbConnection from './src/db/connection';
 import logger from 'morgan';
-import BloodService from './src/service/bloodService';
-import mongoose, { Schema } from 'mongoose';
-import { IChatNotification } from './src/Util/Types/Interface/UtilInterface';
-import ProfileChat from './src/communication/ApiCommunication/ProfileChatApiCommunication';
-import BloodNotificationProvider from './src/communication/Provider/notification_service';
 import cors from 'cors'
 
 env.config({ path: "./.env" })
@@ -31,7 +25,6 @@ app.use(logger("combined"))
 
 app.use("/", userRouter)
 app.use("/admin", adminRouter)
-// app.use("/organization", organizationRouter)
 
 
 

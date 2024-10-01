@@ -102,7 +102,7 @@ enum BloodGroupUpdateStatus {
 }
 
 enum S3BucketsNames {
-    bloodCertificate = "blood-certificate"
+    bloodCertificate = "lifelink-blood-bank"
 }
 
 enum ChatFrom {
