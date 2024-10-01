@@ -8,7 +8,7 @@ class ProfileChat implements IProfileChat {
 
 
     createChatRoom(msg: string, to_profile: string, token: string): void {
-        axios.post(`${process.env.PROFILE_END_POINT || ""}/create_chat`, { to_profile: to_profile, msg }, {
+        axios.post(`${process.env.PROFILE_END_POINT || ""}/create_chat/profile_id`, { to_profile: to_profile, msg }, {
             headers: { authorization: `Bearer ${token}` }
         }).then(() => true)
             .catch((e) => {
