@@ -65,6 +65,7 @@ class UserController implements IUserController {
         this.requestUpdate = this.requestUpdate.bind(this)
         this.findDonationHistory = this.findDonationHistory.bind(this)
         this.findNearestDonors = this.findNearestDonors.bind(this)
+        this.advanceBloodRequirement = this.advanceBloodRequirement.bind(this)
         // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
         this.bloodDonorRepo = new BloodDonorRepo()
