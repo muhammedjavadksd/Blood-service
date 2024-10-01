@@ -1,8 +1,7 @@
 
 import express, { Express, NextFunction, Request, Response } from 'express';
 import env from 'dotenv';
-import userRouter from './src/router/userRouter';
-import adminRouter from './src/router/adminRouter';
+
 import mongoDbConnection from './src/db/connection';
 import logger from 'morgan';
 import cors from 'cors'
@@ -20,6 +19,9 @@ app.use(express.static("public"))
 app.use(cors({
     origin: ['http://localhost:3000', "https://life-link.online"]
 }))
+
+import userRouter from './src/router/userRouter';
+import adminRouter from './src/router/adminRouter';
 
 app.use(logger("combined"))
 
