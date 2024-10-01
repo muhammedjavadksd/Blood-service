@@ -281,7 +281,8 @@ class BloodService implements IBloodService {
             return {
                 status: true,
                 msg: "Found result",
-                statusCode: StatusCode.OK
+                statusCode: StatusCode.OK,
+                data: findData
             }
         } else {
             return {
