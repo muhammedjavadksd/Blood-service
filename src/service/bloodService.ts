@@ -1220,24 +1220,46 @@ class BloodService implements IBloodService {
     }
 
     async updateBloodDonors(editData: Record<string, any>, edit_id: string): Promise<HelperFunctionResponse> {
-        const updateDonor = await this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
-        console.log(updateDonor);
-        console.log(edit_id, editData);
 
+        const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(edit_id);
+        if (findDonor) {
 
-        if (updateDonor) {
-            return {
-                status: true,
-                msg: "Donor updated success",
-                statusCode: StatusCode.OK
+            if (editData['status']) {
+                if (editData['status'] == BloodDonorStatus.Open) {
+                    if (findDonor.blocked_reason == DonorAccountBlockedReason.AlreadyDonated) {
+                        return {
+                            msg: "You can't manually update your status because you've already donated. Please wait 90 days before making any changes.",
+                            status: false,
+                            statusCode: StatusCode.BAD_REQUEST
+                        }
+                    }
+                }
+            }
+            const updateDonor = await this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+
+            if (updateDonor) {
+                return {
+                    status: true,
+                    msg: "Donor updated success",
+                    statusCode: StatusCode.OK
+                }
+            } else {
+                return {
+                    status: false,
+                    msg: "Donor updation failed",
+                    statusCode: StatusCode.BAD_REQUEST
+                }
             }
         } else {
             return {
                 status: false,
-                msg: "Donor updation failed",
-                statusCode: StatusCode.BAD_REQUEST
+                msg: "Donor not found",
+                statusCode: StatusCode.NOT_FOUND
             }
         }
+
+
+
     }
 
     async createDonorId(blood_group: BloodGroup, fullName: string): Promise<string> {
