@@ -81,7 +81,7 @@ class UserController implements IUserController {
         const page: number = +req.params.page;
         const long: number = +(req.query.long || 0)
         const lati: number = +(req.query.lati || 0)
-        const location: [number, number] = [lati, long]
+        const location: [number, number] = [long, lati]
 
 
 

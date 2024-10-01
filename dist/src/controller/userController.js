@@ -54,7 +54,7 @@ class UserController {
             const page = +req.params.page;
             const long = +(req.query.long || 0);
             const lati = +(req.query.lati || 0);
-            const location = [lati, long];
+            const location = [long, lati];
             const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup);
             res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
         });
