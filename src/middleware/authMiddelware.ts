@@ -17,8 +17,64 @@ interface IAuthMiddleware {
 
 class AuthMiddleware implements IAuthMiddleware {
 
-    async isValidAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-        next()
+    async isValidAdmin(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        const utilHelper = new UtilHelper();
+        const tokenHelper = new TokenHelper();
+        const headers: CustomRequest['headers'] = req.headers;
+        const token: string | false = utilHelper.getTokenFromHeader(headers['authorization'])
+        console.log("The token is :" + token);
+
+        if (token) {
+            if (!req.context) {
+                req.context = {}
+            }
+            req.context.auth_token = token;
+
+
+            const checkValidity: JwtPayload | string | boolean = await tokenHelper.checkTokenValidity(token);
+            console.log(checkValidity);
+
+            if (checkValidity) {
+                if (typeof checkValidity == "object") {
+                    const emailAddress: string = checkValidity.email || checkValidity.email_address;
+                    if (emailAddress) {
+                        if (checkValidity) {
+                            req.context.email_id = emailAddress;
+                            req.context.token = token;
+                            req.context.user_id = checkValidity.user_id;
+                            console.log("Passed");
+                            console.log(req.context);
+                            next();
+                        } else {
+                            res.status(401).json({
+                                status: false,
+                                msg: "Authorization is failed"
+                            });
+                        }
+                    } else {
+                        res.status(401).json({
+                            status: false,
+                            msg: "Authorization is failed"
+                        });
+                    }
+                } else {
+                    res.status(401).json({
+                        status: false,
+                        msg: "Authorization is failed"
+                    });
+                }
+            } else {
+                res.status(401).json({
+                    status: false,
+                    msg: "Authorization is failed"
+                });
+            }
+        } else {
+            res.status(401).json({
+                status: false,
+                msg: "Invalid auth attempt"
+            });
+        }
     }
 
     async isValidRequired(req: Request, res: Response, next: NextFunction): Promise<void> {
