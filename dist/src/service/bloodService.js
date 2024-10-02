@@ -237,7 +237,8 @@ class BloodService {
                 return {
                     status: true,
                     msg: "Found result",
-                    statusCode: Enum_1.StatusCode.OK
+                    statusCode: Enum_1.StatusCode.OK,
+                    data: findData
                 };
             }
             else {
@@ -1079,21 +1080,40 @@ class BloodService {
     }
     updateBloodDonors(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updateDonor = yield this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
-            console.log(updateDonor);
-            console.log(edit_id, editData);
-            if (updateDonor) {
-                return {
-                    status: true,
-                    msg: "Donor updated success",
-                    statusCode: Enum_1.StatusCode.OK
-                };
+            const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(edit_id);
+            if (findDonor) {
+                if (editData['status']) {
+                    if (editData['status'] == Enum_1.BloodDonorStatus.Open) {
+                        if (findDonor.blocked_reason == Enum_1.DonorAccountBlockedReason.AlreadyDonated) {
+                            return {
+                                msg: "You can't manually update your status because you've already donated. Please wait 90 days before making any changes.",
+                                status: false,
+                                statusCode: Enum_1.StatusCode.BAD_REQUEST
+                            };
+                        }
+                    }
+                }
+                const updateDonor = yield this.bloodDonorRepo.updateBloodDonor(editData, edit_id);
+                if (updateDonor) {
+                    return {
+                        status: true,
+                        msg: "Donor updated success",
+                        statusCode: Enum_1.StatusCode.OK
+                    };
+                }
+                else {
+                    return {
+                        status: false,
+                        msg: "Donor updation failed",
+                        statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    };
+                }
             }
             else {
                 return {
                     status: false,
-                    msg: "Donor updation failed",
-                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    msg: "Donor not found",
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
                 };
             }
         });

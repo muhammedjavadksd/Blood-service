@@ -5,8 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const userRouter_1 = __importDefault(require("./src/router/userRouter"));
-const adminRouter_1 = __importDefault(require("./src/router/adminRouter"));
 const connection_1 = __importDefault(require("./src/db/connection"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
@@ -20,6 +18,8 @@ app.use(express_1.default.static("public"));
 app.use((0, cors_1.default)({
     origin: ['http://localhost:3000', "https://life-link.online"]
 }));
+const userRouter_1 = __importDefault(require("./src/router/userRouter"));
+const adminRouter_1 = __importDefault(require("./src/router/adminRouter"));
 app.use((0, morgan_1.default)("combined"));
 app.use("/", userRouter_1.default);
 app.use("/admin", adminRouter_1.default);
