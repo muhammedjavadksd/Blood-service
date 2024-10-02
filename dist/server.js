@@ -16,7 +16,7 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static("public"));
 app.use((0, cors_1.default)({
-    origin: ['http://localhost:3000', "https://life-link.online"]
+    origin: ["http://localhost:3000", "https://life-link.online", "https://www.life-link.online"]
 }));
 const userRouter_1 = __importDefault(require("./src/router/userRouter"));
 const adminRouter_1 = __importDefault(require("./src/router/adminRouter"));

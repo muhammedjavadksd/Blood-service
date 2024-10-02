@@ -17,7 +17,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static("public"))
 app.use(cors({
-    origin: ['http://localhost:3000', "https://life-link.online"]
+    origin: ["http://localhost:3000", "https://life-link.online", "https://www.life-link.online"]
 }))
 
 import userRouter from './src/router/userRouter';
