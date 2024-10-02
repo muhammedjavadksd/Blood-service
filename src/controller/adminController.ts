@@ -123,13 +123,13 @@ class AdminController implements IAdminController {
 
     async addBloodRequirement(req: CustomRequest, res: Response): Promise<void> {
 
-        const requestData = req.body.requestData;
+        // const requestData = re;
 
-        const patientName: string = requestData.patientName;
-        const unit: number = requestData.unit;
-        const neededAt: Date = requestData.neededAt;
-        const status = requestData.status;
-        const blood_group: BloodGroup = requestData.blood_group;
+        const patientName: string = req.body.patientName;
+        const unit: number = req.body.unit;
+        const neededAt: Date = req.body.neededAt;
+        const status = req.body.status;
+        const blood_group: BloodGroup = req.body.blood_group;
         const relationship: ExtendsRelationship = "Admin";
         const locatedAt: LocatedAt = req.body.locatedAt;
         const address: string = req.body.address;

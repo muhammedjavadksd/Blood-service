@@ -103,13 +103,13 @@ class AdminController {
     }
     addBloodRequirement(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            // const requestData = re;
             var _a;
-            const requestData = req.body.requestData;
-            const patientName = requestData.patientName;
-            const unit = requestData.unit;
-            const neededAt = requestData.neededAt;
-            const status = requestData.status;
-            const blood_group = requestData.blood_group;
+            const patientName = req.body.patientName;
+            const unit = req.body.unit;
+            const neededAt = req.body.neededAt;
+            const status = req.body.status;
+            const blood_group = req.body.blood_group;
             const relationship = "Admin";
             const locatedAt = req.body.locatedAt;
             const address = req.body.address;
