@@ -17,6 +17,7 @@ const bloodService_1 = __importDefault(require("../service/bloodService"));
 const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const ImageService_1 = __importDefault(require("../service/ImageService"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
+const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
 class UserController {
     // private readonly chatService: ChatService;
     constructor() {
@@ -236,20 +237,22 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
             const utilHelper = new UtilHelpers_1.default();
+            const s3Helper = new S3Helper_1.default(Enum_1.S3BucketsNames.bloodCertificate, Enum_1.S3FolderName.bloodCertification);
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const newGroup = (_b = req.body) === null || _b === void 0 ? void 0 : _b.blood_group;
             const certificateName = (_c = req.body) === null || _c === void 0 ? void 0 : _c.presigned_url;
-            const certificate_name_from_presigned_url = `${Enum_1.S3BucketsNames.bloodCertificate}/${utilHelper.extractImageNameFromPresignedUrl(certificateName)}`;
-            console.log(req.body);
-            console.log(certificate_name_from_presigned_url);
-            console.log(req.context);
-            if (certificate_name_from_presigned_url) {
-                const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
-                res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
+            const imageKey = utilHelper.extractImageNameFromPresignedUrl(certificateName);
+            // `https://${bucketName}.s3.amazonaws.com/${imageKey}`
+            if (certificateName && imageKey) {
+                const findFile = yield s3Helper.findFile(imageKey);
+                if (findFile) {
+                    const certificate_name_from_presigned_url = `https://${Enum_1.S3BucketsNames.bloodCertificate}.s3.amazonaws.com/${imageKey}`;
+                    const submiteRequest = yield this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
+                    res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg });
+                    return;
+                }
             }
-            else {
-                res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" });
-            }
+            res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" });
         });
     }
     updateBloodDonor(req, res) {

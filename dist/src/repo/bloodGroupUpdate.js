@@ -38,11 +38,19 @@ class BloodGroupUpdateRepo {
     findAllRequest(status, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const match = {};
+                if (status) {
+                    match['status'] = status;
+                }
+                console.log("The status");
+                console.log(status);
+                console.log("Page");
+                console.log(skip);
+                console.log("Limit");
+                console.log(limit);
                 const findDonation = yield this.bloodGroupUpdate.aggregate([
                     {
-                        $match: {
-                            status: status
-                        }
+                        $match: match
                     },
                     {
                         $facet: {
@@ -53,6 +61,17 @@ class BloodGroupUpdateRepo {
                                 {
                                     $limit: limit
                                 },
+                                {
+                                    $lookup: {
+                                        from: "donors",
+                                        localField: "donor_id",
+                                        foreignField: "donor_id",
+                                        as: "donor"
+                                    }
+                                },
+                                {
+                                    $unwind: "$donor"
+                                }
                             ],
                             total_records: [
                                 {
@@ -71,6 +90,8 @@ class BloodGroupUpdateRepo {
                         }
                     }
                 ]);
+                console.log("response");
+                console.log(findDonation);
                 const response = {
                     paginated: findDonation[0].paginated,
                     total_records: findDonation[0].total_records
@@ -78,6 +99,7 @@ class BloodGroupUpdateRepo {
                 return response;
             }
             catch (e) {
+                console.log(e);
                 const response = {
                     paginated: [],
                     total_records: 0

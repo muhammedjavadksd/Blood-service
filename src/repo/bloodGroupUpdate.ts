@@ -38,11 +38,25 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
 
     async findAllRequest(status: BloodGroupUpdateStatus, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonorUpdate>> {
         try {
+
+            const match: Record<string, any> = {};
+            if (status) {
+                match['status'] = status
+            }
+
+
+            console.log("The status")
+            console.log(status)
+
+            console.log("Page")
+            console.log(skip)
+
+            console.log("Limit")
+            console.log(limit)
+
             const findDonation = await this.bloodGroupUpdate.aggregate([
                 {
-                    $match: {
-                        status: status
-                    }
+                    $match: match
                 },
                 {
                     $facet: {
@@ -53,6 +67,17 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
                             {
                                 $limit: limit
                             },
+                            {
+                                $lookup: {
+                                    from: "donors",
+                                    localField: "donor_id",
+                                    foreignField: "donor_id",
+                                    as: "donor"
+                                }
+                            },
+                            {
+                                $unwind: "$donor"
+                            }
                         ],
                         total_records: [
                             {
@@ -71,12 +96,20 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
                     }
                 }
             ])
+
+
+            console.log("response");
+            console.log(findDonation);
+
+
             const response: IPaginatedResponse<IBloodDonorUpdate> = {
                 paginated: findDonation[0].paginated,
                 total_records: findDonation[0].total_records
             }
             return response;
         } catch (e) {
+            console.log(e);
+
             const response: IPaginatedResponse<IBloodDonorUpdate[]> = {
                 paginated: [],
                 total_records: 0

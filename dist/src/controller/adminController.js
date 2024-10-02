@@ -22,6 +22,8 @@ class AdminController {
         this.getAllRequirements = this.getAllRequirements.bind(this);
         this.findDonorByBloodGroup = this.findDonorByBloodGroup.bind(this);
         this.closeRequest = this.closeRequest.bind(this);
+        this.addBloodRequirement = this.addBloodRequirement.bind(this);
+        this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this);
         this.bloodService = new bloodService_1.default();
     }
     findIntrest(req, res) {

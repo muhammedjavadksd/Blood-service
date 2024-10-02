@@ -83,6 +83,7 @@ class BloodService implements IBloodService {
         this.findPaginatedBloodRequirements = this.findPaginatedBloodRequirements.bind(this)
         this.findActivePaginatedBloodRequirements = this.findActivePaginatedBloodRequirements.bind(this)
         this.advanceBloodBankSearch = this.advanceBloodBankSearch.bind(this)
+        this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
@@ -1156,6 +1157,9 @@ class BloodService implements IBloodService {
     async findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number): Promise<HelperFunctionResponse> {
         const skip: number = (page - 1) * limit
         const findRequests = await this.bloodGroupUpdateRepo.findAllRequest(status, skip, limit)
+
+
+
         if (findRequests.paginated.length) {
             return {
                 status: true,

@@ -25,6 +25,24 @@ class S3BucketHelper {
             signatureVersion: 'v4',
         });
     }
+    findFile(fileName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = {
+                    Bucket: this.bucketName,
+                    Key: fileName,
+                };
+                const headData = yield this.s3.headObject(params).promise();
+                if (headData) {
+                    return true;
+                }
+                return false;
+            }
+            catch (e) {
+                return false;
+            }
+        });
+    }
     generatePresignedUrl(key) {
         return __awaiter(this, void 0, void 0, function* () {
             const signedUrlExpireSeconds = 60 * 5;

@@ -47,6 +47,7 @@ class BloodService {
         this.findPaginatedBloodRequirements = this.findPaginatedBloodRequirements.bind(this);
         this.findActivePaginatedBloodRequirements = this.findActivePaginatedBloodRequirements.bind(this);
         this.advanceBloodBankSearch = this.advanceBloodBankSearch.bind(this);
+        this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this);
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();

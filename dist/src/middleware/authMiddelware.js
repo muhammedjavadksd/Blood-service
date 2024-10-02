@@ -20,7 +20,64 @@ const bloodDonation_1 = __importDefault(require("../repo/bloodDonation"));
 class AuthMiddleware {
     isValidAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            next();
+            const utilHelper = new UtilHelpers_1.default();
+            const tokenHelper = new tokenHelper_1.default();
+            const headers = req.headers;
+            const token = utilHelper.getTokenFromHeader(headers['authorization']);
+            console.log("The token is :" + token);
+            if (token) {
+                if (!req.context) {
+                    req.context = {};
+                }
+                req.context.auth_token = token;
+                const checkValidity = yield tokenHelper.checkTokenValidity(token);
+                console.log(checkValidity);
+                if (checkValidity) {
+                    if (typeof checkValidity == "object") {
+                        const emailAddress = checkValidity.email || checkValidity.email_address;
+                        if (emailAddress && checkValidity.role == "admin") {
+                            if (checkValidity) {
+                                req.context.email_id = emailAddress;
+                                req.context.token = token;
+                                req.context.user_id = checkValidity.user_id;
+                                console.log("Passed");
+                                console.log(req.context);
+                                next();
+                            }
+                            else {
+                                res.status(401).json({
+                                    status: false,
+                                    msg: "Authorization is failed"
+                                });
+                            }
+                        }
+                        else {
+                            res.status(401).json({
+                                status: false,
+                                msg: "Authorization is failed"
+                            });
+                        }
+                    }
+                    else {
+                        res.status(401).json({
+                            status: false,
+                            msg: "Authorization is failed"
+                        });
+                    }
+                }
+                else {
+                    res.status(401).json({
+                        status: false,
+                        msg: "Authorization is failed"
+                    });
+                }
+            }
+            else {
+                res.status(401).json({
+                    status: false,
+                    msg: "Invalid auth attempt"
+                });
+            }
         });
     }
     isValidRequired(req, res, next) {

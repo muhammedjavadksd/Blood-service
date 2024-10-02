@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, StatusCode } from '../Util/Types/Enum';
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, S3FolderName, StatusCode } from '../Util/Types/Enum';
 import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
 import BloodDonorRepo from '../repo/bloodDonorRepo';
@@ -9,6 +9,7 @@ import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
 import BloodNotificationProvider from '../communication/Provider/notification_service';
 import { ObjectId } from 'mongoose';
+import S3BucketHelper from '../Util/Helpers/S3Helper';
 // import ChatService from '../service/chatService';
 
 interface IUserController {
@@ -282,23 +283,23 @@ class UserController implements IUserController {
 
     async updateBloodGroup(req: CustomRequest, res: Response): Promise<void> {
         const utilHelper = new UtilHelper();
+        const s3Helper = new S3BucketHelper(S3BucketsNames.bloodCertificate, S3FolderName.bloodCertification);
         const donor_id: string = req.context?.donor_id;
         const newGroup: BloodGroup = req.body?.blood_group;
         const certificateName: string = req.body?.presigned_url;
-        const certificate_name_from_presigned_url: string | boolean = `${S3BucketsNames.bloodCertificate}/${utilHelper.extractImageNameFromPresignedUrl(certificateName)}`;
+        const imageKey: string | false = utilHelper.extractImageNameFromPresignedUrl(certificateName)
 
-        console.log(req.body);
-        console.log(certificate_name_from_presigned_url);
-        console.log(req.context);
-
-
-
-        if (certificate_name_from_presigned_url) {
-            const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
-            res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
-        } else {
-            res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" })
+        // `https://${bucketName}.s3.amazonaws.com/${imageKey}`
+        if (certificateName && imageKey) {
+            const findFile = await s3Helper.findFile(imageKey)
+            if (findFile) {
+                const certificate_name_from_presigned_url: string | boolean = `https://${S3BucketsNames.bloodCertificate}.s3.amazonaws.com/${imageKey}`;
+                const submiteRequest: HelperFunctionResponse = await this.bloodService.updateBloodGroupRequest(newGroup, donor_id, certificate_name_from_presigned_url);
+                res.status(submiteRequest.statusCode).json({ status: submiteRequest.status, msg: submiteRequest.msg })
+                return
+            }
         }
+        res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Image not found" })
     }
 
     async updateBloodDonor(req: CustomRequest, res: Response): Promise<void> {

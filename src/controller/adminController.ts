@@ -34,6 +34,7 @@ class AdminController implements IAdminController {
         this.findDonorByBloodGroup = this.findDonorByBloodGroup.bind(this)
         this.closeRequest = this.closeRequest.bind(this)
         this.addBloodRequirement = this.addBloodRequirement.bind(this)
+        this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this)
         this.bloodService = new BloodService()
     }
 
@@ -169,7 +170,7 @@ class AdminController implements IAdminController {
     async bloodGroupChangeRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
         const limit: number = parseInt(req.params.limit);
         const page: number = parseInt(req.params.page)
-        const status: BloodGroupUpdateStatus = req.params.status as BloodGroupUpdateStatus;
+        const status: BloodGroupUpdateStatus | null = req.params.status as BloodGroupUpdateStatus;
 
         const findRequets: HelperFunctionResponse = await this.bloodService.findBloodGroupChangeRequets(status, page, limit)
         res.status(findRequets.statusCode).json({ status: findRequets.status, msg: findRequets.msg, data: findRequets.data })
