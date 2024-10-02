@@ -283,12 +283,16 @@ class BloodReqDepo implements IBloodReqDepo {
                 }
             ])
 
+            console.log(bloodGroup);
+
+
             const response: IPaginatedResponse<IBloodRequirement[]> = {
                 paginated: bloodGroup[0].paginated,
                 total_records: bloodGroup[0].total_records
             }
             return response;
         } catch (e) {
+            console.log(e);
             return {
                 paginated: [],
                 total_records: 0
@@ -299,7 +303,7 @@ class BloodReqDepo implements IBloodReqDepo {
     async findActiveBloodReqPaginted(limit: number, skip: number): Promise<IBloodRequirement[]> {
         console.log(limit, skip);
 
-        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Approved }).skip(skip).limit(limit)
+        const bloodGroup: IBloodRequirement[] = await this.BloodReq.find({ status: BloodStatus.Approved, is_closed: false }).skip(skip).limit(limit)
         return bloodGroup
     }
 

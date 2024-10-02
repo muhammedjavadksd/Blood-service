@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 import { IBloodDonor, IBloodDonorTemplate, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
 import BloodDonorCollection from "../db/model/donors";
-import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../Util/Types/Enum";
+import { BloodDonorStatus, BloodGroup, BloodStatus, DonorAccountBlockedReason } from "../Util/Types/Enum";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 
 interface IBloodDonorRepo {
@@ -12,7 +12,7 @@ interface IBloodDonorRepo {
     findDonors(filter: ISearchBloodDonorTemplate): Promise<IBloodDonor[]>
     blockDonor(donor_id: string, reason: DonorAccountBlockedReason): Promise<boolean>
     unBlockDonor(donor_id: string): Promise<boolean>
-    nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>>
+    nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>>
     findDonorsPaginated(limit: number, skip: number, filter: ISearchBloodDonorTemplate): Promise<IPaginatedResponse<IBloodDonor[]>>
 }
 
@@ -163,15 +163,19 @@ class BloodDonorRepo implements IBloodDonorRepo {
     }
 
 
-    async nearBySearch(location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>> {
+    async nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>> {
         try {
 
-            console.log("The location is");
-            console.log(location);
-            console.log(group);
-
+            const match: Record<string, any> = {};
+            if (activeOnly) {
+                match['status'] = BloodStatus.Approved
+                match['is_closed'] = false
+            }
 
             const find = await this.BloodDonor.aggregate([
+                {
+                    $match: match
+                },
                 {
                     $geoNear: {
                         near: {

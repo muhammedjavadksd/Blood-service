@@ -253,6 +253,7 @@ class BloodReqDepo {
                         }
                     }
                 ]);
+                console.log(bloodGroup);
                 const response = {
                     paginated: bloodGroup[0].paginated,
                     total_records: bloodGroup[0].total_records
@@ -260,6 +261,7 @@ class BloodReqDepo {
                 return response;
             }
             catch (e) {
+                console.log(e);
                 return {
                     paginated: [],
                     total_records: 0

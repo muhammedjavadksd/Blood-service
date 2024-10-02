@@ -162,6 +162,8 @@ class BloodService {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
             const match = {};
+            console.log("The blood group");
+            console.log(bloodGroup);
             if (bloodGroup) {
                 match.blood_group = bloodGroup;
             }
@@ -176,7 +178,7 @@ class BloodService {
             //     };
             // }
             if (isClosedOnly !== undefined) {
-                match.isClosed = isClosedOnly;
+                match.is_closed = isClosedOnly;
             }
             const find = yield this.bloodReqRepo.findBloodReqPaginted(limit, skip, status, match);
             if (find.paginated.length) {

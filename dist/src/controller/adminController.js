@@ -142,6 +142,8 @@ class AdminController {
             const long = (_b = req.query.long) === null || _b === void 0 ? void 0 : _b.toString();
             const closedOnly = req.query.closed == "true";
             const location = (lang && long) ? [lang, long] : null;
+            console.log("Query");
+            console.log(req.query);
             const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
             res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
         });

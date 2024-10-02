@@ -67,7 +67,7 @@ class AdminController implements IAdminController {
         if (lati == null || lati == undefined || long == null || long == undefined) {
             res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" })
         } else {
-            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group);
+            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, false);
             res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data })
         }
     }
@@ -81,7 +81,7 @@ class AdminController implements IAdminController {
         const isUrgent: boolean = req.query.is_urgent == "true";
         const hospital_id: string | undefined = req.query.hospital_id?.toString();
 
-        const bloodBank = await this.bloodService.advanceBloodBankSearch(page, limit, bloodGroup, isUrgent, hospital_id);
+        const bloodBank = await this.bloodService.advanceBloodBankSearch(page, limit, false, bloodGroup, isUrgent, hospital_id);
         res.status(bloodBank.statusCode).json({ status: bloodBank.status, msg: bloodBank.msg, data: bloodBank.data });
     }
 
@@ -161,6 +161,10 @@ class AdminController implements IAdminController {
         const long: string | undefined = req.query.long?.toString();
         const closedOnly: boolean = req.query.closed == "true"
         const location: [string, string] | null = (lang && long) ? [lang, long] : null
+
+        console.log("Query");
+        console.log(req.query);
+
 
         const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
         res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })

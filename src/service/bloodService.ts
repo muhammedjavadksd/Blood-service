@@ -50,8 +50,8 @@ interface IBloodService {
     updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
-    advanceBloodBankSearch(page: number, limit: number, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
-    findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse>
+    advanceBloodBankSearch(page: number, limit: number, activeOnly: boolean, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
+    findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup, activeOnly: boolean): Promise<HelperFunctionResponse>
     findSingleBloodRequirement(requirement_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: BloodDonorStatus): Promise<HelperFunctionResponse>
 }
@@ -200,7 +200,11 @@ class BloodService implements IBloodService {
 
     async findPaginatedBloodRequirements(page: number, limit: number, status?: BloodStatus, bloodGroup?: BloodGroup, location?: [string, string] | null, isClosedOnly?: boolean): Promise<HelperFunctionResponse> {
         const skip: number = (page - 1) * limit;
-        const match: Record<string, any> = {}
+        const match: Partial<IBloodRequirement> = {}
+
+        console.log("The blood group");
+        console.log(bloodGroup);
+
 
         if (bloodGroup) {
             match.blood_group = bloodGroup;
@@ -218,7 +222,7 @@ class BloodService implements IBloodService {
         // }
 
         if (isClosedOnly !== undefined) {
-            match.isClosed = isClosedOnly;
+            match.is_closed = isClosedOnly;
         }
         const find = await this.bloodReqRepo.findBloodReqPaginted(limit, skip, status, match);
         if (find.paginated.length) {
@@ -238,10 +242,10 @@ class BloodService implements IBloodService {
     }
 
 
-    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup): Promise<HelperFunctionResponse> {
+    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup, activeOnly: boolean): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
-        const find = await this.bloodDonorRepo.nearBySearch(location, limit, skip, group);
+        const find = await this.bloodDonorRepo.nearBySearch(activeOnly, location, limit, skip, group);
         if (find.total_records) {
             return {
                 status: true,
@@ -259,11 +263,18 @@ class BloodService implements IBloodService {
     }
 
 
-    async advanceBloodBankSearch(page: number, limit: number, blood_group?: BloodGroup, urgency?: boolean, hospital?: string): Promise<HelperFunctionResponse> {
+    async advanceBloodBankSearch(page: number, limit: number, activeOnly: boolean, blood_group?: BloodGroup, urgency?: boolean, hospital?: string): Promise<HelperFunctionResponse> {
 
-        const filter: Record<string, any> = {}
+        const filter: Record<string, any> = {
+
+        }
         if (blood_group) {
             filter['blood_group'] = blood_group
+        }
+
+        if (activeOnly) {
+            filter['is_closed'] = false
+            filter['status'] = BloodStatus.Approved
         }
 
         const date = new Date()

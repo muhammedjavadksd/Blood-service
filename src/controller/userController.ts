@@ -87,7 +87,7 @@ class UserController implements IUserController {
 
 
 
-        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup);
+        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup, false);
         res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data })
     }
 
@@ -100,7 +100,7 @@ class UserController implements IUserController {
         const urgency: boolean = Boolean(req.params.urgency);
         const hospital: string = req.params.hospital;
 
-        const find = await this.bloodService.advanceBloodBankSearch(page, limit, blood_group, urgency, hospital);
+        const find = await this.bloodService.advanceBloodBankSearch(page, limit, true, blood_group, urgency, hospital);
         res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
     }
 
