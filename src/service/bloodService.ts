@@ -1119,9 +1119,11 @@ class BloodService implements IBloodService {
         if (findBloodGroup) {
             const updateData: IEditableGroupGroupRequest = {};
 
+            let updateDonor: boolean = true
             if (findBloodGroup.status == BloodGroupUpdateStatus.Pending && newStatus == BloodGroupUpdateStatus.Completed) {
                 updateData.new_group = findBloodGroup.new_group;
                 updateData.status = BloodGroupUpdateStatus.Completed
+                updateDonor = await this.bloodDonorRepo.updateBloodGroup(findBloodGroup.donor_id, findBloodGroup.new_group);
             } else if (findBloodGroup.status == BloodGroupUpdateStatus.Pending && newStatus == BloodGroupUpdateStatus.Rejected) {
                 updateData.status = BloodGroupUpdateStatus.Rejected
             } else {
@@ -1132,8 +1134,8 @@ class BloodService implements IBloodService {
                 }
             }
 
-            const upateBloodGroup = await this.bloodGroupUpdateRepo.updateRequest(request_id, updateData)
-            if (upateBloodGroup) {
+            if (updateDonor) {
+                await this.bloodGroupUpdateRepo.updateRequest(request_id, updateData)
                 return {
                     msg: "Blood group updated success",
                     status: true,

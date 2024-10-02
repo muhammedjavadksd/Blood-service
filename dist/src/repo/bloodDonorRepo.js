@@ -76,6 +76,12 @@ class BloodDonorRepo {
             return updateData.modifiedCount > 0;
         });
     }
+    updateBloodGroup(donor_id, bloodGroup) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { blood_group: bloodGroup } });
+            return updateData.modifiedCount > 0;
+        });
+    }
     findDonors(filter) {
         return __awaiter(this, void 0, void 0, function* () {
             const findDonors = yield this.BloodDonor.find(filter);

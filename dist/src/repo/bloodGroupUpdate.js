@@ -20,6 +20,7 @@ class BloodGroupUpdateRepo {
     updateRequest(update_id, data) {
         return __awaiter(this, void 0, void 0, function* () {
             const update = yield this.bloodGroupUpdate.updateOne({ _id: update_id }, { $set: data });
+            console.log(update);
             return update.modifiedCount > 0;
         });
     }

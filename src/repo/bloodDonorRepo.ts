@@ -82,6 +82,11 @@ class BloodDonorRepo implements IBloodDonorRepo {
         return updateData.modifiedCount > 0
     }
 
+    async updateBloodGroup(donor_id: string, bloodGroup: BloodGroup): Promise<boolean> {
+        const updateData = await this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { blood_group: bloodGroup } })
+        return updateData.modifiedCount > 0
+    }
+
     async findDonors(filter: ISearchBloodDonorTemplate): Promise<IBloodDonor[]> {
         const findDonors = await this.BloodDonor.find(filter);
         return findDonors;

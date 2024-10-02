@@ -972,9 +972,11 @@ class BloodService {
             const findBloodGroup = yield this.bloodGroupUpdateRepo.findRequestById(request_id);
             if (findBloodGroup) {
                 const updateData = {};
+                let updateDonor = true;
                 if (findBloodGroup.status == Enum_1.BloodGroupUpdateStatus.Pending && newStatus == Enum_1.BloodGroupUpdateStatus.Completed) {
                     updateData.new_group = findBloodGroup.new_group;
                     updateData.status = Enum_1.BloodGroupUpdateStatus.Completed;
+                    updateDonor = yield this.bloodDonorRepo.updateBloodGroup(findBloodGroup.donor_id, findBloodGroup.new_group);
                 }
                 else if (findBloodGroup.status == Enum_1.BloodGroupUpdateStatus.Pending && newStatus == Enum_1.BloodGroupUpdateStatus.Rejected) {
                     updateData.status = Enum_1.BloodGroupUpdateStatus.Rejected;
@@ -986,8 +988,8 @@ class BloodService {
                         statusCode: Enum_1.StatusCode.BAD_REQUEST
                     };
                 }
-                const upateBloodGroup = yield this.bloodGroupUpdateRepo.updateRequest(request_id, updateData);
-                if (upateBloodGroup) {
+                if (updateDonor) {
+                    yield this.bloodGroupUpdateRepo.updateRequest(request_id, updateData);
                     return {
                         msg: "Blood group updated success",
                         status: true,
