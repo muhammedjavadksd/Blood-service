@@ -84,6 +84,7 @@ class BloodService implements IBloodService {
         this.findActivePaginatedBloodRequirements = this.findActivePaginatedBloodRequirements.bind(this)
         this.advanceBloodBankSearch = this.advanceBloodBankSearch.bind(this)
         this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this)
+        this.updateBloodGroup = this.updateBloodGroup.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();

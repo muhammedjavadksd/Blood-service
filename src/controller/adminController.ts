@@ -35,6 +35,7 @@ class AdminController implements IAdminController {
         this.closeRequest = this.closeRequest.bind(this)
         this.addBloodRequirement = this.addBloodRequirement.bind(this)
         this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this)
+        this.updateBloodGroup = this.updateBloodGroup.bind(this)
         this.bloodService = new BloodService()
     }
 

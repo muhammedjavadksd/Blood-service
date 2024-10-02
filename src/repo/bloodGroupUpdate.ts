@@ -22,7 +22,7 @@ class BloodGroupUpdateRepo implements IBloodGroupUpdateRepo {
     }
 
     async updateRequest(update_id: ObjectId, data: IEditableGroupGroupRequest): Promise<boolean> {
-        const update = await this.bloodGroupUpdate.updateOne({ id: update_id }, { $set: data });
+        const update = await this.bloodGroupUpdate.updateOne({ _id: update_id }, { $set: data });
         return update.modifiedCount > 0
     }
 
