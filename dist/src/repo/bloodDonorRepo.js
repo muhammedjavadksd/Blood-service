@@ -158,13 +158,18 @@ class BloodDonorRepo {
             return save === null || save === void 0 ? void 0 : save.id;
         });
     }
-    nearBySearch(location, limit, skip, group) {
+    nearBySearch(activeOnly, location, limit, skip, group) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log("The location is");
-                console.log(location);
-                console.log(group);
+                const match = {};
+                if (activeOnly) {
+                    match['status'] = Enum_1.BloodStatus.Approved;
+                    match['is_closed'] = false;
+                }
                 const find = yield this.BloodDonor.aggregate([
+                    {
+                        $match: match
+                    },
                     {
                         $geoNear: {
                             near: {

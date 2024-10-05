@@ -57,7 +57,7 @@ class UserController {
             const long = +(req.query.long || 0);
             const lati = +(req.query.lati || 0);
             const location = [long, lati];
-            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup);
+            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup, false);
             res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
         });
     }
@@ -69,7 +69,7 @@ class UserController {
             const blood_group = req.params.blood_group;
             const urgency = Boolean(req.params.urgency);
             const hospital = req.params.hospital;
-            const find = yield this.bloodService.advanceBloodBankSearch(page, limit, blood_group, urgency, hospital);
+            const find = yield this.bloodService.advanceBloodBankSearch(page, limit, true, blood_group, urgency, hospital);
             res.status(find.statusCode).json({ status: find.status, msg: find.msg, data: find.data });
         });
     }
@@ -304,12 +304,11 @@ class UserController {
             const bloodGroup = req.body.bloodGroup;
             const locationBody = req.body.location;
             const location = {
-                coordinates: [+locationBody.longitude || 76.514138, (locationBody === null || locationBody === void 0 ? void 0 : locationBody.latitude) || 10.5199396],
+                coordinates: [+locationBody.coordinates[0], +locationBody.coordinates[1]],
                 type: "Point"
             };
-            console.log("Location proper");
-            console.log(location);
-            const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+            console.log(locationBody);
+            const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location, locationBody, Enum_1.BloodDonorStatus.Open);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,
                 msg: createBloodDonor.msg,
@@ -368,7 +367,7 @@ class UserController {
                 const status = Enum_1.BloodStatus.Pending;
                 const blood_group = requestData.blood_group;
                 const relationship = req.body.relationship;
-                const locatedAt = req.body.locatedAt;
+                const locatedAt = req.body.location;
                 const address = req.body.address;
                 const phoneNumber = req.body.phoneNumber;
                 const email_address = req.body.email_address;

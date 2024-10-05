@@ -7,7 +7,7 @@ type IBloodAvailabilityResult = Record<BloodGroup, number>
 type LocatedAt = {
     hospital_name: string,
     hospital_id: string,
-    coordinates: [string, string]
+    coordinates: [number, number]
 }
 
 export { mongoObjectId, IBloodAvailabilityResult, LocatedAt }

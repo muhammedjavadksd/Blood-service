@@ -357,18 +357,21 @@ class UserController implements IUserController {
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
         const bloodGroup: BloodGroup = req.body.bloodGroup;
-        const locationBody = req.body.location;
+        const locationBody: LocatedAt = req.body.location;
+
         const location: ILocatedAt = {
-            coordinates: [+locationBody.longitude || 76.514138, locationBody?.latitude || 10.5199396],
+            coordinates: [+locationBody.coordinates[0], +locationBody.coordinates[1]],
             type: "Point"
         }
 
-        console.log("Location proper");
-        console.log(location);
+
+
+        console.log(locationBody);
 
 
 
-        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location);
+
+        const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location, locationBody, BloodDonorStatus.Open);
         res.status(createBloodDonor.statusCode).json({
             status: createBloodDonor.status,
             msg: createBloodDonor.msg,
@@ -432,7 +435,7 @@ class UserController implements IUserController {
             const status = BloodStatus.Pending;
             const blood_group: BloodGroup = requestData.blood_group;
             const relationship: Relationship = req.body.relationship;
-            const locatedAt: LocatedAt = req.body.locatedAt;
+            const locatedAt: LocatedAt = req.body.location;
             const address: string = req.body.address;
             const phoneNumber: number = req.body.phoneNumber;
             const email_address: string = req.body.email_address;

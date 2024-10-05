@@ -22,13 +22,14 @@ import fs from 'fs'
 import S3BucketHelper from "../Util/Helpers/S3Helper";
 import { config } from 'dotenv'
 import { bool } from "aws-sdk/clients/signer";
+import { BlockedReason } from "aws-sdk/clients/sagemaker";
 
 
 interface IBloodService {
     getStatitics(): Promise<HelperFunctionResponse>
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
-    bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse>
+    bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location_coords: ILocatedAt, location: LocatedAt, status: BloodDonorStatus, blockedReason?: DonorAccountBlockedReason): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_id: string, category: BloodCloseCategory, explanation: string): Promise<HelperFunctionResponse>
     updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
@@ -136,11 +137,19 @@ class BloodService implements IBloodService {
 
 
 
-    async searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: BloodDonorStatus): Promise<HelperFunctionResponse> {
+    async searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: string | null): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
-        const findProfile = await this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+        const match: Record<string, any> = {};
+        if (status) {
+            match['status'] = status == "true" ? BloodDonorStatus.Open : BloodDonorStatus.Blocked
+        }
+        if (bloodGroup) {
+            match['blood_group'] = bloodGroup
+        }
+        const findProfile = await this.bloodDonorRepo.findDonorsPaginated(limit, skip, match);
         console.log(findProfile);
+        console.log(match);
 
         if (findProfile.paginated.length) {
             return {
@@ -914,7 +923,7 @@ class BloodService implements IBloodService {
                     ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
                     : '';
 
-                const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
+                const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.hospital.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
 
                 console.log(`To profile id ${findRequirement.profile_id}`)
                 const newInterest = await this.bloodDonationRepo.saveDonation(bloodDonationData);
@@ -1305,7 +1314,18 @@ class BloodService implements IBloodService {
     async createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse> {
         const blood_id: string = await this.createBloodId(blood_group, unit)
 
-        const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address)
+
+
+
+        console.log(locatedAt);
+
+
+        const location: ILocatedAt = {
+            type: "Point",
+            coordinates: locatedAt.coordinates
+        }
+
+        const createdBloodRequest: mongoObjectId | null = await this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, location, locatedAt, address, phoneNumber, false, email_address)
 
 
         const matchedProfile = await this.bloodDonorRepo.findDonors({ status: BloodDonorStatus.Open, blood_group: blood_group });
@@ -1338,29 +1358,23 @@ class BloodService implements IBloodService {
         }
     }
 
-    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location: ILocatedAt): Promise<HelperFunctionResponse> {
+    async bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location_coords: ILocatedAt, location: LocatedAt, status: BloodDonorStatus, blockedReason?: DonorAccountBlockedReason): Promise<HelperFunctionResponse> {
 
         const BloodDonorId: string = await this.createDonorId(bloodGroup, fullName);
         const saveData: IBloodDonorTemplate = {
+            location: location,
+            location_coords: location_coords,
             blood_group: bloodGroup,
             donor_id: BloodDonorId,
             email_address: emailID,
             full_name: fullName,
-            locatedAt: location,
             phoneNumber: phoneNumber,
-            status: BloodDonorStatus.Open
+            status,
         };
-
-        console.log("The final data");
-        console.log(saveData);
-
-
-
-
-        console.log("Saved data");
-        console.log(saveData);
-
-
+        if (status == BloodDonorStatus.Blocked && blockedReason) {
+            saveData['blocked_date'] = new Date()
+            saveData['blocked_reason'] = blockedReason
+        }
 
         const saveDonorIntoDb: ObjectId | null = await this.bloodDonorRepo.createDonor(saveData);
         console.log("Save donor db");

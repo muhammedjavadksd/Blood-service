@@ -28,7 +28,7 @@ userRouter.get("/nearest-donors/:limit/:page/:group", userController.findNearest
 
 // userRouter.post("/nearest-donors/:page/:limit", authMiddleware.isValidDonor, userController.findDonationHistory)
 userRouter.post("/intrest/:request_id", authMiddleware.isValidDonor, authMiddleware.isAuthenitcated, userController.showIntresrest) //test pending
-userRouter.post("/create", userController.createBloodDonation) //test pending
+userRouter.post("/create", authMiddleware.isAuthenitcated, userController.createBloodDonation) //test pending
 userRouter.post("/blood_request", authMiddleware.isAuthenitcated, userController.blood_request) //test pending
 userRouter.post("/group_change_request", authMiddleware.isValidDonor, userController.updateBloodGroup) //test pending
 userRouter.post("/presigned_url_blood_group_change", authMiddleware.isValidDonor, userController.generatePresignedUrlForBloodGroupChange) //test pending

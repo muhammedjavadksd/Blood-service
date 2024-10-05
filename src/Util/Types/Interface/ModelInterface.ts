@@ -31,7 +31,8 @@ interface IBloodDonorTemplate {
     donor_id: string
     full_name: string
     blood_group: BloodGroup,
-    locatedAt: ILocatedAt,
+    location_coords: ILocatedAt,
+    location: LocatedAt,
     phoneNumber: number,
     email_address: string,
     status: BloodDonorStatus,
@@ -67,7 +68,8 @@ interface IBloodRequirementTemplate {
     profile_id: string,
     blood_group: BloodGroup,
     relationship: Relationship,
-    locatedAt: LocatedAt,
+    locatedAt: ILocatedAt,
+    hospital: LocatedAt,
     address: String,
     phoneNumber: number
     is_closed: boolean,
@@ -122,7 +124,6 @@ interface IChatTemplate {
 }
 
 interface IBloodRequirement extends Document, IBloodRequirementTemplate {
-    locatedAt: LocatedAt
 }
 interface IBloodDonor extends Document, IBloodDonorTemplate { }
 interface IBloodDonorUpdate extends Document, IBloodGroupUpdateTemplate { }

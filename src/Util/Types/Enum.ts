@@ -81,7 +81,8 @@ enum Relationship {
 enum DonorAccountBlockedReason {
     AlreadyDonated = "You have already donated within the last 90 days. Please wait until 90 days have passed since your last donation before donating again.",
     UserHideAccount = "Your profile has been temporarily hidden from donation listings.",
-    AccountDeleted = "It seems like your account has been deleted"
+    AccountDeleted = "It seems like your account has been deleted",
+    AccountJustCreated = "Admin just created the account, need verification"
 }
 
 enum S3FolderName {

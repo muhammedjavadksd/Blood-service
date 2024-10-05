@@ -272,7 +272,7 @@ class BloodReqDepo {
     findActiveBloodReqPaginted(limit, skip) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(limit, skip);
-            const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Approved }).skip(skip).limit(limit);
+            const bloodGroup = yield this.BloodReq.find({ status: Enum_1.BloodStatus.Approved, is_closed: false }).skip(skip).limit(limit);
             return bloodGroup;
         });
     }
@@ -288,7 +288,7 @@ class BloodReqDepo {
             return find;
         });
     }
-    createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_address) {
+    createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, hospital, address, phoneNumber, is_closed, email_address) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('blood_id:', blood_id);
             console.log('patientName:', patientName);
@@ -304,7 +304,7 @@ class BloodReqDepo {
             console.log('phoneNumber:', phoneNumber);
             console.log('is_closed:', is_closed);
             try {
-                const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_id: email_address });
+                const bloodRequirement = new this.BloodReq({ hospital, blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_id: email_address });
                 const userCreated = yield bloodRequirement.save();
                 return userCreated.id;
             }

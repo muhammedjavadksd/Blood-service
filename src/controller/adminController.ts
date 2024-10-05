@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import BloodService from "../service/bloodService";
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
 import { CustomRequest, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { ObjectId } from "mongoose";
 import { LocatedAt } from "../Util/Types/Types";
+import { ILocatedAt } from "../Util/Types/Interface/ModelInterface";
 
 
 interface IAdminController {
@@ -13,6 +14,7 @@ interface IAdminController {
     getAllRequirements(req: Request, res: Response): Promise<void>
     updateBloodRequirements(req: Request, res: Response): Promise<void>
     addBloodRequirement(req: Request, res: Response): Promise<void>
+    addDonor(req: Request, res: Response): Promise<void>
     closeRequest(req: Request, res: Response): Promise<void>
     viewSingleRequirement(req: Request, res: Response): Promise<void>
     findDonorByBloodGroup(req: Request, res: Response): Promise<void>
@@ -36,7 +38,36 @@ class AdminController implements IAdminController {
         this.addBloodRequirement = this.addBloodRequirement.bind(this)
         this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this)
         this.updateBloodGroup = this.updateBloodGroup.bind(this)
+        this.addDonor = this.addDonor.bind(this)
         this.bloodService = new BloodService()
+    }
+
+
+    async addDonor(req: Request, res: Response): Promise<void> {
+
+
+        const full_name: string = req.body.full_name;
+        const blood_group: BloodGroup = req.body.blood_group
+        const location: LocatedAt = req.body.location
+        const phoneNumber: number = req.body.phone_number
+        const email_address: string = req.body.email_address
+        const status: BloodDonorStatus = req.body.status
+        const isBlocked = status == BloodDonorStatus.Blocked
+
+        console.log("The cord");
+        console.log(req.body);
+
+
+        console.log(location);
+
+        const coords: ILocatedAt = {
+            coordinates: location.coordinates,
+            type: "Point"
+        }
+
+
+        const addDonor = await this.bloodService.bloodDonation(full_name, email_address, phoneNumber, blood_group, coords, location, status, DonorAccountBlockedReason.AccountJustCreated);
+        res.status(addDonor.statusCode).json({ status: addDonor.status, msg: addDonor.msg, data: addDonor.data })
     }
 
 
@@ -87,6 +118,7 @@ class AdminController implements IAdminController {
 
 
 
+
     async findDonorByBloodGroup(req: Request, res: Response): Promise<void> {
 
         console.log("Reached here");
@@ -95,8 +127,10 @@ class AdminController implements IAdminController {
         const limit: number = +req.params.limit
         const page: number = +req.params.page
         const bloodGroup: BloodGroup = req.params.blood_group as BloodGroup;
+        const isActiveOnly: string | null = <string>req.query.active || null;
+        const status: string | null = isActiveOnly || null
 
-        const findData = await this.bloodService.searchBloodDonors(page, limit, bloodGroup, BloodDonorStatus.Open);
+        const findData = await this.bloodService.searchBloodDonors(page, limit, bloodGroup, status);
         res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
     }
 

@@ -25,6 +25,8 @@ import adminRouter from './src/router/adminRouter';
 
 app.use(logger("combined"))
 
+
+
 app.use("/", userRouter)
 app.use("/admin", adminRouter)
 

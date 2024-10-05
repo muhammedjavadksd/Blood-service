@@ -16,6 +16,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const donors_1 = __importDefault(require("./model/donors"));
 function mongoDbConnection() {
     const mongoURL = process.env.mongodb_url;
+    console.log(mongoURL);
     if (!mongoURL) {
         console.log("Connection failed");
         return;

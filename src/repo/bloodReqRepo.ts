@@ -1,13 +1,13 @@
 import BloodRequirement from "../db/model/requirements";
 import { BloodGroup, BloodStatus, ExtendsRelationship, Relationship } from "../Util/Types/Enum";
-import IBloodRequirement, { IEditableBloodRequirementTemplate } from "../Util/Types/Interface/ModelInterface";
+import IBloodRequirement, { IEditableBloodRequirementTemplate, ILocatedAt } from "../Util/Types/Interface/ModelInterface";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
 import { LocatedAt, mongoObjectId } from "../Util/Types/Types";
 
 
 interface IBloodReqDepo {
     getStatitics(): Promise<Record<string, any>>
-    createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null>
+    createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: ILocatedAt, hospital: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null>
     findBloodRequirementByBloodId(blood_id: string): Promise<IBloodRequirement | null>
     updateBloodDonor(blood_id: string, data: IEditableBloodRequirementTemplate): Promise<boolean>
     findActiveBloodReq(blood_group: BloodGroup): Promise<IBloodRequirement[]>
@@ -318,7 +318,7 @@ class BloodReqDepo implements IBloodReqDepo {
         return find
     }
 
-    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null> {
+    async createBloodRequirement(blood_id: string, patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: ExtendsRelationship, locatedAt: ILocatedAt, hospital: LocatedAt, address: string, phoneNumber: number, is_closed: boolean, email_address: string): Promise<mongoObjectId | null> {
         console.log('blood_id:', blood_id);
         console.log('patientName:', patientName);
         console.log('unit:', unit);
@@ -333,7 +333,7 @@ class BloodReqDepo implements IBloodReqDepo {
         console.log('phoneNumber:', phoneNumber);
         console.log('is_closed:', is_closed);
         try {
-            const bloodRequirement = new this.BloodReq({ blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_id: email_address });
+            const bloodRequirement = new this.BloodReq({ hospital, blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, is_closed, email_id: email_address });
             const userCreated = await bloodRequirement.save();
             return userCreated.id
         } catch (e) {

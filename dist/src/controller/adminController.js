@@ -25,7 +25,28 @@ class AdminController {
         this.addBloodRequirement = this.addBloodRequirement.bind(this);
         this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this);
         this.updateBloodGroup = this.updateBloodGroup.bind(this);
+        this.addDonor = this.addDonor.bind(this);
         this.bloodService = new bloodService_1.default();
+    }
+    addDonor(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const full_name = req.body.full_name;
+            const blood_group = req.body.blood_group;
+            const location = req.body.location;
+            const phoneNumber = req.body.phone_number;
+            const email_address = req.body.email_address;
+            const status = req.body.status;
+            const isBlocked = status == Enum_1.BloodDonorStatus.Blocked;
+            console.log("The cord");
+            console.log(req.body);
+            console.log(location);
+            const coords = {
+                coordinates: location.coordinates,
+                type: "Point"
+            };
+            const addDonor = yield this.bloodService.bloodDonation(full_name, email_address, phoneNumber, blood_group, coords, location, status, Enum_1.DonorAccountBlockedReason.AccountJustCreated);
+            res.status(addDonor.statusCode).json({ status: addDonor.status, msg: addDonor.msg, data: addDonor.data });
+        });
     }
     findIntrest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -53,7 +74,7 @@ class AdminController {
                 res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" });
             }
             else {
-                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group);
+                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, false);
                 res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data });
             }
         });
@@ -66,7 +87,7 @@ class AdminController {
             const bloodGroup = req.params.bloodGroup;
             const isUrgent = req.query.is_urgent == "true";
             const hospital_id = (_a = req.query.hospital_id) === null || _a === void 0 ? void 0 : _a.toString();
-            const bloodBank = yield this.bloodService.advanceBloodBankSearch(page, limit, bloodGroup, isUrgent, hospital_id);
+            const bloodBank = yield this.bloodService.advanceBloodBankSearch(page, limit, false, bloodGroup, isUrgent, hospital_id);
             res.status(bloodBank.statusCode).json({ status: bloodBank.status, msg: bloodBank.msg, data: bloodBank.data });
         });
     }
@@ -76,7 +97,9 @@ class AdminController {
             const limit = +req.params.limit;
             const page = +req.params.page;
             const bloodGroup = req.params.blood_group;
-            const findData = yield this.bloodService.searchBloodDonors(page, limit, bloodGroup, Enum_1.BloodDonorStatus.Open);
+            const isActiveOnly = req.query.active || null;
+            const status = isActiveOnly || null;
+            const findData = yield this.bloodService.searchBloodDonors(page, limit, bloodGroup, status);
             res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
         });
     }

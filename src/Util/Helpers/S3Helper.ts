@@ -84,7 +84,7 @@ class S3BucketHelper {
             const folderPath = utlHelper.extractImageNameFromPresignedUrl(presigned_url);
             console.log(folderPath);
             await axios.put(presigned_url, file, { headers: { "Content-Type": fileType, } })
-            const imageUrl = `http://${this.bucketName}.s3.amazonaws.com/${folderPath}`
+            const imageUrl = `https://${this.bucketName}.s3.amazonaws.com/${folderPath}`
             return imageUrl
         } catch (e) {
             console.log(e);

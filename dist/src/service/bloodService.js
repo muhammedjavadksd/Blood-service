@@ -98,8 +98,16 @@ class BloodService {
     searchBloodDonors(page, limit, bloodGroup, status) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const findProfile = yield this.bloodDonorRepo.findDonorsPaginated(limit, skip, { status, blood_group: bloodGroup });
+            const match = {};
+            if (status) {
+                match['status'] = status == "true" ? Enum_1.BloodDonorStatus.Open : Enum_1.BloodDonorStatus.Blocked;
+            }
+            if (bloodGroup) {
+                match['blood_group'] = bloodGroup;
+            }
+            const findProfile = yield this.bloodDonorRepo.findDonorsPaginated(limit, skip, match);
             console.log(findProfile);
+            console.log(match);
             if (findProfile.paginated.length) {
                 return {
                     status: true,
@@ -198,10 +206,10 @@ class BloodService {
             }
         });
     }
-    findNearestBloodDonors(page, limit, location, group) {
+    findNearestBloodDonors(page, limit, location, group, activeOnly) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
-            const find = yield this.bloodDonorRepo.nearBySearch(location, limit, skip, group);
+            const find = yield this.bloodDonorRepo.nearBySearch(activeOnly, location, limit, skip, group);
             if (find.total_records) {
                 return {
                     status: true,
@@ -219,11 +227,15 @@ class BloodService {
             }
         });
     }
-    advanceBloodBankSearch(page, limit, blood_group, urgency, hospital) {
+    advanceBloodBankSearch(page, limit, activeOnly, blood_group, urgency, hospital) {
         return __awaiter(this, void 0, void 0, function* () {
             const filter = {};
             if (blood_group) {
                 filter['blood_group'] = blood_group;
+            }
+            if (activeOnly) {
+                filter['is_closed'] = false;
+                filter['status'] = Enum_1.BloodStatus.Approved;
             }
             const date = new Date();
             const maxDate = date.setDate(date.getDate() + 1);
@@ -766,7 +778,7 @@ class BloodService {
                     const concernsChat = concernsMessage.length
                         ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
                         : '';
-                    const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.locatedAt.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
+                    const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.hospital.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
                     console.log(`To profile id ${findRequirement.profile_id}`);
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
                     if (newInterest) {
@@ -1149,7 +1161,12 @@ class BloodService {
     createBloodRequirement(patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, email_address) {
         return __awaiter(this, void 0, void 0, function* () {
             const blood_id = yield this.createBloodId(blood_group, unit);
-            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, locatedAt, address, phoneNumber, false, email_address);
+            console.log(locatedAt);
+            const location = {
+                type: "Point",
+                coordinates: locatedAt.coordinates
+            };
+            const createdBloodRequest = yield this.bloodReqRepo.createBloodRequirement(blood_id, patientName, unit, neededAt, status, user_id, profile_id, blood_group, relationship, location, locatedAt, address, phoneNumber, false, email_address);
             const matchedProfile = yield this.bloodDonorRepo.findDonors({ status: Enum_1.BloodDonorStatus.Open, blood_group: blood_group });
             const profileEmails = matchedProfile.map((pro) => { return { name: pro.full_name, email: pro.email_address }; });
             console.log("Passed two");
@@ -1179,22 +1196,23 @@ class BloodService {
             }
         });
     }
-    bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location) {
+    bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location_coords, location, status, blockedReason) {
         return __awaiter(this, void 0, void 0, function* () {
             const BloodDonorId = yield this.createDonorId(bloodGroup, fullName);
             const saveData = {
+                location: location,
+                location_coords: location_coords,
                 blood_group: bloodGroup,
                 donor_id: BloodDonorId,
                 email_address: emailID,
                 full_name: fullName,
-                locatedAt: location,
                 phoneNumber: phoneNumber,
-                status: Enum_1.BloodDonorStatus.Open
+                status,
             };
-            console.log("The final data");
-            console.log(saveData);
-            console.log("Saved data");
-            console.log(saveData);
+            if (status == Enum_1.BloodDonorStatus.Blocked && blockedReason) {
+                saveData['blocked_date'] = new Date();
+                saveData['blocked_reason'] = blockedReason;
+            }
             const saveDonorIntoDb = yield this.bloodDonorRepo.createDonor(saveData);
             console.log("Save donor db");
             console.log(saveDonorIntoDb);

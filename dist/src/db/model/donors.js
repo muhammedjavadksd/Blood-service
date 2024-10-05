@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const Enum_1 = require("../../Util/Types/Enum");
-const LocationScheme = new mongoose_1.Schema({
+const coordsSchema = new mongoose_1.Schema({
     type: {
         type: String,
         enum: ['Point'], // Ensure only 'Point' is allowed
@@ -35,6 +35,20 @@ const LocationScheme = new mongoose_1.Schema({
         type: [Number], // Updated to allow an array of numbers
         required: true,
         index: '2dsphere' // Add geospatial index
+    }
+});
+const locationSchema = new mongoose_1.Schema({
+    hospital_name: {
+        type: String,
+        required: true
+    },
+    hospital_id: {
+        type: String,
+        required: true
+    },
+    coordinates: {
+        type: [Number, Number],
+        required: true
     }
 });
 const bloodDonorScheme = new mongoose_1.default.Schema({
@@ -52,9 +66,13 @@ const bloodDonorScheme = new mongoose_1.default.Schema({
         enum: Object.values(Enum_1.BloodGroup),
         required: true
     },
-    locatedAt: {
-        type: LocationScheme,
+    location_coords: {
+        type: coordsSchema,
         required: true
+    },
+    location: {
+        type: locationSchema,
+        required: true,
     },
     phoneNumber: {
         type: Number,

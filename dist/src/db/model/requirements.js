@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const Enum_1 = require("../../Util/Types/Enum");
-const LocatedAtSchema = new mongoose_1.Schema({
+const HospitalScheme = new mongoose_1.Schema({
     coordinates: {
         type: [String, String],
         required: true
@@ -38,6 +38,16 @@ const LocatedAtSchema = new mongoose_1.Schema({
         type: String,
         required: true
     }
+});
+const locatedAtScheme = new mongoose_1.Schema({
+    coordinates: {
+        type: [String, String],
+        required: true
+    },
+    type: {
+        type: String,
+        required: true
+    },
 });
 const closeDetailsSchma = new mongoose_1.Schema({
     category: {
@@ -95,8 +105,12 @@ const bloodRequirementScheme = new mongoose_1.default.Schema({
         enum: [...Object.values(Enum_1.Relationship), "Admin"],
         required: true,
     },
+    hospital: {
+        type: HospitalScheme,
+        required: true
+    },
     locatedAt: {
-        type: LocatedAtSchema,
+        type: locatedAtScheme,
         required: true
     },
     address: {
