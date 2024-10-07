@@ -10,9 +10,8 @@ const coordsSchema = new Schema<ILocatedAt>({
         required: true
     },
     coordinates: {
-        type: [Number], // Updated to allow an array of numbers
+        type: [Number],
         required: true,
-        index: '2dsphere' // Add geospatial index
     }
 });
 

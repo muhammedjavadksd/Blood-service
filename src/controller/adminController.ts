@@ -112,7 +112,7 @@ class AdminController implements IAdminController {
         if (lati == null || lati == undefined || long == null || long == undefined) {
             res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" })
         } else {
-            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, true);
+            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], true, blood_group);
             res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data })
         }
     }

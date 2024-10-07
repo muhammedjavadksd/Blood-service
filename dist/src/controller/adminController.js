@@ -86,7 +86,7 @@ class AdminController {
                 res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" });
             }
             else {
-                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, true);
+                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], true, blood_group);
                 res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data });
             }
         });

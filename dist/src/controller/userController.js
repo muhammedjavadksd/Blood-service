@@ -57,7 +57,7 @@ class UserController {
             const long = +(req.query.long || 0);
             const lati = +(req.query.lati || 0);
             const location = [long, lati];
-            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup, false);
+            const findData = yield this.bloodService.findNearestBloodDonors(page, limit, location, false, bloodGroup);
             res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data });
         });
     }
@@ -212,7 +212,6 @@ class UserController {
     findRequest(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e;
-            console.log("Reached here");
             if (req.context) {
                 const profile_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.profile_id;
                 const blood_id = (_b = req.params) === null || _b === void 0 ? void 0 : _b.request_id;
@@ -257,15 +256,27 @@ class UserController {
     }
     updateBloodDonor(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b;
             const bodyData = req.body;
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             let editableBloodDonors = {
                 email_address: bodyData.email_address,
                 full_name: bodyData.full_name,
-                locatedAt: bodyData.locatedAt,
                 phoneNumber: bodyData.phoneNumber
             };
+            console.log(bodyData);
+            console.log("The hospital");
+            console.log(bodyData.locatedAt);
+            if (bodyData.locatedAt) {
+                editableBloodDonors['location'] = bodyData.locatedAt;
+                const coords = (_b = bodyData.locatedAt) === null || _b === void 0 ? void 0 : _b.coordinates;
+                if (coords && coords.length) {
+                    editableBloodDonors['location_coords'] = {
+                        type: "Point",
+                        coordinates: coords
+                    };
+                }
+            }
             console.log("Editing details");
             console.log(editableBloodDonors);
             const updateDonor = yield this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);

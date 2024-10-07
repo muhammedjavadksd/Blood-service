@@ -7,7 +7,8 @@ import { BloodDonationConcerns } from "./UtilInterface"
 
 interface IUserBloodDonorEditable {
     full_name?: string
-    locatedAt?: ILocatedAt,
+    location_coords?: ILocatedAt,
+    location?: LocatedAt,
     phoneNumber?: number,
     email_address?: string,
 }

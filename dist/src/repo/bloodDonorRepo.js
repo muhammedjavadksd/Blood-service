@@ -66,7 +66,13 @@ class BloodDonorRepo {
     blockDonor(donor_id, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             const blockedDate = new Date();
-            const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: Enum_1.BloodDonorStatus.Blocked, blocked_date: blockedDate } });
+            const updateData = yield this.BloodDonor.updateOne({ donor_id: donor_id }, {
+                $set: {
+                    status: Enum_1.BloodDonorStatus.Blocked,
+                    blocked_date: blockedDate,
+                    blocked_reason: reason,
+                }
+            });
             return updateData.modifiedCount > 0;
         });
     }

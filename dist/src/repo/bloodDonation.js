@@ -26,6 +26,7 @@ class BloodDonationRepo {
     }
     findMyDonation(donor_id, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("The donor id is");
             console.log(donor_id);
             try {
                 const findDonation = yield this.BloodDonation.aggregate([
@@ -84,6 +85,7 @@ class BloodDonationRepo {
                         }
                     }
                 ]);
+                console.log(findDonation);
                 const response = {
                     paginated: findDonation[0].paginated,
                     total_records: findDonation[0].total_records

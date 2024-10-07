@@ -21,53 +21,62 @@ class BloodReqDepo {
     getStatitics() {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
-            const result = yield this.BloodReq.aggregate([
-                {
-                    $facet: {
-                        totalRequests: [{ $count: "count" }],
-                        openRequests: [
-                            { $match: { is_closed: false } },
-                            { $count: "count" }
-                        ],
-                        closedRequests: [
-                            { $match: { is_closed: true } },
-                            { $count: "count" }
-                        ],
-                        totalUnitsNeeded: [
-                            {
-                                $group: {
-                                    _id: null,
-                                    totalUnits: { $sum: "$unit" }
+            try {
+                const result = yield this.BloodReq.aggregate([
+                    {
+                        $facet: {
+                            totalRequests: [{ $count: "count" }],
+                            openRequests: [
+                                { $match: { is_closed: false } },
+                                { $count: "count" }
+                            ],
+                            closedRequests: [
+                                { $match: { is_closed: true } },
+                                { $count: "count" }
+                            ],
+                            totalUnitsNeeded: [
+                                {
+                                    $group: {
+                                        _id: null,
+                                        totalUnits: { $sum: "$unit" }
+                                    }
                                 }
-                            }
-                        ],
-                        requestsByBloodGroup: [
-                            {
-                                $group: {
-                                    _id: "$blood_group",
-                                    count: { $sum: 1 }
+                            ],
+                            requestsByBloodGroup: [
+                                {
+                                    $group: {
+                                        _id: "$blood_group",
+                                        count: { $sum: 1 }
+                                    }
                                 }
-                            }
-                        ],
-                        requestsByStatus: [
-                            {
-                                $group: {
-                                    _id: "$status",
-                                    count: { $sum: 1 }
+                            ],
+                            requestsByStatus: [
+                                {
+                                    $group: {
+                                        _id: "$status",
+                                        count: { $sum: 1 }
+                                    }
                                 }
-                            }
-                        ]
+                            ]
+                        }
                     }
-                }
-            ]);
-            return {
-                totalRequests: ((_a = result[0].totalRequests[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
-                openRequests: ((_b = result[0].openRequests[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
-                closedRequests: ((_c = result[0].closedRequests[0]) === null || _c === void 0 ? void 0 : _c.count) || 0,
-                totalUnitsNeeded: ((_d = result[0].totalUnitsNeeded[0]) === null || _d === void 0 ? void 0 : _d.totalUnits) || 0,
-                requestsByBloodGroup: result[0].requestsByBloodGroup,
-                requestsByStatus: result[0].requestsByStatus
-            };
+                ]);
+                console.log("Statitics");
+                console.log(result);
+                return {
+                    totalRequests: ((_a = result[0].totalRequests[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+                    openRequests: ((_b = result[0].openRequests[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
+                    closedRequests: ((_c = result[0].closedRequests[0]) === null || _c === void 0 ? void 0 : _c.count) || 0,
+                    totalUnitsNeeded: ((_d = result[0].totalUnitsNeeded[0]) === null || _d === void 0 ? void 0 : _d.totalUnits) || 0,
+                    requestsByBloodGroup: result[0].requestsByBloodGroup,
+                    requestsByStatus: result[0].requestsByStatus
+                };
+            }
+            catch (e) {
+                console.log("sdfsd");
+                console.log(e);
+                return {};
+            }
         });
     }
     findSingleBloodRequirement(blood_id, status) {
@@ -229,6 +238,11 @@ class BloodReqDepo {
                     {
                         $facet: {
                             paginated: [
+                                {
+                                    $sort: {
+                                        _id: -1
+                                    }
+                                },
                                 {
                                     $skip: skip
                                 },

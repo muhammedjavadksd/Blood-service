@@ -53,7 +53,7 @@ interface IBloodService {
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
     advanceBloodBankSearch(page: number, limit: number, activeOnly: boolean, blood_group: BloodGroup, urgency: boolean, hospital: string): Promise<HelperFunctionResponse>
-    findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup, activeOnly: boolean): Promise<HelperFunctionResponse>
+    findNearestBloodDonors(page: number, limit: number, location: [number, number], activeOnly: boolean, group?: BloodGroup | null): Promise<HelperFunctionResponse>
     findSingleBloodRequirement(requirement_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: BloodDonorStatus): Promise<HelperFunctionResponse>
 }
@@ -250,7 +250,7 @@ class BloodService implements IBloodService {
     }
 
 
-    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup | null, activeOnly: boolean): Promise<HelperFunctionResponse> {
+    async findNearestBloodDonors(page: number, limit: number, location: [number, number], activeOnly: boolean, group?: BloodGroup | null): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
         const find = await this.bloodDonorRepo.nearBySearch(activeOnly, location, limit, skip, group);
@@ -695,6 +695,8 @@ class BloodService implements IBloodService {
 
                     if (updateRequest) {
                         if (status == BloodDonationStatus.Approved) {
+
+                            await this.bloodDonorRepo.blockDonor(findRequest.donor_id, DonorAccountBlockedReason.AlreadyDonated);
                             try {
                                 this.bloodDonorRepo.findBloodDonorByDonorId(findRequest.donor_id).then((donor) => {
                                     this.bloodReqRepo.findBloodRequirementByBloodId(findRequest.donation_id).then(async (req) => {
@@ -881,6 +883,11 @@ class BloodService implements IBloodService {
 
 
         if (findRequirement) {
+
+            console.log("The requirement");
+
+            console.log(findRequirement);
+
             const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
             if (findDonor?.status == BloodDonorStatus.Open) {
                 if (findRequirement.neededAt < date) {
@@ -922,7 +929,7 @@ class BloodService implements IBloodService {
                     ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
                     : '';
 
-                const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.hospital.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
+                const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${(findRequirement?.hospital?.hospital_name) || "your location"} by ${date}.Please let me know if there’s anything else I should be aware of.`;
 
                 console.log(`To profile id ${findRequirement.profile_id}`)
                 const newInterest = await this.bloodDonationRepo.saveDonation(bloodDonationData);
@@ -1009,6 +1016,8 @@ class BloodService implements IBloodService {
         if (bloodReq && bloodReq.profile_id == profile_id) {
             const skip: number = (page - 1) * limit;
             const request = await this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit, status);
+            console.log(request)
+            console.log("Find request")
             if (request.total_records) {
                 return {
                     status: true,

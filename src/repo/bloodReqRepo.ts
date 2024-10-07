@@ -31,54 +31,63 @@ class BloodReqDepo implements IBloodReqDepo {
     }
 
     async getStatitics(): Promise<Record<string, any>> {
-        const result = await this.BloodReq.aggregate([
-            {
-                $facet: {
-                    totalRequests: [{ $count: "count" }],
-                    openRequests: [
-                        { $match: { is_closed: false } },
-                        { $count: "count" }
-                    ],
-                    closedRequests: [
-                        { $match: { is_closed: true } },
-                        { $count: "count" }
-                    ],
-                    totalUnitsNeeded: [
-                        {
-                            $group: {
-                                _id: null,
-                                totalUnits: { $sum: "$unit" }
+        try {
+            const result = await this.BloodReq.aggregate([
+                {
+                    $facet: {
+                        totalRequests: [{ $count: "count" }],
+                        openRequests: [
+                            { $match: { is_closed: false } },
+                            { $count: "count" }
+                        ],
+                        closedRequests: [
+                            { $match: { is_closed: true } },
+                            { $count: "count" }
+                        ],
+                        totalUnitsNeeded: [
+                            {
+                                $group: {
+                                    _id: null,
+                                    totalUnits: { $sum: "$unit" }
+                                }
                             }
-                        }
-                    ],
-                    requestsByBloodGroup: [
-                        {
-                            $group: {
-                                _id: "$blood_group",
-                                count: { $sum: 1 }
+                        ],
+                        requestsByBloodGroup: [
+                            {
+                                $group: {
+                                    _id: "$blood_group",
+                                    count: { $sum: 1 }
+                                }
                             }
-                        }
-                    ],
-                    requestsByStatus: [
-                        {
-                            $group: {
-                                _id: "$status",
-                                count: { $sum: 1 }
+                        ],
+                        requestsByStatus: [
+                            {
+                                $group: {
+                                    _id: "$status",
+                                    count: { $sum: 1 }
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
-            }
-        ]);
-        return {
-            totalRequests: result[0].totalRequests[0]?.count || 0,
-            openRequests: result[0].openRequests[0]?.count || 0,
-            closedRequests: result[0].closedRequests[0]?.count || 0,
-            totalUnitsNeeded: result[0].totalUnitsNeeded[0]?.totalUnits || 0,
-            requestsByBloodGroup: result[0].requestsByBloodGroup,
-            requestsByStatus: result[0].requestsByStatus
-        };
+            ]);
 
+            console.log("Statitics")
+            console.log(result)
+            return {
+                totalRequests: result[0].totalRequests[0]?.count || 0,
+                openRequests: result[0].openRequests[0]?.count || 0,
+                closedRequests: result[0].closedRequests[0]?.count || 0,
+                totalUnitsNeeded: result[0].totalUnitsNeeded[0]?.totalUnits || 0,
+                requestsByBloodGroup: result[0].requestsByBloodGroup,
+                requestsByStatus: result[0].requestsByStatus
+            };
+
+        } catch (e) {
+            console.log("sdfsd")
+            console.log(e)
+            return {}
+        }
     }
 
     async findSingleBloodRequirement(blood_id: string, status?: BloodStatus): Promise<IBloodRequirement | null> {
@@ -258,6 +267,11 @@ class BloodReqDepo implements IBloodReqDepo {
                 {
                     $facet: {
                         paginated: [
+                            {
+                                $sort: {
+                                    _id: -1
+                                }
+                            },
                             {
                                 $skip: skip
                             },

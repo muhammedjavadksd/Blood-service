@@ -30,6 +30,8 @@ class BloodDonationRepo implements IBloodDonationRepo {
 
     async findMyDonation(donor_id: string, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonate[]>> {
 
+        console.log("The donor id is");
+
         console.log(donor_id);
 
         try {
@@ -89,6 +91,8 @@ class BloodDonationRepo implements IBloodDonationRepo {
                     }
                 }
             ])
+
+            console.log(findDonation)
             const response: IPaginatedResponse<IBloodDonate[]> = {
                 paginated: findDonation[0].paginated,
                 total_records: findDonation[0].total_records

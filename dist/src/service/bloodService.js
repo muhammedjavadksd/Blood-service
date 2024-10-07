@@ -208,7 +208,7 @@ class BloodService {
             }
         });
     }
-    findNearestBloodDonors(page, limit, location, group, activeOnly) {
+    findNearestBloodDonors(page, limit, location, activeOnly, group) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
             const find = yield this.bloodDonorRepo.nearBySearch(activeOnly, location, limit, skip, group);
@@ -591,6 +591,7 @@ class BloodService {
                         yield this.bloodDonationRepo.updateUnit(request_id, unit);
                         if (updateRequest) {
                             if (status == Enum_1.BloodDonationStatus.Approved) {
+                                yield this.bloodDonorRepo.blockDonor(findRequest.donor_id, Enum_1.DonorAccountBlockedReason.AlreadyDonated);
                                 try {
                                     this.bloodDonorRepo.findBloodDonorByDonorId(findRequest.donor_id).then((donor) => {
                                         this.bloodReqRepo.findBloodRequirementByBloodId(findRequest.donation_id).then((req) => __awaiter(this, void 0, void 0, function* () {
@@ -736,7 +737,7 @@ class BloodService {
     }
     showIntrest(auth_token, profile_id, donor_id, request_id, concerns, date) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b;
             const findRequirement = yield this.bloodReqRepo.findBloodRequirementByBloodId(request_id);
             const findExistance = yield this.bloodDonationRepo.findExistanceOfDonation(donor_id, request_id);
             if (findExistance) {
@@ -747,6 +748,8 @@ class BloodService {
                 };
             }
             if (findRequirement) {
+                console.log("The requirement");
+                console.log(findRequirement);
                 const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
                 if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Open) {
                     if (findRequirement.neededAt < date) {
@@ -780,7 +783,7 @@ class BloodService {
                     const concernsChat = concernsMessage.length
                         ? `Please consider that I have the following concerns: ${concernsMessage.join(", ")}.`
                         : '';
-                    const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${findRequirement.hospital.hospital_name} by ${date}.Please let me know if there’s anything else I should be aware of.`;
+                    const msg = `Hi ${findRequirement.patientName}, ${concernsChat} I would like to donate my blood to you. I'll come to ${((_a = findRequirement === null || findRequirement === void 0 ? void 0 : findRequirement.hospital) === null || _a === void 0 ? void 0 : _a.hospital_name) || "your location"} by ${date}.Please let me know if there’s anything else I should be aware of.`;
                     console.log(`To profile id ${findRequirement.profile_id}`);
                     const newInterest = yield this.bloodDonationRepo.saveDonation(bloodDonationData);
                     if (newInterest) {
@@ -811,7 +814,7 @@ class BloodService {
                     }
                 }
                 else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
-                    const blockedReason = (_a = findDonor.blocked_reason) !== null && _a !== void 0 ? _a : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
+                    const blockedReason = (_b = findDonor.blocked_reason) !== null && _b !== void 0 ? _b : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
                     return {
                         status: false,
                         msg: blockedReason || "You't cant donate blood at this moment!",
@@ -863,6 +866,8 @@ class BloodService {
             if (bloodReq && bloodReq.profile_id == profile_id) {
                 const skip = (page - 1) * limit;
                 const request = yield this.bloodDonationRepo.findBloodResponse(blood_id, skip, limit, status);
+                console.log(request);
+                console.log("Find request");
                 if (request.total_records) {
                     return {
                         status: true,

@@ -78,7 +78,7 @@ class UserController implements IUserController {
     async findNearestDonors(req: CustomRequest, res: Response): Promise<void> {
 
 
-        const bloodGroup: BloodGroup = req.params.group as BloodGroup;
+        const bloodGroup: BloodGroup | null = req.params.group as BloodGroup;
         const limit: number = +req.params.limit;
         const page: number = +req.params.page;
         const long: number = +(req.query.long || 0)
@@ -87,7 +87,7 @@ class UserController implements IUserController {
 
 
 
-        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, bloodGroup, false);
+        const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, false, bloodGroup);
         res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data })
     }
 
@@ -260,7 +260,6 @@ class UserController implements IUserController {
 
 
     async findRequest(req: CustomRequest, res: Response): Promise<void> {
-        console.log("Reached here");
 
         if (req.context) {
             const profile_id = req.context?.profile_id;
@@ -304,14 +303,33 @@ class UserController implements IUserController {
 
     async updateBloodDonor(req: CustomRequest, res: Response): Promise<void> {
 
-        const bodyData: IUserBloodDonorEditable = req.body;
+        const bodyData = req.body;
         const donor_id: string = req.context?.donor_id;
         let editableBloodDonors: IUserBloodDonorEditable = {
             email_address: bodyData.email_address,
             full_name: bodyData.full_name,
-            locatedAt: bodyData.locatedAt,
             phoneNumber: bodyData.phoneNumber
         };
+
+        console.log(bodyData);
+
+
+
+        console.log("The hospital");
+        console.log(bodyData.locatedAt);
+
+
+        if (bodyData.locatedAt) {
+            editableBloodDonors['location'] = bodyData.locatedAt
+            const coords = bodyData.locatedAt?.coordinates
+            if (coords && coords.length) {
+                editableBloodDonors['location_coords'] = {
+                    type: "Point",
+                    coordinates: coords
+                }
+            }
+        }
+
 
         console.log("Editing details");
         console.log(editableBloodDonors);

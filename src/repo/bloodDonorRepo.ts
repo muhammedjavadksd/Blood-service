@@ -73,7 +73,13 @@ class BloodDonorRepo implements IBloodDonorRepo {
 
     async blockDonor(donor_id: string, reason: DonorAccountBlockedReason): Promise<boolean> {
         const blockedDate = new Date()
-        const updateData = await this.BloodDonor.updateOne({ donor_id: donor_id }, { $set: { status: BloodDonorStatus.Blocked, blocked_date: blockedDate } })
+        const updateData = await this.BloodDonor.updateOne({ donor_id: donor_id }, {
+            $set: {
+                status: BloodDonorStatus.Blocked,
+                blocked_date: blockedDate,
+                blocked_reason: reason,
+            }
+        })
         return updateData.modifiedCount > 0
     }
 
@@ -105,6 +111,11 @@ class BloodDonorRepo implements IBloodDonorRepo {
                 {
                     $facet: {
                         paginated: [
+                            {
+                                $sort: {
+                                    _id: -1
+                                }
+                            },
                             {
                                 $skip: skip
                             },
@@ -163,7 +174,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
     }
 
 
-    async nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup | null): Promise<IPaginatedResponse<IBloodDonor[]>> {
+    async nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group?: BloodGroup | null): Promise<IPaginatedResponse<IBloodDonor[]>> {
         try {
 
             const match: Record<string, any> = {};
@@ -186,6 +197,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         distanceField: "distance_km",
                         spherical: true,
                         maxDistance: 50000000,
+                        key: "location_coords",
                     },
                 },
                 {
