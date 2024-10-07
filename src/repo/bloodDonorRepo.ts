@@ -163,34 +163,33 @@ class BloodDonorRepo implements IBloodDonorRepo {
     }
 
 
-    async nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>> {
+    async nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup | null): Promise<IPaginatedResponse<IBloodDonor[]>> {
         try {
 
             const match: Record<string, any> = {};
+
+            if (group) {
+                match['blood_group'] = group
+            }
+
             if (activeOnly) {
-                match['status'] = BloodStatus.Approved
-                match['is_closed'] = false
+                match['status'] = BloodDonorStatus.Open
             }
 
             const find = await this.BloodDonor.aggregate([
-                {
-                    $match: match
-                },
                 {
                     $geoNear: {
                         near: {
                             type: "Point",
                             coordinates: location
                         },
-                        distanceField: "distance",
+                        distanceField: "distance_km",
                         spherical: true,
                         maxDistance: 50000000,
                     },
                 },
                 {
-                    $sort: {
-                        distance: -1
-                    }
+                    $match: match
                 },
                 {
                     $addFields: {
@@ -198,7 +197,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
                             $concat: [
                                 {
                                     $toString: {
-                                        $ceil: { $divide: ['$distance', 1000] }
+                                        $ceil: { $divide: ['$distance_km', 1000] }
                                     }
                                 },
                                 " Km"
@@ -207,9 +206,8 @@ class BloodDonorRepo implements IBloodDonorRepo {
                     }
                 },
                 {
-                    $match: {
-                        status: BloodDonorStatus.Open,
-                        blood_group: group
+                    $sort: {
+                        distance_km: -1
                     }
                 },
                 {
@@ -236,7 +234,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
                     }
                 }
             ]);
-            console.log(find);
+            console.log(find[0].paginated);
 
             const response: IPaginatedResponse<IBloodDonor[]> = {
                 paginated: find[0].paginated,

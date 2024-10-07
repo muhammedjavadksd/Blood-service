@@ -162,29 +162,26 @@ class BloodDonorRepo {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const match = {};
+                if (group) {
+                    match['blood_group'] = group;
+                }
                 if (activeOnly) {
-                    match['status'] = Enum_1.BloodStatus.Approved;
-                    match['is_closed'] = false;
+                    match['status'] = Enum_1.BloodDonorStatus.Open;
                 }
                 const find = yield this.BloodDonor.aggregate([
-                    {
-                        $match: match
-                    },
                     {
                         $geoNear: {
                             near: {
                                 type: "Point",
                                 coordinates: location
                             },
-                            distanceField: "distance",
+                            distanceField: "distance_km",
                             spherical: true,
                             maxDistance: 50000000,
                         },
                     },
                     {
-                        $sort: {
-                            distance: -1
-                        }
+                        $match: match
                     },
                     {
                         $addFields: {
@@ -192,7 +189,7 @@ class BloodDonorRepo {
                                 $concat: [
                                     {
                                         $toString: {
-                                            $ceil: { $divide: ['$distance', 1000] }
+                                            $ceil: { $divide: ['$distance_km', 1000] }
                                         }
                                     },
                                     " Km"
@@ -201,9 +198,8 @@ class BloodDonorRepo {
                         }
                     },
                     {
-                        $match: {
-                            status: Enum_1.BloodDonorStatus.Open,
-                            blood_group: group
+                        $sort: {
+                            distance_km: -1
                         }
                     },
                     {
@@ -230,7 +226,7 @@ class BloodDonorRepo {
                         }
                     }
                 ]);
-                console.log(find);
+                console.log(find[0].paginated);
                 const response = {
                     paginated: find[0].paginated,
                     total_records: find[0].total_records

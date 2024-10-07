@@ -26,7 +26,19 @@ class AdminController {
         this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this);
         this.updateBloodGroup = this.updateBloodGroup.bind(this);
         this.addDonor = this.addDonor.bind(this);
+        this.updateDonorStatus = this.updateDonorStatus.bind(this);
+        this.findNearest = this.findNearest.bind(this);
+        this.updateBloodRequirements = this.updateBloodRequirements.bind(this);
         this.bloodService = new bloodService_1.default();
+    }
+    updateDonorStatus(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const donorId = req.params.donor_id;
+            const status = req.body.status;
+            const reason = status == Enum_1.BloodDonorStatus.Blocked ? req.body.reason : null;
+            const updateDonor = yield this.bloodService.updateBloodDonors({ status, blocked_reason: reason }, donorId, true);
+            res.status(updateDonor.statusCode).json({ status: updateDonor.status, msg: updateDonor.msg, data: updateDonor.data });
+        });
     }
     addDonor(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -74,7 +86,7 @@ class AdminController {
                 res.status(Enum_1.StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" });
             }
             else {
-                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, false);
+                const findNearest = yield this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, true);
                 res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data });
             }
         });

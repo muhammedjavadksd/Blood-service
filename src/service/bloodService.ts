@@ -23,6 +23,7 @@ import S3BucketHelper from "../Util/Helpers/S3Helper";
 import { config } from 'dotenv'
 import { bool } from "aws-sdk/clients/signer";
 import { BlockedReason } from "aws-sdk/clients/sagemaker";
+import { NullAttributeValue } from "aws-sdk/clients/dynamodb";
 
 
 interface IBloodService {
@@ -32,7 +33,7 @@ interface IBloodService {
     bloodDonation(fullName: string, emailID: string, phoneNumber: number, bloodGroup: BloodGroup, location_coords: ILocatedAt, location: LocatedAt, status: BloodDonorStatus, blockedReason?: DonorAccountBlockedReason): Promise<HelperFunctionResponse>
     createDonorId(blood_group: BloodGroup, fullName: string): Promise<string>
     closeRequest(blood_id: string, category: BloodCloseCategory, explanation: string): Promise<HelperFunctionResponse>
-    updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string): Promise<HelperFunctionResponse>
+    updateBloodDonors(editData: IUserBloodDonorEditable, edit_id: string, forceUpdate?: boolean): Promise<HelperFunctionResponse>
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroupRequest(newGroup: string, profile_id: string, certificate_name: string): Promise<HelperFunctionResponse>
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
@@ -86,6 +87,8 @@ class BloodService implements IBloodService {
         this.advanceBloodBankSearch = this.advanceBloodBankSearch.bind(this)
         this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this)
         this.updateBloodGroup = this.updateBloodGroup.bind(this)
+        this.updateProfileStatus = this.updateProfileStatus.bind(this)
+        // this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
@@ -132,10 +135,6 @@ class BloodService implements IBloodService {
             }
         }
     }
-
-
-
-
 
     async searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: string | null): Promise<HelperFunctionResponse> {
 
@@ -251,7 +250,7 @@ class BloodService implements IBloodService {
     }
 
 
-    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup, activeOnly: boolean): Promise<HelperFunctionResponse> {
+    async findNearestBloodDonors(page: number, limit: number, location: [number, number], group: BloodGroup | null, activeOnly: boolean): Promise<HelperFunctionResponse> {
 
         const skip: number = (page - 1) * limit;
         const find = await this.bloodDonorRepo.nearBySearch(activeOnly, location, limit, skip, group);
@@ -1246,12 +1245,12 @@ class BloodService implements IBloodService {
         }
     }
 
-    async updateBloodDonors(editData: Record<string, any>, edit_id: string): Promise<HelperFunctionResponse> {
+    async updateBloodDonors(editData: Record<string, any>, edit_id: string, forceUpdate?: boolean): Promise<HelperFunctionResponse> {
 
         const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(edit_id);
         if (findDonor) {
 
-            if (editData['status']) {
+            if (editData['status'] && !forceUpdate) {
                 if (editData['status'] == BloodDonorStatus.Open) {
                     if (findDonor.blocked_reason == DonorAccountBlockedReason.AlreadyDonated) {
                         return {
@@ -1284,9 +1283,6 @@ class BloodService implements IBloodService {
                 statusCode: StatusCode.NOT_FOUND
             }
         }
-
-
-
     }
 
     async createDonorId(blood_group: BloodGroup, fullName: string): Promise<string> {

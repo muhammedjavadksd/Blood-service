@@ -14,6 +14,7 @@ userRouter.get("/", (req: Request, res: Response) => {
     res.status(200).send("Welcome to Blood service in Life Link");
 })
 
+
 userRouter.get("/get_profile", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.getSingleProfile) // test pending
 // userRouter.get("/blood_availability/:blood_group/:status", userController.bloodAvailability) //test
 userRouter.get("/blood_availability/:page/:limit/:blood_group/:urgency?/:hospital?", userController.advanceBloodRequirement) //test

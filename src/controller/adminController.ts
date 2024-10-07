@@ -21,6 +21,7 @@ interface IAdminController {
     bloodBank(req: Request, res: Response): Promise<void>
     findNearest(req: Request, res: Response): Promise<void>
     findIntrest(req: Request, res: Response): Promise<void>
+    updateDonorStatus(req: Request, res: Response): Promise<void>
     // updateRequirementStatus(req: Request, res: Response): Promise<void>
 }
 
@@ -39,7 +40,20 @@ class AdminController implements IAdminController {
         this.bloodGroupChangeRequests = this.bloodGroupChangeRequests.bind(this)
         this.updateBloodGroup = this.updateBloodGroup.bind(this)
         this.addDonor = this.addDonor.bind(this)
+        this.updateDonorStatus = this.updateDonorStatus.bind(this)
+        this.findNearest = this.findNearest.bind(this)
+        this.updateBloodRequirements = this.updateBloodRequirements.bind(this)
         this.bloodService = new BloodService()
+    }
+
+    async updateDonorStatus(req: Request, res: Response): Promise<void> {
+
+        const donorId: string = req.params.donor_id;
+        const status: BloodDonorStatus = req.body.status;
+        const reason: string = status == BloodDonorStatus.Blocked ? req.body.reason : null;
+
+        const updateDonor = await this.bloodService.updateBloodDonors({ status, blocked_reason: reason }, donorId, true);
+        res.status(updateDonor.statusCode).json({ status: updateDonor.status, msg: updateDonor.msg, data: updateDonor.data })
     }
 
 
@@ -93,12 +107,12 @@ class AdminController implements IAdminController {
         const long = +(req.query.long || 0);
         const page: number = +(req.params.page);
         const limit: number = +req.params.limit;
-        const blood_group: BloodGroup = req.params.blood_group as BloodGroup;
+        const blood_group: BloodGroup | null = req.params.blood_group as BloodGroup;
 
         if (lati == null || lati == undefined || long == null || long == undefined) {
             res.status(StatusCode.BAD_REQUEST).json({ status: false, msg: "Please select valid location" })
         } else {
-            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, false);
+            const findNearest = await this.bloodService.findNearestBloodDonors(page, limit, [long, lati], blood_group, true);
             res.status(findNearest.statusCode).json({ status: findNearest.status, msg: findNearest.msg, data: findNearest.data })
         }
     }

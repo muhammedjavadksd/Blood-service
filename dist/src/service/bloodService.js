@@ -49,6 +49,8 @@ class BloodService {
         this.advanceBloodBankSearch = this.advanceBloodBankSearch.bind(this);
         this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this);
         this.updateBloodGroup = this.updateBloodGroup.bind(this);
+        this.updateProfileStatus = this.updateProfileStatus.bind(this);
+        // this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
@@ -1096,11 +1098,11 @@ class BloodService {
             }
         });
     }
-    updateBloodDonors(editData, edit_id) {
+    updateBloodDonors(editData, edit_id, forceUpdate) {
         return __awaiter(this, void 0, void 0, function* () {
             const findDonor = yield this.bloodDonorRepo.findBloodDonorByDonorId(edit_id);
             if (findDonor) {
-                if (editData['status']) {
+                if (editData['status'] && !forceUpdate) {
                     if (editData['status'] == Enum_1.BloodDonorStatus.Open) {
                         if (findDonor.blocked_reason == Enum_1.DonorAccountBlockedReason.AlreadyDonated) {
                             return {
