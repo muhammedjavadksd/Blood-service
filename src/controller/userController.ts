@@ -96,7 +96,7 @@ class UserController implements IUserController {
         // page/:limit/:blood_group/:urgency/:hospital
         const page: number = +req.params.page;
         const limit: number = +req.params.limit;
-        const blood_group: BloodGroup = req.params.blood_group as BloodGroup;
+        const blood_group: BloodGroup | null = req.params.blood_group as BloodGroup;
         const urgency: boolean = Boolean(req.params.urgency);
         const hospital: string = req.params.hospital;
 
