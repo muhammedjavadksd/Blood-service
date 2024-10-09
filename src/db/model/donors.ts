@@ -1,12 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 import { BloodDonorStatus, BloodGroup, DonorAccountBlockedReason } from "../../Util/Types/Enum";
-import { IBloodDonor, IBloodDonorTemplate, ILocatedAt } from "../../Util/Types/Interface/ModelInterface";
+import { IBloodDonorTemplate, ILocatedAt } from "../../Util/Types/Interface/ModelInterface";
 import { LocatedAt } from "../../Util/Types/Types";
 
 const coordsSchema = new Schema<ILocatedAt>({
     type: {
         type: String,
-        enum: ['Point'], // Ensure only 'Point' is allowed
+        enum: ['Point'],
         required: true
     },
     coordinates: {

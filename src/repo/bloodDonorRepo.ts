@@ -3,6 +3,7 @@ import { IBloodDonor, IBloodDonorTemplate, ISearchBloodDonorTemplate, IUserBlood
 import BloodDonorCollection from "../db/model/donors";
 import { BloodDonorStatus, BloodGroup, BloodStatus, DonorAccountBlockedReason } from "../Util/Types/Enum";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";
+import moment from 'moment'
 
 interface IBloodDonorRepo {
     getStatitics(): Promise<Record<string, any>>
@@ -14,6 +15,8 @@ interface IBloodDonorRepo {
     unBlockDonor(donor_id: string): Promise<boolean>
     nearBySearch(activeOnly: boolean, location: [number, number], limit: number, skip: number, group: BloodGroup): Promise<IPaginatedResponse<IBloodDonor[]>>
     findDonorsPaginated(limit: number, skip: number, filter: ISearchBloodDonorTemplate): Promise<IPaginatedResponse<IBloodDonor[]>>
+    findBlockedSchedule(): Promise<string[]>
+    bulkUnBlock(donor_ids: string[]): Promise<boolean>
 }
 
 class BloodDonorRepo implements IBloodDonorRepo {
@@ -28,6 +31,33 @@ class BloodDonorRepo implements IBloodDonorRepo {
         this.blockDonor = this.blockDonor.bind(this)
         this.unBlockDonor = this.unBlockDonor.bind(this)
         this.BloodDonor = BloodDonorCollection;
+    }
+
+
+    async bulkUnBlock(donor_ids: string[]): Promise<boolean> {
+        const unblock = await this.BloodDonor.updateMany({ donor_id: { $in: donor_ids } }, {
+            $set: {
+                status: BloodDonorStatus.Open,
+                blocked_date: null,
+                blocked_reason: null
+            }
+        });
+        return unblock.modifiedCount > 0
+    }
+
+
+    async findBlockedSchedule(): Promise<string[]> {
+        const findBlockedAccount = await this.BloodDonor.find({
+            status: BloodDonorStatus.Blocked,
+            blocked_date: {
+                $lt: moment().subtract(90, 'days').toDate(),
+            },
+            blocked_reason: DonorAccountBlockedReason.AlreadyDonated
+        })
+            .select({ donor_id: 1, _id: 0 })
+            .exec();
+
+        return findBlockedAccount.map(account => account.donor_id);
     }
 
 

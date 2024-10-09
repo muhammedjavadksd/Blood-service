@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const donors_1 = __importDefault(require("../db/model/donors"));
 const Enum_1 = require("../Util/Types/Enum");
+const moment_1 = __importDefault(require("moment"));
 class BloodDonorRepo {
     constructor() {
         this.createDonor = this.createDonor.bind(this);
@@ -23,6 +24,32 @@ class BloodDonorRepo {
         this.blockDonor = this.blockDonor.bind(this);
         this.unBlockDonor = this.unBlockDonor.bind(this);
         this.BloodDonor = donors_1.default;
+    }
+    bulkUnBlock(donor_ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const unblock = yield this.BloodDonor.updateMany({ donor_id: { $in: donor_ids } }, {
+                $set: {
+                    status: Enum_1.BloodDonorStatus.Open,
+                    blocked_date: null,
+                    blocked_reason: null
+                }
+            });
+            return unblock.modifiedCount > 0;
+        });
+    }
+    findBlockedSchedule() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findBlockedAccount = yield this.BloodDonor.find({
+                status: Enum_1.BloodDonorStatus.Blocked,
+                blocked_date: {
+                    $lt: (0, moment_1.default)().subtract(90, 'days').toDate(),
+                },
+                blocked_reason: Enum_1.DonorAccountBlockedReason.AlreadyDonated
+            })
+                .select({ donor_id: 1, _id: 0 })
+                .exec();
+            return findBlockedAccount.map(account => account.donor_id);
+        });
     }
     getStatitics() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -106,6 +133,11 @@ class BloodDonorRepo {
                         $facet: {
                             paginated: [
                                 {
+                                    $sort: {
+                                        _id: -1
+                                    }
+                                },
+                                {
                                     $skip: skip
                                 },
                                 {
@@ -184,6 +216,7 @@ class BloodDonorRepo {
                             distanceField: "distance_km",
                             spherical: true,
                             maxDistance: 50000000,
+                            key: "location_coords",
                         },
                     },
                     {

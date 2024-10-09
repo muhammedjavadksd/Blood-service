@@ -1,6 +1,5 @@
 import { ObjectId } from "mongoose";
 import { IBloodDonorUpdate, IBloodGroupUpdateTemplate, IEditableGroupGroupRequest } from "../Util/Types/Interface/ModelInterface";
-import BloodDonorUpdate from "../db/model/updateBloodGroup";
 import BloodGroupUpdate from "../db/model/updateBloodGroup";
 import { BloodGroupUpdateStatus } from "../Util/Types/Enum";
 import { IPaginatedResponse } from "../Util/Types/Interface/UtilInterface";

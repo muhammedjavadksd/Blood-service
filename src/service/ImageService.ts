@@ -1,15 +1,7 @@
-import mongoose, { ObjectId } from "mongoose";
-import { BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, JwtTimer, Relationship, S3BucketsNames, S3FolderName, StatusCode } from "../Util/Types/Enum";
 import { HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
-import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
-import BloodRepo from "../repo/bloodReqRepo";
 import UtilHelper from "../Util/Helpers/UtilHelpers";
-import IBloodRequirement, { IBloodDonateTemplate, IBloodDonor, IBloodDonorTemplate, IBloodGroupUpdateTemplate, IBloodRequirementTemplate, IEditableBloodRequirementTemplate, IEditableGroupGroupRequest, ISearchBloodDonorTemplate, IUserBloodDonorEditable } from "../Util/Types/Interface/ModelInterface";
-import BloodDonorRepo from "../repo/bloodDonorRepo";
-import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
-import BloodDonationRepo from "../repo/bloodDonation";
-import TokenHelper from "../Util/Helpers/tokenHelper";
 import S3BucketHelper from "../Util/Helpers/S3Helper";
+import { S3BucketsNames, S3FolderName, StatusCode } from "../Util/Types/Enum";
 
 interface IImageServices {
     generatePresignedUrlForChangeBloodGroupCertificat(): Promise<HelperFunctionResponse>

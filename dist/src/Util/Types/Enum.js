@@ -15,6 +15,7 @@ var BloodGroup;
 var JwtTimer;
 (function (JwtTimer) {
     JwtTimer["_30Days"] = "30d";
+    JwtTimer["_1Year"] = "1year";
 })(JwtTimer || (exports.JwtTimer = JwtTimer = {}));
 var BloodGroupFilter;
 (function (BloodGroupFilter) {

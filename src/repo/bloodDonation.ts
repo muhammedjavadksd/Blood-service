@@ -30,10 +30,6 @@ class BloodDonationRepo implements IBloodDonationRepo {
 
     async findMyDonation(donor_id: string, skip: number, limit: number): Promise<IPaginatedResponse<IBloodDonate[]>> {
 
-        console.log("The donor id is");
-
-        console.log(donor_id);
-
         try {
             const findDonation = await this.BloodDonation.aggregate([
                 {

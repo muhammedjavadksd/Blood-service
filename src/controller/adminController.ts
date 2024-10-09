@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import BloodService from "../service/bloodService";
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, ExtendsRelationship, Relationship, StatusCode } from "../Util/Types/Enum";
+import { BloodCloseCategory, BloodDonorStatus, BloodGroup, BloodGroupUpdateStatus, BloodStatus, DonorAccountBlockedReason, ExtendsRelationship, StatusCode } from "../Util/Types/Enum";
 import { CustomRequest, HelperFunctionResponse } from "../Util/Types/Interface/UtilInterface";
 import { ObjectId } from "mongoose";
 import { LocatedAt } from "../Util/Types/Types";
@@ -66,19 +66,10 @@ class AdminController implements IAdminController {
         const phoneNumber: number = req.body.phone_number
         const email_address: string = req.body.email_address
         const status: BloodDonorStatus = req.body.status
-        const isBlocked = status == BloodDonorStatus.Blocked
-
-        console.log("The cord");
-        console.log(req.body);
-
-
-        console.log(location);
-
         const coords: ILocatedAt = {
             coordinates: location.coordinates,
             type: "Point"
         }
-
 
         const addDonor = await this.bloodService.bloodDonation(full_name, email_address, phoneNumber, blood_group, coords, location, status, DonorAccountBlockedReason.AccountJustCreated);
         res.status(addDonor.statusCode).json({ status: addDonor.status, msg: addDonor.msg, data: addDonor.data })
@@ -103,8 +94,8 @@ class AdminController implements IAdminController {
 
 
     async findNearest(req: Request, res: Response): Promise<void> {
-        const lati = +(req.query.lati || 0)
-        const long = +(req.query.long || 0);
+        const lati: number = +(req.query.lati || 0)
+        const long: number = +(req.query.long || 0);
         const page: number = +(req.params.page);
         const limit: number = +req.params.limit;
         const blood_group: BloodGroup | null = req.params.blood_group as BloodGroup;
@@ -134,9 +125,6 @@ class AdminController implements IAdminController {
 
 
     async findDonorByBloodGroup(req: Request, res: Response): Promise<void> {
-
-        console.log("Reached here");
-
 
         const limit: number = +req.params.limit
         const page: number = +req.params.page
@@ -174,8 +162,6 @@ class AdminController implements IAdminController {
 
     async addBloodRequirement(req: CustomRequest, res: Response): Promise<void> {
 
-        // const requestData = re;
-
         const patientName: string = req.body.patientName;
         const unit: number = req.body.unit;
         const neededAt: Date = req.body.neededAt;
@@ -209,10 +195,6 @@ class AdminController implements IAdminController {
         const long: string | undefined = req.query.long?.toString();
         const closedOnly: boolean = req.query.closed == "true"
         const location: [string, string] | null = (lang && long) ? [lang, long] : null
-
-        console.log("Query");
-        console.log(req.query);
-
 
         const findProfile = await this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
         res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data })

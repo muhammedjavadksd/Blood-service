@@ -1,4 +1,4 @@
-import mongoose, { ObjectId } from "mongoose";
+import { ObjectId } from "mongoose";
 import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodGroupUpdateStatus, BloodStatus, ChatFrom, DonorAccountBlockedReason, ExtendsRelationship, JwtTimer, Relationship, S3FolderName, StatusCode } from "../Util/Types/Enum";
 import { BloodDonationConcerns, BloodDonationInterestData, BloodDonationValidationResult, HelperFunctionResponse, IChatNotification, IPaginatedResponse, IProfileCard } from "../Util/Types/Interface/UtilInterface";
 import { IBloodAvailabilityResult, LocatedAt, mongoObjectId } from "../Util/Types/Types";
@@ -9,24 +9,19 @@ import BloodDonorRepo from "../repo/bloodDonorRepo";
 import BloodGroupUpdateRepo from "../repo/bloodGroupUpdate";
 import BloodDonationRepo from "../repo/bloodDonation";
 import TokenHelper from "../Util/Helpers/tokenHelper";
-import e from "express";
 import BloodNotificationProvider from "../communication/Provider/notification_service";
 import axios from "axios";
 import ProfileChat from "../communication/ApiCommunication/ProfileChatApiCommunication";
-import { skip } from "node:test";
-// import ChatService from "./chatService";
 import PDFDocument from 'pdfkit'
 import qrcode from 'qrcode'
 import path from 'path'
 import fs from 'fs'
 import S3BucketHelper from "../Util/Helpers/S3Helper";
 import { config } from 'dotenv'
-import { bool } from "aws-sdk/clients/signer";
-import { BlockedReason } from "aws-sdk/clients/sagemaker";
-import { NullAttributeValue } from "aws-sdk/clients/dynamodb";
 
 
 interface IBloodService {
+    unBlockSchedule(): Promise<boolean>
     getStatitics(): Promise<HelperFunctionResponse>
     createBloodRequirement(patientName: string, unit: number, neededAt: Date, status: BloodStatus, user_id: mongoObjectId, profile_id: string, blood_group: BloodGroup, relationship: Relationship, locatedAt: LocatedAt, address: string, phoneNumber: number, email_address: string): Promise<HelperFunctionResponse>
     createBloodId(blood_group: BloodGroup, unit: number): Promise<string>
@@ -39,7 +34,6 @@ interface IBloodService {
     updateBloodGroup(request_id: ObjectId, newStatus: BloodGroupUpdateStatus): Promise<HelperFunctionResponse>
     findBloodGroupChangeRequets(status: BloodGroupUpdateStatus, page: number, limit: number): Promise<HelperFunctionResponse>
     findBloodAvailability(status: BloodDonorStatus, blood_group: BloodGroup): Promise<HelperFunctionResponse>
-    // donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findRequest(donor_id: string, blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse>
     findResponse(blood_id: string, page: number, limit: number): Promise<HelperFunctionResponse>
     findActivePaginatedBloodRequirements(page: number, limit: number): Promise<HelperFunctionResponse>
@@ -48,7 +42,6 @@ interface IBloodService {
     findMyIntrest(donor_id: string, limit: number, page: number, status: BloodDonationStatus): Promise<HelperFunctionResponse>
     findMyRequest(profile_id: string, page: number, limit: number, status: BloodStatus): Promise<HelperFunctionResponse>
     updateRequestStatus(request_id: ObjectId, status: BloodDonationStatus, unit: number): Promise<HelperFunctionResponse>
-    // updateBloodReqStatus(request_id: ObjectId, status: BloodStatus): Promise<HelperFunctionResponse>
     updateProfileStatus(blood_id: string, status: BloodStatus): Promise<HelperFunctionResponse>
     donationHistory(donor_id: string, limit: number, page: number): Promise<HelperFunctionResponse>
     findDonorProfile(donor_id: string, profile_id: string): Promise<HelperFunctionResponse>
@@ -65,7 +58,6 @@ class BloodService implements IBloodService {
     private readonly bloodGroupUpdateRepo: BloodGroupUpdateRepo;
     private readonly bloodDonationRepo: BloodDonationRepo;
     private readonly utilHelper: UtilHelper;
-    // private readonly chatService: ChatService
 
 
 
@@ -88,14 +80,24 @@ class BloodService implements IBloodService {
         this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this)
         this.updateBloodGroup = this.updateBloodGroup.bind(this)
         this.updateProfileStatus = this.updateProfileStatus.bind(this)
-        // this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
         this.bloodReqRepo = new BloodRepo();
         this.bloodDonorRepo = new BloodDonorRepo();
         this.bloodGroupUpdateRepo = new BloodGroupUpdateRepo();
         this.bloodDonationRepo = new BloodDonationRepo();
         this.utilHelper = new UtilHelper();
         config()
-        // this.chatService = new ChatService();
+    }
+
+
+    async unBlockSchedule(): Promise<boolean> {
+        const findUnBlock = await this.bloodDonorRepo.findBlockedSchedule();
+        console.log(findUnBlock);
+
+        if (findUnBlock.length) {
+            return await this.bloodDonorRepo.bulkUnBlock(findUnBlock);
+        } else {
+            return false
+        }
     }
 
 
@@ -135,6 +137,7 @@ class BloodService implements IBloodService {
             }
         }
     }
+
 
     async searchBloodDonors(page: number, limit: number, bloodGroup: BloodGroup, status: string | null): Promise<HelperFunctionResponse> {
 
@@ -218,16 +221,6 @@ class BloodService implements IBloodService {
             match.blood_group = bloodGroup;
         }
 
-        // if (location) {
-        //     match.location = {
-        //         $geoWithin: {
-        //             $centerSphere: [
-        //                 location,
-        //                 1 / 6378.1
-        //             ]
-        //         }
-        //     };
-        // }
 
         if (isClosedOnly !== undefined) {
             match.is_closed = isClosedOnly;
@@ -1041,58 +1034,7 @@ class BloodService implements IBloodService {
         }
     }
 
-
-    // async donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
-    //     const insertRequest: IBloodDonateTemplate = {
-    //         date: new Date(),
-    //         donation_id,
-    //         status,
-    //         donor_id
-    //     }
-    //     const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-    //     if (findDonor) {
-    //         if (findDonor.status == BloodDonorStatus.Blocked || findDonor.status == BloodDonorStatus.Deleted) {
-    //             return {
-    //                 msg: "You cannot process this request as your account is blocked for 90 days.",
-    //                 status: false,
-    //                 statusCode: StatusCode.BAD_REQUEST
-    //             }
-    //         } else {
-    //             const saveData = await this.bloodDonationRepo.saveDonation(insertRequest);
-
-    //             if (saveData) {
-    //                 if (status == BloodDonationStatus.Approved) {
-    //                     const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id, DonorAccountBlockedReason.AlreadyDonated)
-    //                     return {
-    //                         msg: "Please go through the email; you will receive the remaining details",
-    //                         status: true,
-    //                         statusCode: StatusCode.OK
-    //                     }
-    //                 } else {
-    //                     return {
-    //                         msg: "Rejected success",
-    //                         status: true,
-    //                         statusCode: StatusCode.OK
-    //                     }
-    //                 }
-    //             } else {
-    //                 return {
-    //                     msg: "Internal server error",
-    //                     status: false,
-    //                     statusCode: StatusCode.SERVER_ERROR
-    //                 }
-    //             }
-
-    //         }
-    //     } else {
-    //         return {
-    //             msg: "We couldn't find the donor",
-    //             status: false,
-    //             statusCode: StatusCode.UNAUTHORIZED
-    //         }
-    //     }
-    // }
-
+ 
     async findBloodAvailability(status: BloodDonorStatus, blood_group?: BloodGroup): Promise<HelperFunctionResponse> {
         const findBloodAvailabilityFilter: ISearchBloodDonorTemplate = {}
         let result: IBloodAvailabilityResult = {
@@ -1389,7 +1331,7 @@ class BloodService implements IBloodService {
         if (saveDonorIntoDb) {
             // const updateUser = await this.
             const tokenHelper = new TokenHelper();
-            const authToken = await tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, JwtTimer._30Days)
+            const authToken = await tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, JwtTimer._1Year)
             console.log("Proifle");
             console.log(authToken);
 

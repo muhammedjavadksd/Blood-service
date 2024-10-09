@@ -24,14 +24,12 @@ class AuthMiddleware {
             const tokenHelper = new tokenHelper_1.default();
             const headers = req.headers;
             const token = utilHelper.getTokenFromHeader(headers['authorization']);
-            console.log("The token is :" + token);
             if (token) {
                 if (!req.context) {
                     req.context = {};
                 }
                 req.context.auth_token = token;
                 const checkValidity = yield tokenHelper.checkTokenValidity(token);
-                console.log(checkValidity);
                 if (checkValidity) {
                     if (typeof checkValidity == "object") {
                         const emailAddress = checkValidity.email || checkValidity.email_address;
@@ -43,37 +41,18 @@ class AuthMiddleware {
                                 console.log("Passed");
                                 console.log(req.context);
                                 next();
-                            }
-                            else {
-                                res.status(401).json({
-                                    status: false,
-                                    msg: "Authorization is failed"
-                                });
+                                return;
                             }
                         }
-                        else {
-                            res.status(401).json({
-                                status: false,
-                                msg: "Authorization is failed"
-                            });
-                        }
-                    }
-                    else {
-                        res.status(401).json({
-                            status: false,
-                            msg: "Authorization is failed"
-                        });
                     }
                 }
-                else {
-                    res.status(401).json({
-                        status: false,
-                        msg: "Authorization is failed"
-                    });
-                }
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({
+                    status: false,
+                    msg: "Authorization is failed"
+                });
             }
             else {
-                res.status(401).json({
+                res.status(Enum_1.StatusCode.UNAUTHORIZED).json({
                     status: false,
                     msg: "Invalid auth attempt"
                 });
@@ -117,37 +96,20 @@ class AuthMiddleware {
     }
     isValidDonor(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Eb");
-            console.log("Reached my place");
             const utilHelper = new UtilHelpers_1.default();
             const tokenHelper = new tokenHelper_1.default();
-            console.log(req.headers);
             const headers = req.headers;
             const authToken = headers.bloodauthorization;
-            console.log(authToken);
             if (authToken && typeof authToken == "string") {
                 const token = utilHelper.getBloodTokenFromHeader(authToken);
                 if (token) {
-                    console.log("The token");
-                    console.log(token);
-                    // "blood_group": "A+",
-                    // "donor_id": "MUANBVMA+",
-                    // "email_address": "muhammedjavad119144@gmail.com",
-                    // "full_name": "Muhammed Javad",
-                    // "phone_number": "9744727684",
-                    console.log("Token of blood is");
-                    console.log(token);
                     const tokenValidation = yield tokenHelper.checkTokenValidity(token);
-                    console.log(tokenValidation);
                     if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.donor_id) {
                         const donor_id = tokenValidation.donor_id;
                         if (!req.context) {
                             req.context = {};
                         }
                         req.context.donor_id = donor_id;
-                        console.log("Donor middleware has passed");
-                        console.log(donor_id);
-                        console.log(tokenValidation);
                         next();
                     }
                     else {
@@ -165,17 +127,13 @@ class AuthMiddleware {
     }
     isAuthenitcated(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Reached");
             const utilHelper = new UtilHelpers_1.default();
             const tokenHelper = new tokenHelper_1.default();
-            console.log(req.headers);
             const headers = req.headers;
             const authToken = headers.authorization;
             const token = utilHelper.getTokenFromHeader(authToken);
             if (token) {
-                console.log("token");
                 const tokenValidation = yield tokenHelper.checkTokenValidity(token);
-                console.log(tokenValidation);
                 if (tokenValidation && typeof tokenValidation == "object" && tokenValidation.profile_id && tokenValidation.user_id) {
                     const profile_id = tokenValidation.profile_id;
                     const user_id = tokenValidation.user_id;
@@ -184,9 +142,6 @@ class AuthMiddleware {
                     }
                     req.context.profile_id = profile_id;
                     req.context.user_id = user_id;
-                    console.log("Donor middleware has passed");
-                    console.log(profile_id);
-                    console.log(tokenValidation);
                     next();
                 }
                 else {
@@ -196,11 +151,6 @@ class AuthMiddleware {
             else {
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({ status: false, msg: "Donor is not authenticated" });
             }
-        });
-    }
-    isValidReq(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            next();
         });
     }
 }

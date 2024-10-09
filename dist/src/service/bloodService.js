@@ -59,6 +59,18 @@ class BloodService {
         (0, dotenv_1.config)();
         // this.chatService = new ChatService();
     }
+    unBlockSchedule() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const findUnBlock = yield this.bloodDonorRepo.findBlockedSchedule();
+            console.log(findUnBlock);
+            if (findUnBlock.length) {
+                return yield this.bloodDonorRepo.bulkUnBlock(findUnBlock);
+            }
+            else {
+                return false;
+            }
+        });
+    }
     findResponse(blood_id, page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             const skip = (page - 1) * limit;
@@ -1226,7 +1238,7 @@ class BloodService {
             if (saveDonorIntoDb) {
                 // const updateUser = await this.
                 const tokenHelper = new tokenHelper_1.default();
-                const authToken = yield tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, Enum_1.JwtTimer._30Days);
+                const authToken = yield tokenHelper.generateJWtToken({ blood_group: bloodGroup, donor_id: BloodDonorId, email_address: emailID, full_name: fullName, phone_number: phoneNumber }, Enum_1.JwtTimer._1Year);
                 console.log("Proifle");
                 console.log(authToken);
                 return {

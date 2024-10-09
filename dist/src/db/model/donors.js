@@ -32,9 +32,8 @@ const coordsSchema = new mongoose_1.Schema({
         required: true
     },
     coordinates: {
-        type: [Number], // Updated to allow an array of numbers
+        type: [Number],
         required: true,
-        index: '2dsphere' // Add geospatial index
     }
 });
 const locationSchema = new mongoose_1.Schema({

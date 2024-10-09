@@ -4,7 +4,9 @@ import { BloodGroup } from '../../Util/Types/Enum';
 
 
 interface IBloodNotificationProvider {
-    // bloodRequestMailer(blood_group: BloodGroup, location: string, deadLine: string, full_n)
+    transferData(data: Record<string, any>): Promise<boolean>
+    sendBloodRequest(emails: any, blood_group: BloodGroup, dead_line: Date, location: string): boolean
+    _init_(): Promise<void>
 }
 
 
@@ -20,7 +22,7 @@ class BloodNotificationProvider implements IBloodNotificationProvider {
     }
 
 
-    async transferData(data: Record<string, any>) {
+    async transferData(data: Record<string, any>): Promise<boolean> {
         try {
             await this.channel?.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data)))
             return true
@@ -39,10 +41,6 @@ class BloodNotificationProvider implements IBloodNotificationProvider {
                 deadLine: dead_line,
                 location: location
             }
-            console.log("Profile sending to emails");
-
-            console.log(data);
-
             this.channel?.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data)))
             return true
         } catch (e) {
@@ -51,7 +49,7 @@ class BloodNotificationProvider implements IBloodNotificationProvider {
         }
     }
 
-    async _init_() {
+    async _init_(): Promise<void> {
         this.connection = await amqplib.connect(process.env.RABBITMQ_URL || "");
         this.channel = await this.connection.createChannel();
     }

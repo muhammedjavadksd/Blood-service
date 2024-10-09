@@ -1,13 +1,8 @@
 import mongoose from "mongoose";
 import BloodDonorCollection from "./model/donors";
 
-
-
 function mongoDbConnection() {
     const mongoURL = process.env.mongodb_url;
-
-    console.log(mongoURL);
-
 
     if (!mongoURL) {
         console.log("Connection failed");

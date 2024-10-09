@@ -1,22 +1,18 @@
 import { Request, Response } from 'express';
-import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodGroupFilter, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, S3FolderName, StatusCode } from '../Util/Types/Enum';
+import { BloodCloseCategory, BloodDonationStatus, BloodDonorStatus, BloodGroup, BloodStatus, DonorAccountBlockedReason, Relationship, S3BucketsNames, S3FolderName, StatusCode } from '../Util/Types/Enum';
 import { BloodDonationConcerns, CustomRequest, HelperFunctionResponse } from '../Util/Types/Interface/UtilInterface';
 import BloodService from '../service/bloodService';
-import BloodDonorRepo from '../repo/bloodDonorRepo';
-import { IBloodDonorTemplate, ILocatedAt, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
+import { ILocatedAt, IUserBloodDonorEditable } from '../Util/Types/Interface/ModelInterface';
 import { LocatedAt } from '../Util/Types/Types';
 import ImageServices from '../service/ImageService';
 import UtilHelper from '../Util/Helpers/UtilHelpers';
-import BloodNotificationProvider from '../communication/Provider/notification_service';
 import { ObjectId } from 'mongoose';
 import S3BucketHelper from '../Util/Helpers/S3Helper';
-// import ChatService from '../service/chatService';
 
 interface IUserController {
     createBloodDonation(req: Request, res: Response): Promise<void>
     updateBloodDonation(req: Request, res: Response): Promise<void>
     blood_request(req: CustomRequest, res: Response): Promise<void>
-    // blood_donate(req: CustomRequest, res: Response): Promise<void>
     findBloodRequirement(req: Request, res: Response): Promise<void>
     bloodAvailability(req: Request, res: Response): Promise<void>
     bloodAvailabilityByStatitics(req: Request, res: Response): Promise<void>
@@ -33,22 +29,17 @@ interface IUserController {
     findDonationHistory(req: CustomRequest, res: Response): Promise<void>
     advanceBloodRequirement(req: CustomRequest, res: Response): Promise<void>
     findNearestDonors(req: CustomRequest, res: Response): Promise<void>
-    // getMyChats(req: CustomRequest, res: Response): Promise<void>
 }
 
 class UserController implements IUserController {
 
-
     private readonly bloodService: BloodService;
     private readonly imageService: ImageServices;
-    private readonly bloodDonorRepo: BloodDonorRepo;
-    // private readonly chatService: ChatService;
 
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this)
         this.updateBloodDonation = this.updateBloodDonation.bind(this)
         this.blood_request = this.blood_request.bind(this)
-        // this.blood_donate = this.blood_donate.bind(this)
         this.findBloodRequirement = this.findBloodRequirement.bind(this)
         this.bloodAvailability = this.bloodAvailability.bind(this)
         this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this)
@@ -67,16 +58,12 @@ class UserController implements IUserController {
         this.findDonationHistory = this.findDonationHistory.bind(this)
         this.findNearestDonors = this.findNearestDonors.bind(this)
         this.advanceBloodRequirement = this.advanceBloodRequirement.bind(this)
-        // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new BloodService();
-        this.bloodDonorRepo = new BloodDonorRepo()
         this.imageService = new ImageServices()
-        // this.chatService = new ChatService()
     }
 
 
     async findNearestDonors(req: CustomRequest, res: Response): Promise<void> {
-
 
         const bloodGroup: BloodGroup | null = req.params.group as BloodGroup;
         const limit: number = +req.params.limit;
@@ -85,15 +72,12 @@ class UserController implements IUserController {
         const lati: number = +(req.query.lati || 0)
         const location: [number, number] = [long, lati]
 
-
-
         const findData = await this.bloodService.findNearestBloodDonors(page, limit, location, false, bloodGroup);
         res.status(findData.statusCode).json({ status: findData.status, msg: findData.msg, data: findData.data })
     }
 
 
     async advanceBloodRequirement(req: CustomRequest, res: Response): Promise<void> {
-        // page/:limit/:blood_group/:urgency/:hospital
         const page: number = +req.params.page;
         const limit: number = +req.params.limit;
         const blood_group: BloodGroup | null = req.params.blood_group as BloodGroup;
@@ -132,9 +116,6 @@ class UserController implements IUserController {
     }
 
     async updateAccountStatus(req: CustomRequest, res: Response): Promise<void> {
-        console.log("Body");
-
-        console.log(req.body);
 
         const status = req.body.status;
         const updateStatus: string = status == true ? "Open" : BloodDonorStatus.Blocked;
@@ -311,13 +292,6 @@ class UserController implements IUserController {
             phoneNumber: bodyData.phoneNumber
         };
 
-        console.log(bodyData);
-
-
-
-        console.log("The hospital");
-        console.log(bodyData.locatedAt);
-
 
         if (bodyData.locatedAt) {
             editableBloodDonors['location'] = bodyData.locatedAt
@@ -329,11 +303,6 @@ class UserController implements IUserController {
                 }
             }
         }
-
-
-        console.log("Editing details");
-        console.log(editableBloodDonors);
-
 
         const updateDonor: HelperFunctionResponse = await this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
         res.status(updateDonor.statusCode).json({
@@ -349,12 +318,6 @@ class UserController implements IUserController {
         const donor_id: string = req.context?.donor_id;
         const profile_id: string = req.context?.profile_id;
 
-        console.log("Profiles");
-        console.log(donor_id, profile_id);
-
-        console.log("Enterd 11111");
-
-
         if (profile_id && donor_id) {
             const profile: HelperFunctionResponse = await this.bloodService.findDonorProfile(donor_id, profile_id)  //await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
             console.log(profile);
@@ -368,9 +331,6 @@ class UserController implements IUserController {
 
     async createBloodDonation(req: Request, res: Response) {
 
-        console.log("Body data");
-
-        console.log(req.body);
         const fullName: string = req.body.full_name;
         const emailID: string = req.body.email_address
         const phoneNumber: number = req.body.phone_number;
@@ -381,13 +341,6 @@ class UserController implements IUserController {
             coordinates: [+locationBody.coordinates[0], +locationBody.coordinates[1]],
             type: "Point"
         }
-
-
-
-        console.log(locationBody);
-
-
-
 
         const createBloodDonor: HelperFunctionResponse = await this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location, locationBody, BloodDonorStatus.Open);
         res.status(createBloodDonor.statusCode).json({
@@ -494,21 +447,6 @@ class UserController implements IUserController {
             res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "User not found" })
         }
     }
-
-    // async blood_donate(req: CustomRequest, res: Response) {
-    //     const context = req.context;
-    //     if (context) {
-    //         const donor_id: string = context.donor_id;
-    //         const donation_id: string = req.params.donation_id;
-    //         const status: BloodDonationStatus = req.params.status as BloodDonationStatus;
-
-    //         const donateBlood = await this.bloodService.donateBlood(donor_id, donation_id, status);
-    //         res.status(donateBlood.statusCode).json({ status: donateBlood.status, msg: donateBlood.msg })
-    //     } else {
-    //         res.status(StatusCode.UNAUTHORIZED).json({ status: false, msg: "Unauthorized access" })
-    //     }
-    // }
-
 }
 
 export default UserController

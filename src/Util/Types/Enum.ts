@@ -11,7 +11,8 @@ enum BloodGroup {
 
 
 enum JwtTimer {
-    _30Days = "30d"
+    _30Days = "30d",
+    _1Year = "1year"
 }
 
 
