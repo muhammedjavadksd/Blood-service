@@ -28,7 +28,7 @@ const Enum_1 = require("../../Util/Types/Enum");
 const coordsSchema = new mongoose_1.Schema({
     type: {
         type: String,
-        enum: ['Point'], // Ensure only 'Point' is allowed
+        enum: ['Point'],
         required: true
     },
     coordinates: {

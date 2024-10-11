@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Enum_1 = require("../Util/Types/Enum");
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
+const Enum_1 = require("../Util/Types/Enum");
 class ImageServices {
     constructor() {
         this.utilHelper = new UtilHelpers_1.default();

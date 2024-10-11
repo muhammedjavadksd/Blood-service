@@ -186,6 +186,11 @@ class BloodDonorRepo implements IBloodDonorRepo {
 
     async updateBloodDonor(editData: IUserBloodDonorEditable, edit_id: string): Promise<boolean> {
 
+        console.log("Edit data");
+
+        console.log(editData);
+
+
         const updateData = await this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData })
         console.log(editData, edit_id);
         console.log(updateData);

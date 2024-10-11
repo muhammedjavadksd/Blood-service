@@ -345,7 +345,7 @@ class BloodService implements IBloodService {
                 return {
                     status: false,
                     msg: "̉No profile found",
-                    statusCode: StatusCode.BAD_REQUEST,
+                    statusCode: StatusCode.NOT_FOUND,
                 }
             }
 
@@ -960,10 +960,14 @@ class BloodService implements IBloodService {
                     }
                 }
             } else if (findDonor?.status == BloodDonorStatus.Blocked) {
-                const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.AlreadyDonated
+
+                console.log("Blocked reason");
+
+                console.log(findDonor.blocked_reason)
+                const blockedReason = findDonor.blocked_reason ?? DonorAccountBlockedReason.UserHideAccount
                 return {
                     status: false,
-                    msg: blockedReason || "You't cant donate blood at this moment!",
+                    msg: blockedReason,
                     statusCode: StatusCode.BAD_REQUEST
                 }
             } else {
@@ -1034,7 +1038,7 @@ class BloodService implements IBloodService {
         }
     }
 
- 
+
     async findBloodAvailability(status: BloodDonorStatus, blood_group?: BloodGroup): Promise<HelperFunctionResponse> {
         const findBloodAvailabilityFilter: ISearchBloodDonorTemplate = {}
         let result: IBloodAvailabilityResult = {

@@ -22,7 +22,6 @@ const tokenHelper_1 = __importDefault(require("../Util/Helpers/tokenHelper"));
 const notification_service_1 = __importDefault(require("../communication/Provider/notification_service"));
 const axios_1 = __importDefault(require("axios"));
 const ProfileChatApiCommunication_1 = __importDefault(require("../communication/ApiCommunication/ProfileChatApiCommunication"));
-// import ChatService from "./chatService";
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const qrcode_1 = __importDefault(require("qrcode"));
 const path_1 = __importDefault(require("path"));
@@ -30,7 +29,6 @@ const fs_1 = __importDefault(require("fs"));
 const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
 const dotenv_1 = require("dotenv");
 class BloodService {
-    // private readonly chatService: ChatService
     constructor() {
         this.createBloodRequirement = this.createBloodRequirement.bind(this);
         this.createBloodId = this.createBloodId.bind(this);
@@ -50,14 +48,12 @@ class BloodService {
         this.findBloodGroupChangeRequets = this.findBloodGroupChangeRequets.bind(this);
         this.updateBloodGroup = this.updateBloodGroup.bind(this);
         this.updateProfileStatus = this.updateProfileStatus.bind(this);
-        // this.findNearestBloodDonors = this.findNearestBloodDonors.bind(this)
         this.bloodReqRepo = new bloodReqRepo_1.default();
         this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.bloodGroupUpdateRepo = new bloodGroupUpdate_1.default();
         this.bloodDonationRepo = new bloodDonation_1.default();
         this.utilHelper = new UtilHelpers_1.default();
         (0, dotenv_1.config)();
-        // this.chatService = new ChatService();
     }
     unBlockSchedule() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -189,16 +185,6 @@ class BloodService {
             if (bloodGroup) {
                 match.blood_group = bloodGroup;
             }
-            // if (location) {
-            //     match.location = {
-            //         $geoWithin: {
-            //             $centerSphere: [
-            //                 location,
-            //                 1 / 6378.1
-            //             ]
-            //         }
-            //     };
-            // }
             if (isClosedOnly !== undefined) {
                 match.is_closed = isClosedOnly;
             }
@@ -312,7 +298,7 @@ class BloodService {
                     return {
                         status: false,
                         msg: "̉No profile found",
-                        statusCode: Enum_1.StatusCode.BAD_REQUEST,
+                        statusCode: Enum_1.StatusCode.NOT_FOUND,
                     };
                 }
             }
@@ -826,10 +812,12 @@ class BloodService {
                     }
                 }
                 else if ((findDonor === null || findDonor === void 0 ? void 0 : findDonor.status) == Enum_1.BloodDonorStatus.Blocked) {
-                    const blockedReason = (_b = findDonor.blocked_reason) !== null && _b !== void 0 ? _b : Enum_1.DonorAccountBlockedReason.AlreadyDonated;
+                    console.log("Blocked reason");
+                    console.log(findDonor.blocked_reason);
+                    const blockedReason = (_b = findDonor.blocked_reason) !== null && _b !== void 0 ? _b : Enum_1.DonorAccountBlockedReason.UserHideAccount;
                     return {
                         status: false,
-                        msg: blockedReason || "You't cant donate blood at this moment!",
+                        msg: blockedReason,
                         statusCode: Enum_1.StatusCode.BAD_REQUEST
                     };
                 }
@@ -905,54 +893,6 @@ class BloodService {
             }
         });
     }
-    // async donateBlood(donor_id: string, donation_id: string, status: BloodDonationStatus): Promise<HelperFunctionResponse> {
-    //     const insertRequest: IBloodDonateTemplate = {
-    //         date: new Date(),
-    //         donation_id,
-    //         status,
-    //         donor_id
-    //     }
-    //     const findDonor = await this.bloodDonorRepo.findBloodDonorByDonorId(donor_id);
-    //     if (findDonor) {
-    //         if (findDonor.status == BloodDonorStatus.Blocked || findDonor.status == BloodDonorStatus.Deleted) {
-    //             return {
-    //                 msg: "You cannot process this request as your account is blocked for 90 days.",
-    //                 status: false,
-    //                 statusCode: StatusCode.BAD_REQUEST
-    //             }
-    //         } else {
-    //             const saveData = await this.bloodDonationRepo.saveDonation(insertRequest);
-    //             if (saveData) {
-    //                 if (status == BloodDonationStatus.Approved) {
-    //                     const blockDonor = await this.bloodDonorRepo.blockDonor(donor_id, DonorAccountBlockedReason.AlreadyDonated)
-    //                     return {
-    //                         msg: "Please go through the email; you will receive the remaining details",
-    //                         status: true,
-    //                         statusCode: StatusCode.OK
-    //                     }
-    //                 } else {
-    //                     return {
-    //                         msg: "Rejected success",
-    //                         status: true,
-    //                         statusCode: StatusCode.OK
-    //                     }
-    //                 }
-    //             } else {
-    //                 return {
-    //                     msg: "Internal server error",
-    //                     status: false,
-    //                     statusCode: StatusCode.SERVER_ERROR
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         return {
-    //             msg: "We couldn't find the donor",
-    //             status: false,
-    //             statusCode: StatusCode.UNAUTHORIZED
-    //         }
-    //     }
-    // }
     findBloodAvailability(status, blood_group) {
         return __awaiter(this, void 0, void 0, function* () {
             const findBloodAvailabilityFilter = {};

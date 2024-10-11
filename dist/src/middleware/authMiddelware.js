@@ -30,20 +30,14 @@ class AuthMiddleware {
                 }
                 req.context.auth_token = token;
                 const checkValidity = yield tokenHelper.checkTokenValidity(token);
-                if (checkValidity) {
-                    if (typeof checkValidity == "object") {
-                        const emailAddress = checkValidity.email || checkValidity.email_address;
-                        if (emailAddress && checkValidity.role == "admin") {
-                            if (checkValidity) {
-                                req.context.email_id = emailAddress;
-                                req.context.token = token;
-                                req.context.user_id = checkValidity.user_id;
-                                console.log("Passed");
-                                console.log(req.context);
-                                next();
-                                return;
-                            }
-                        }
+                if (checkValidity && typeof checkValidity == "object") {
+                    const emailAddress = checkValidity.email || checkValidity.email_address;
+                    if (emailAddress && checkValidity.role == "admin") {
+                        req.context.email_id = emailAddress;
+                        req.context.token = token;
+                        req.context.user_id = checkValidity.user_id;
+                        next();
+                        return;
                     }
                 }
                 res.status(Enum_1.StatusCode.UNAUTHORIZED).json({

@@ -61,8 +61,6 @@ class BloodNotificationProvider {
                 deadLine: dead_line,
                 location: location
             };
-            console.log("Profile sending to emails");
-            console.log(data);
             (_a = this.channel) === null || _a === void 0 ? void 0 : _a.sendToQueue(this.NOTIFICATION_QUEUE, Buffer.from(JSON.stringify(data)));
             return true;
         }

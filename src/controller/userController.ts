@@ -118,8 +118,12 @@ class UserController implements IUserController {
     async updateAccountStatus(req: CustomRequest, res: Response): Promise<void> {
 
         const status = req.body.status;
+        console.log("Status");
+
+        console.log(status);
+
         const updateStatus: string = status == true ? "Open" : BloodDonorStatus.Blocked;
-        const reason = status == true ? DonorAccountBlockedReason.UserHideAccount : ""
+        const reason = status != true ? DonorAccountBlockedReason.UserHideAccount : ""
         const donor_id: string = req.context?.donor_id;
         let editableBloodDonors = {
             status: updateStatus,

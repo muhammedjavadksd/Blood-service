@@ -177,6 +177,8 @@ class BloodDonorRepo {
     }
     updateBloodDonor(editData, edit_id) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("Edit data");
+            console.log(editData);
             const updateData = yield this.BloodDonor.updateOne({ donor_id: edit_id }, { $set: editData });
             console.log(editData, edit_id);
             console.log(updateData);

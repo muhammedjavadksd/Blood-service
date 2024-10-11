@@ -48,10 +48,6 @@ class AdminController {
             const phoneNumber = req.body.phone_number;
             const email_address = req.body.email_address;
             const status = req.body.status;
-            const isBlocked = status == Enum_1.BloodDonorStatus.Blocked;
-            console.log("The cord");
-            console.log(req.body);
-            console.log(location);
             const coords = {
                 coordinates: location.coordinates,
                 type: "Point"
@@ -105,7 +101,6 @@ class AdminController {
     }
     findDonorByBloodGroup(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Reached here");
             const limit = +req.params.limit;
             const page = +req.params.page;
             const bloodGroup = req.params.blood_group;
@@ -141,7 +136,6 @@ class AdminController {
     }
     addBloodRequirement(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const requestData = re;
             var _a;
             const patientName = req.body.patientName;
             const unit = req.body.unit;
@@ -177,8 +171,6 @@ class AdminController {
             const long = (_b = req.query.long) === null || _b === void 0 ? void 0 : _b.toString();
             const closedOnly = req.query.closed == "true";
             const location = (lang && long) ? [lang, long] : null;
-            console.log("Query");
-            console.log(req.query);
             const findProfile = yield this.bloodService.findPaginatedBloodRequirements(page, limit, status, bloodGroup, location, closedOnly);
             res.status(findProfile.statusCode).json({ status: findProfile.status, msg: findProfile.msg, data: findProfile.data });
         });

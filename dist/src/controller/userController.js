@@ -14,17 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Enum_1 = require("../Util/Types/Enum");
 const bloodService_1 = __importDefault(require("../service/bloodService"));
-const bloodDonorRepo_1 = __importDefault(require("../repo/bloodDonorRepo"));
 const ImageService_1 = __importDefault(require("../service/ImageService"));
 const UtilHelpers_1 = __importDefault(require("../Util/Helpers/UtilHelpers"));
 const S3Helper_1 = __importDefault(require("../Util/Helpers/S3Helper"));
 class UserController {
-    // private readonly chatService: ChatService;
     constructor() {
         this.createBloodDonation = this.createBloodDonation.bind(this);
         this.updateBloodDonation = this.updateBloodDonation.bind(this);
         this.blood_request = this.blood_request.bind(this);
-        // this.blood_donate = this.blood_donate.bind(this)
         this.findBloodRequirement = this.findBloodRequirement.bind(this);
         this.bloodAvailability = this.bloodAvailability.bind(this);
         this.bloodAvailabilityByStatitics = this.bloodAvailabilityByStatitics.bind(this);
@@ -43,11 +40,8 @@ class UserController {
         this.findDonationHistory = this.findDonationHistory.bind(this);
         this.findNearestDonors = this.findNearestDonors.bind(this);
         this.advanceBloodRequirement = this.advanceBloodRequirement.bind(this);
-        // this.getMyChats = this.getMyChats.bind(this)
         this.bloodService = new bloodService_1.default();
-        this.bloodDonorRepo = new bloodDonorRepo_1.default();
         this.imageService = new ImageService_1.default();
-        // this.chatService = new ChatService()
     }
     findNearestDonors(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,7 +57,6 @@ class UserController {
     }
     advanceBloodRequirement(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            // page/:limit/:blood_group/:urgency/:hospital
             const page = +req.params.page;
             const limit = +req.params.limit;
             const blood_group = req.params.blood_group;
@@ -107,11 +100,11 @@ class UserController {
     updateAccountStatus(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            console.log("Body");
-            console.log(req.body);
             const status = req.body.status;
+            console.log("Status");
+            console.log(status);
             const updateStatus = status == true ? "Open" : Enum_1.BloodDonorStatus.Blocked;
-            const reason = status == true ? Enum_1.DonorAccountBlockedReason.UserHideAccount : "";
+            const reason = status != true ? Enum_1.DonorAccountBlockedReason.UserHideAccount : "";
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             let editableBloodDonors = {
                 status: updateStatus,
@@ -264,9 +257,6 @@ class UserController {
                 full_name: bodyData.full_name,
                 phoneNumber: bodyData.phoneNumber
             };
-            console.log(bodyData);
-            console.log("The hospital");
-            console.log(bodyData.locatedAt);
             if (bodyData.locatedAt) {
                 editableBloodDonors['location'] = bodyData.locatedAt;
                 const coords = (_b = bodyData.locatedAt) === null || _b === void 0 ? void 0 : _b.coordinates;
@@ -277,8 +267,6 @@ class UserController {
                     };
                 }
             }
-            console.log("Editing details");
-            console.log(editableBloodDonors);
             const updateDonor = yield this.bloodService.updateBloodDonors(editableBloodDonors, donor_id);
             res.status(updateDonor.statusCode).json({
                 status: updateDonor.status,
@@ -291,9 +279,6 @@ class UserController {
             var _a, _b;
             const donor_id = (_a = req.context) === null || _a === void 0 ? void 0 : _a.donor_id;
             const profile_id = (_b = req.context) === null || _b === void 0 ? void 0 : _b.profile_id;
-            console.log("Profiles");
-            console.log(donor_id, profile_id);
-            console.log("Enterd 11111");
             if (profile_id && donor_id) {
                 const profile = yield this.bloodService.findDonorProfile(donor_id, profile_id); //await this.bloodDonorRepo.findBloodDonorByDonorId(profile_id);
                 console.log(profile);
@@ -307,8 +292,6 @@ class UserController {
     }
     createBloodDonation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Body data");
-            console.log(req.body);
             const fullName = req.body.full_name;
             const emailID = req.body.email_address;
             const phoneNumber = req.body.phone_number;
@@ -318,7 +301,6 @@ class UserController {
                 coordinates: [+locationBody.coordinates[0], +locationBody.coordinates[1]],
                 type: "Point"
             };
-            console.log(locationBody);
             const createBloodDonor = yield this.bloodService.bloodDonation(fullName, emailID, phoneNumber, bloodGroup, location, locationBody, Enum_1.BloodDonorStatus.Open);
             res.status(createBloodDonor.statusCode).json({
                 status: createBloodDonor.status,
