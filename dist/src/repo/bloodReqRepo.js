@@ -106,6 +106,11 @@ class BloodReqDepo {
                         $facet: {
                             paginated: [
                                 {
+                                    $sort: {
+                                        _id: -1
+                                    }
+                                },
+                                {
                                     $skip: skip
                                 },
                                 {

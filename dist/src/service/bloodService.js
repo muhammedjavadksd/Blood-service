@@ -222,7 +222,7 @@ class BloodService {
                 return {
                     status: false,
                     msg: "No data found",
-                    statusCode: Enum_1.StatusCode.BAD_REQUEST
+                    statusCode: Enum_1.StatusCode.NOT_FOUND
                 };
             }
         });

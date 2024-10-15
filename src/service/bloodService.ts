@@ -258,7 +258,7 @@ class BloodService implements IBloodService {
             return {
                 status: false,
                 msg: "No data found",
-                statusCode: StatusCode.BAD_REQUEST
+                statusCode: StatusCode.NOT_FOUND
             }
         }
     }

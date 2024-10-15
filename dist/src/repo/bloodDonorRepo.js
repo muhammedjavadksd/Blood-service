@@ -208,6 +208,8 @@ class BloodDonorRepo {
                 if (activeOnly) {
                     match['status'] = Enum_1.BloodDonorStatus.Open;
                 }
+                console.log("Match query");
+                console.log(match);
                 const find = yield this.BloodDonor.aggregate([
                     {
                         $geoNear: {
@@ -218,7 +220,7 @@ class BloodDonorRepo {
                             distanceField: "distance_km",
                             spherical: true,
                             maxDistance: 50000000,
-                            key: "location_coords",
+                            // key: "location_coords",
                         },
                     },
                     {
@@ -248,9 +250,6 @@ class BloodDonorRepo {
                             paginated: [
                                 { $skip: skip }, // Skip based on pagination offset
                                 { $limit: limit }, // Limit number of documents
-                                {
-                                    $sort: { distance: 1 } // Sort by distance, ascending order
-                                }
                             ],
                             total_records: [
                                 { $count: "total_records" } // Count total number of records

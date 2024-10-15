@@ -117,7 +117,13 @@ class BloodReqDepo implements IBloodReqDepo {
                 },
                 {
                     $facet: {
+
                         paginated: [
+                            {
+                                $sort: {
+                                    _id: -1
+                                }
+                            },
                             {
                                 $skip: skip
                             },

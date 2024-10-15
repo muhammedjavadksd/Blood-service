@@ -222,6 +222,9 @@ class BloodDonorRepo implements IBloodDonorRepo {
                 match['status'] = BloodDonorStatus.Open
             }
 
+            console.log("Match query");
+            console.log(match)
+
             const find = await this.BloodDonor.aggregate([
                 {
                     $geoNear: {
@@ -232,7 +235,7 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         distanceField: "distance_km",
                         spherical: true,
                         maxDistance: 50000000,
-                        key: "location_coords",
+                        // key: "location_coords",
                     },
                 },
                 {
@@ -262,9 +265,6 @@ class BloodDonorRepo implements IBloodDonorRepo {
                         paginated: [
                             { $skip: skip },   // Skip based on pagination offset
                             { $limit: limit }, // Limit number of documents
-                            {
-                                $sort: { distance: 1 }  // Sort by distance, ascending order
-                            }
                         ],
                         total_records: [
                             { $count: "total_records" }  // Count total number of records

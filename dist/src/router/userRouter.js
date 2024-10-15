@@ -14,8 +14,8 @@ userRouter.get("/blood_availability/:page/:limit/:blood_group?/:urgency?/:hospit
 userRouter.get("/blood_availability", userController.bloodAvailabilityByStatitics); //test
 userRouter.get("/get_blood_requirements/:page/:limit", userController.findBloodRequirement);
 userRouter.get("/find_request", authMiddleware.isValidDonor, userController.findRequest); //test pending // for getting request matched on my blood group
-userRouter.get("/blood-requests/:limit/:page/:status?", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.myBloodRequest); //test pending
-userRouter.get("/intrest/:request_id/:page/:limit/:status?", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.findRequest); //test pending
+userRouter.get("/blood-requests/:limit/:page/:status?", authMiddleware.isAuthenitcated, userController.myBloodRequest); //test pending
+userRouter.get("/intrest/:request_id/:page/:limit/:status?", authMiddleware.isAuthenitcated, userController.findRequest); //test pending
 userRouter.get("/interested_blood_requirements/:page/:limit/:status?", authMiddleware.isValidDonor, userController.findMyIntrest); //test pending
 userRouter.get("/donation-history/:page/:limit", authMiddleware.isAuthenitcated, authMiddleware.isValidDonor, userController.findDonationHistory);
 userRouter.get("/nearest-donors/:limit/:page/:group?", userController.findNearestDonors);
