@@ -14,7 +14,11 @@ class ProfileChat implements IProfileChat {
         ).then(() => true).catch((e) => {
             console.log(e);
             return false;
-        });
+        }).catch((err) => {
+            console.log("Room creation error");
+            console.log(err);
+
+        })
     }
 }
 
