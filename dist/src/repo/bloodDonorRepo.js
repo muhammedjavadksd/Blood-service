@@ -241,13 +241,13 @@ class BloodDonorRepo {
                         }
                     },
                     {
-                        $sort: {
-                            distance_km: -1
-                        }
-                    },
-                    {
                         $facet: {
                             paginated: [
+                                {
+                                    $sort: {
+                                        distance_km: 1
+                                    }
+                                },
                                 { $skip: skip }, // Skip based on pagination offset
                                 { $limit: limit }, // Limit number of documents
                             ],
